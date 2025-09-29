@@ -50,11 +50,11 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-logs/
+logs
 *.log
 
 # Runtime data
-pids/
+pids
 *.pid
 *.seed
 *.pid.lock
@@ -67,17 +67,17 @@ playwright-report/
 playwright/.cache/
 
 # Cache directories
-.cache/
-.parcel-cache/
+.cache
+.parcel-cache
 .vite/
-.npm/
+.npm
 
 # TypeScript build info
 *.tsbuildinfo
 
 # Temporary files
-tmp/
-temp/
+tmp
+temp
 
 # Package manager files
 *.tgz
@@ -86,6 +86,24 @@ jspm_packages/
 
 # Optional REPL history
 .node_repl_history
+
+# Next.js build output
+.next
+
+# Nuxt.js build output
+.nuxt
+
+# Vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
 
 # Docker
 .dockerignore.bak
