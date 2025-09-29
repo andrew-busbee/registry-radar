@@ -6,7 +6,7 @@ import { ContainerRegistry, ContainerState, CronConfig, NotificationConfig } fro
 const CONFIG_DIR = path.join(process.cwd(), 'data');
 const CONTAINERS_FILE = path.join(CONFIG_DIR, 'containers.yml');
 const STATE_FILE = path.join(CONFIG_DIR, 'state.json');
-const CRON_FILE = path.join(CONFIG_DIR, 'cron.yml');
+const CRON_FILE = path.join(CONFIG_DIR, 'cron.json');
 const NOTIFICATIONS_FILE = path.join(CONFIG_DIR, 'notifications.yml');
 
 export class ConfigService {
@@ -55,23 +55,21 @@ export class ConfigService {
     await this.ensureConfigDir();
     try {
       const content = await fs.readFile(CRON_FILE, 'utf-8');
-      console.log('Reading cron config from file:', content);
-      const parsed = yaml.parse(content);
-      const config = parsed.cron || { schedule: '0 9 * * *', enabled: true };
-      console.log('Parsed cron config:', config);
-      return config;
+      const parsed = JSON.parse(content);
+      return parsed.cron || { schedule: '0 9 * * *', enabled: true };
     } catch (error) {
-      console.log('Error reading cron config file, using default:', error);
+      // Just return default, don't recreate the file
+      console.log('Using default cron config');
       return { schedule: '0 9 * * *', enabled: true };
     }
   }
 
   static async saveCronConfig(config: CronConfig): Promise<void> {
+    console.log('SAVE CALLED FROM:', new Error().stack?.split('\n')[2]?.trim());
     await this.ensureConfigDir();
-    const yamlContent = yaml.stringify({ cron: config });
-    console.log('Saving cron config to file:', yamlContent);
-    await fs.writeFile(CRON_FILE, yamlContent, 'utf-8');
-    console.log('Cron config saved to:', CRON_FILE);
+    const jsonContent = JSON.stringify({ cron: config }, null, 2);
+    await fs.writeFile(CRON_FILE, jsonContent, 'utf-8');
+    console.log('Cron config saved:', config);
   }
 
   static async getNotificationConfig(): Promise<NotificationConfig> {

@@ -32,13 +32,18 @@ RUN npm install --omit=dev && npm cache clean --force
 # Copy built application
 COPY --from=builder /app/dist ./dist
 
-# Create data directory for configuration files
-RUN mkdir -p /app/data
-
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S registry-radar -u 1001
+
+# Create data directory for configuration files and copy config files
+RUN mkdir -p /app/data
+COPY data/*.yml /app/data/
+COPY data/*.json /app/data/
+
+# Set proper ownership and permissions
 RUN chown -R registry-radar:nodejs /app
+RUN chmod -R 755 /app/data
 USER registry-radar
 
 # Expose port

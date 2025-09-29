@@ -188,20 +188,7 @@ function AppContent() {
         );
       }
 
-      if (config.enabled !== undefined) {
-        updates.push(
-          fetch('/api/cron/config/enabled', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: config.enabled }),
-          }).then(response => {
-            if (!response.ok) {
-              throw new Error(`Failed to update enabled status: ${response.statusText}`);
-            }
-            return response.json();
-          })
-        );
-      }
+      // Don't make separate enabled call - schedule call handles both
 
       await Promise.all(updates);
       
