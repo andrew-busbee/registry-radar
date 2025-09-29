@@ -7,17 +7,13 @@ import { Dashboard } from './pages/Dashboard';
 import { Containers } from './pages/Containers';
 import { Settings } from './pages/Settings';
 import { Notifications as NotificationsPage } from './pages/Notifications';
-import { Login } from './pages/Login';
-import { PasswordChangeModal } from './components/PasswordChangeModal';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CheckProvider } from './contexts/CheckContext';
 import { CheckProgressBar } from './components/CheckProgressBar';
 import { Footer } from './components/Footer';
 
-// Main app content component (only shown when authenticated)
+// Main app content component
 function AppContent() {
-  const { user, logout } = useAuth();
   const [containers, setContainers] = useState<ContainerRegistry[]>([]);
   const [containerStates, setContainerStates] = useState<ContainerState[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -32,26 +28,19 @@ function AppContent() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState('dashboard');
-  const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'notifications'>('general');
 
-  // Check if user needs to change password on first login
-  useEffect(() => {
-    if (user?.isFirstLogin) {
-      setShowPasswordChangeModal(true);
-    }
-  }, [user]);
 
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [containersRes, statesRes, notificationsRes, cronRes, notificationConfigRes] = await Promise.all([
-          fetch('/api/config/containers', { credentials: 'include' }),
-          fetch('/api/registry/states', { credentials: 'include' }),
-          fetch('/api/notifications', { credentials: 'include' }),
-          fetch('/api/cron/config', { credentials: 'include' }),
-          fetch('/api/notification-config/config', { credentials: 'include' }),
+          fetch('/api/config/containers'),
+          fetch('/api/registry/states'),
+          fetch('/api/notifications'),
+          fetch('/api/cron/config'),
+          fetch('/api/notification-config/config'),
         ]);
 
         const [containersData, statesData, notificationsData, cronData, notificationConfigData] = await Promise.all([
@@ -91,7 +80,6 @@ function AppContent() {
       const response = await fetch('/api/config/containers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(container),
       });
 
@@ -114,7 +102,6 @@ function AppContent() {
       const response = await fetch(`/api/config/containers/${index}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(container),
       });
 
@@ -136,7 +123,6 @@ function AppContent() {
     try {
       const response = await fetch(`/api/config/containers/${index}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       if (response.ok) {
@@ -156,14 +142,13 @@ function AppContent() {
     try {
       const response = await fetch('/api/registry/check', {
         method: 'POST',
-        credentials: 'include',
       });
 
       if (response.ok) {
         // Refresh data after check
         const [statesRes, notificationsRes] = await Promise.all([
-          fetch('/api/registry/states', { credentials: 'include' }),
-          fetch('/api/notifications', { credentials: 'include' }),
+          fetch('/api/registry/states'),
+          fetch('/api/notifications'),
         ]);
         
         const [statesData, notificationsData] = await Promise.all([
@@ -193,7 +178,6 @@ function AppContent() {
           fetch('/api/cron/config/schedule', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ schedule: config.schedule }),
           }).then(response => {
             if (!response.ok) {
@@ -209,7 +193,6 @@ function AppContent() {
           fetch('/api/cron/config/enabled', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ enabled: config.enabled }),
           }).then(response => {
             if (!response.ok) {
@@ -237,7 +220,6 @@ function AppContent() {
       const response = await fetch('/api/notification-config/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(config),
       });
 
@@ -260,7 +242,6 @@ function AppContent() {
     try {
       const response = await fetch(`/api/notifications/${id}/read`, {
         method: 'PUT',
-        credentials: 'include',
       });
 
       if (response.ok) {
@@ -277,7 +258,6 @@ function AppContent() {
     try {
       const response = await fetch('/api/notifications', {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       if (response.ok) {
@@ -368,11 +348,6 @@ function AppContent() {
             </div>
             <CheckProgressBar />
             <Footer />
-            <PasswordChangeModal 
-              isOpen={showPasswordChangeModal}
-              onClose={() => setShowPasswordChangeModal(false)}
-              isFirstLogin={user?.isFirstLogin || false}
-            />
           </div>
         </Router>
       </CheckProvider>
@@ -380,22 +355,8 @@ function AppContent() {
   );
 }
 
-// Main App component with authentication
+// Main App component
 function App() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Login />;
-  }
-
   return <AppContent />;
 }
 

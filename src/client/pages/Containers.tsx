@@ -74,7 +74,6 @@ export function Containers({
         try {
           const response = await fetch(`/api/registry/check/${i}`, {
             method: 'POST',
-            credentials: 'include',
           });
           
           if (!response.ok) {
@@ -106,7 +105,6 @@ export function Containers({
     try {
       const response = await fetch(`/api/registry/check/${index}`, {
         method: 'POST',
-        credentials: 'include',
       });
       
       if (response.ok) {
@@ -132,7 +130,6 @@ export function Containers({
       const response = await fetch('/api/config/containers/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ containers }),
       });
 
@@ -153,7 +150,6 @@ export function Containers({
   const handleExport = async () => {
     try {
       const response = await fetch('/api/config/containers/export', {
-        credentials: 'include',
       });
 
       if (response.ok) {

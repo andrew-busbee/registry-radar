@@ -9,10 +9,7 @@ import { cronRouter } from './routes/cron';
 import { notificationsRouter } from './routes/notifications';
 import { notificationConfigRouter } from './routes/notificationConfig';
 import { adminRouter } from './routes/admin';
-import { authRouter } from './routes/auth';
 import { InitService } from './services/initService';
-import { UserService } from './services/userService';
-import { authenticateToken } from './middleware/auth';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,13 +27,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client')));
 
 // API Routes
-app.use('/api/auth', authRouter);
-app.use('/api/config', authenticateToken, configRouter);
-app.use('/api/registry', authenticateToken, registryRouter);
-app.use('/api/cron', authenticateToken, cronRouter);
-app.use('/api/notifications', authenticateToken, notificationsRouter);
-app.use('/api/notification-config', authenticateToken, notificationConfigRouter);
-app.use('/api/admin', authenticateToken, adminRouter);
+app.use('/api/config', configRouter);
+app.use('/api/registry', registryRouter);
+app.use('/api/cron', cronRouter);
+app.use('/api/notifications', notificationsRouter);
+app.use('/api/notification-config', notificationConfigRouter);
+app.use('/api/admin', adminRouter);
 
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {
@@ -44,14 +40,10 @@ app.get('*', (req, res) => {
 });
 
 // Initialize and start server
-Promise.all([
-  InitService.initialize(),
-  UserService.initialize()
-]).then(() => {
+InitService.initialize().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Registry Radar server running on port ${PORT}`);
     console.log(`📱 Open http://localhost:${PORT} to view the application`);
-    console.log(`🔐 Default login: username=user, password=password`);
   });
 }).catch((error) => {
   console.error('Failed to start Registry Radar:', error);

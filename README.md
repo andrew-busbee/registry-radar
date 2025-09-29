@@ -29,6 +29,12 @@ docker-compose up -d
 
 3. Open your browser and navigate to `http://localhost:3001`
 
+⚠️ **Important Security Note:**
+The application does not yet include authentication. If this is deployed in a production environment, you may want to consider:
+- Network-level security (firewall, VPN)
+- Reverse proxy authentication
+- Basic HTTP authentication at the web server level
+
 ### Manual Setup
 
 1. Install dependencies:

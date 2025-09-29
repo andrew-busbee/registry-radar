@@ -132,7 +132,6 @@ export function Dashboard({
         try {
           const response = await fetch(`/api/registry/check/${i}`, {
             method: 'POST',
-            credentials: 'include',
           });
           
           if (!response.ok) {
@@ -181,7 +180,6 @@ export function Dashboard({
     try {
       const response = await fetch(`/api/registry/dismiss/${encodeURIComponent(image)}/${encodeURIComponent(tag)}`, {
         method: 'POST',
-        credentials: 'include',
       });
 
       if (response.ok) {
@@ -200,7 +198,6 @@ export function Dashboard({
       const response = await fetch('/api/config/containers/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ containers }),
       });
 
@@ -221,7 +218,6 @@ export function Dashboard({
   const handleExport = async () => {
     try {
       const response = await fetch('/api/config/containers/export', {
-        credentials: 'include',
       });
 
       if (response.ok) {
@@ -257,7 +253,6 @@ export function Dashboard({
     try {
       const response = await fetch(`/api/registry/check/${index}`, {
         method: 'POST',
-        credentials: 'include',
       });
       
       if (response.ok) {
