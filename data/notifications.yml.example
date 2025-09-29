@@ -1,0 +1,23 @@
+notifications:
+  # Notification trigger settings
+  triggers:
+    onEveryRun: false        # Send notification for every scheduled check
+    onNewUpdates: true       # Send notification when new updates are found
+    onErrors: true          # Send notification when errors occur
+    onManualCheck: false    # Send notification for manual checks
+
+  # Pushover configuration (optional)
+  pushover:
+    enabled: false
+    apiKey: "your_pushover_app_api_key"
+    userKey: "your_pushover_user_key"
+    devices: ["device1", "device2"]  # Optional: specific devices
+
+  # Discord configuration (optional)
+  discord:
+    enabled: false
+    webhooks:
+      - name: "Production Alerts"
+        url: "https://discord.com/api/webhooks/..."
+      - name: "Development Updates"
+        url: "https://discord.com/api/webhooks/..."

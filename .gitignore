@@ -83,8 +83,32 @@ jspm_packages/
 .dynamodb/
 
 # Data directory (contains configuration and state files)
-data/
+# Note: Keep example files tracked, ignore actual data files
+data/*.json
+data/*.yml
+!data/*.example
 
 # Temporary files
 tmp/
 temp/
+
+# TypeScript
+*.tsbuildinfo
+
+# Docker
+.dockerignore.bak
+
+# Vite
+.vite/
+
+# Testing
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
