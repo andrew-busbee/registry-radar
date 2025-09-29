@@ -1,17 +1,30 @@
-# Dependencies
+# ===========================================
+# Registry Radar - Docker Compose Deployment
+# ===========================================
+
+# Project-specific files (not needed for Docker deployment)
+docker-compose.override.yml
+AUTHENTICATION.md
+BULK_IMPORT_EXPORT.md
+DEMO.md
+setup.bat
+setup.sh
+
+# Data directory (contains runtime configuration and state)
+# Keep example files tracked, ignore actual data files
+data/*.json
+data/*.yml
+!data/*.example
+
+# Build outputs (handled by Docker)
+dist/
+build/
+
+# Dependencies (installed in Docker container)
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Project-specific files
-docker-compose.override.yml
-AUTHENTICATION.md
-BULK_IMPORT_EXPORT.md
-
-# Production builds
-dist/
-build/
 
 # Environment variables
 .env
@@ -20,7 +33,7 @@ build/
 .env.test.local
 .env.production.local
 
-# IDE files
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
@@ -37,81 +50,47 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-logs
+logs/
 *.log
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# Coverage and testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
 
-# Dependency directories
-jspm_packages/
+# Cache directories
+.cache/
+.parcel-cache/
+.vite/
+.npm/
 
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# Data directory (contains configuration and state files)
-# Note: Keep example files tracked, ignore actual data files
-data/*.json
-data/*.yml
-!data/*.example
+# TypeScript build info
+*.tsbuildinfo
 
 # Temporary files
 tmp/
 temp/
 
-# TypeScript
-*.tsbuildinfo
+# Package manager files
+*.tgz
+.yarn-integrity
+jspm_packages/
+
+# Optional REPL history
+.node_repl_history
 
 # Docker
 .dockerignore.bak
 
-# Vite
-.vite/
-
-# Testing
-test-results/
-playwright-report/
-playwright/.cache/
-
-# Editor directories and files
+# Editor directories and files (keep some useful ones)
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
