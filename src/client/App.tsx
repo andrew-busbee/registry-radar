@@ -73,7 +73,7 @@ function AppContent() {
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(interval);
-  }, [activePage]);
+  }, []); // Remove activePage dependency to always fetch data on mount
 
   const handleAddContainer = async (container: ContainerRegistry) => {
     try {
@@ -205,8 +205,18 @@ function AppContent() {
 
       await Promise.all(updates);
       
-      // Update the local state after successful API calls
-      setCronConfig(prev => ({ ...prev, ...config }));
+      // Refresh cron configuration from server to ensure we have the latest data
+      try {
+        const cronResponse = await fetch('/api/cron/config');
+        if (cronResponse.ok) {
+          const updatedCronData = await cronResponse.json();
+          setCronConfig(updatedCronData);
+        }
+      } catch (error) {
+        console.error('Error refreshing cron config:', error);
+        // Fallback to local update if server refresh fails
+        setCronConfig(prev => ({ ...prev, ...config }));
+      }
       
       return true;
     } catch (error) {

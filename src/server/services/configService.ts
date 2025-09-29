@@ -55,9 +55,13 @@ export class ConfigService {
     await this.ensureConfigDir();
     try {
       const content = await fs.readFile(CRON_FILE, 'utf-8');
+      console.log('Reading cron config from file:', content);
       const parsed = yaml.parse(content);
-      return parsed.cron || { schedule: '0 9 * * *', enabled: true };
+      const config = parsed.cron || { schedule: '0 9 * * *', enabled: true };
+      console.log('Parsed cron config:', config);
+      return config;
     } catch (error) {
+      console.log('Error reading cron config file, using default:', error);
       return { schedule: '0 9 * * *', enabled: true };
     }
   }
@@ -65,7 +69,9 @@ export class ConfigService {
   static async saveCronConfig(config: CronConfig): Promise<void> {
     await this.ensureConfigDir();
     const yamlContent = yaml.stringify({ cron: config });
+    console.log('Saving cron config to file:', yamlContent);
     await fs.writeFile(CRON_FILE, yamlContent, 'utf-8');
+    console.log('Cron config saved to:', CRON_FILE);
   }
 
   static async getNotificationConfig(): Promise<NotificationConfig> {

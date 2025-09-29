@@ -42,8 +42,12 @@ export class CronService {
     console.log(`Updating cron schedule to: ${newSchedule}`);
     
     const config = await ConfigService.getCronConfig();
+    console.log(`Current cron config before update:`, config);
+    
     config.schedule = newSchedule;
     await ConfigService.saveCronConfig(config);
+    
+    console.log(`Cron config saved successfully`);
     
     // Always stop and restart to ensure the new schedule takes effect
     await this.stopCron();
