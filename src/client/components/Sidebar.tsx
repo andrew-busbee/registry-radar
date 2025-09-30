@@ -1,4 +1,4 @@
-import { Bell, Settings, Container, Home } from 'lucide-react';
+import { Bell, Settings, Container, Home, BookOpen } from 'lucide-react';
 
 interface SidebarProps {
   activePage: string;
@@ -10,6 +10,7 @@ export function Sidebar({ activePage, onPageChange, unreadCount }: SidebarProps)
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'containers', label: 'Image Details', icon: Container },
+    { id: 'getting-started', label: 'Getting Started', icon: BookOpen },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

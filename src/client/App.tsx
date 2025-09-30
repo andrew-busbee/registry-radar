@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { Containers } from './pages/Containers';
+import { GettingStarted } from './pages/GettingStarted';
 import { Settings } from './pages/Settings';
 import { Notifications as NotificationsPage } from './pages/Notifications';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -317,6 +318,22 @@ function AppContent() {
             onMarkAsRead={handleMarkNotificationAsRead}
             onClearAll={handleClearNotifications}
             onNavigateToSettings={() => handleNavigateToSettings('notifications')}
+          />
+        );
+      case 'getting-started':
+        return (
+          <GettingStarted
+            onAddContainer={handleAddContainer}
+            onBulkImport={async (containers: ContainerRegistry[]) => {
+              const response = await fetch('/api/config/containers/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ containers }),
+              });
+              if (response.ok) {
+                window.location.reload();
+              }
+            }}
           />
         );
       default:

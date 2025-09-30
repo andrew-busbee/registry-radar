@@ -308,40 +308,42 @@ export function Dashboard({
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <Container className="w-5 h-5 text-blue-500" />
-            <span className="text-sm font-medium text-muted-foreground">Monitored Images</span>
+      {/* Stats Cards - Only show when there are containers */}
+      {containers.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-card border border-border rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <Container className="w-5 h-5 text-blue-500" />
+              <span className="text-sm font-medium text-muted-foreground">Monitored Images</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.total}</p>
           </div>
-          <p className="text-2xl font-bold text-foreground mt-2">{stats.total}</p>
-        </div>
 
-        <div className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <span className="text-sm font-medium text-muted-foreground">Up to Date</span>
+          <div className="bg-card border border-border rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              <span className="text-sm font-medium text-muted-foreground">Up to Date</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.upToDate}</p>
           </div>
-          <p className="text-2xl font-bold text-foreground mt-2">{stats.upToDate}</p>
-        </div>
 
-        <div className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-orange-500" />
-            <span className="text-sm font-medium text-muted-foreground">Updates Available</span>
+          <div className="bg-card border border-border rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-orange-500" />
+              <span className="text-sm font-medium text-muted-foreground">Updates Available</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.updatesAvailable}</p>
           </div>
-          <p className="text-2xl font-bold text-foreground mt-2">{stats.updatesAvailable}</p>
-        </div>
 
-        <div className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <Clock className="w-5 h-5 text-gray-500" />
-            <span className="text-sm font-medium text-muted-foreground">Never Checked</span>
+          <div className="bg-card border border-border rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <Clock className="w-5 h-5 text-gray-500" />
+              <span className="text-sm font-medium text-muted-foreground">Never Checked</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.neverChecked}</p>
           </div>
-          <p className="text-2xl font-bold text-foreground mt-2">{stats.neverChecked}</p>
         </div>
-      </div>
+      )}
 
       {/* Recent Updates - Only show if there are updates */}
       {recentUpdates.length > 0 && (
@@ -447,17 +449,25 @@ export function Dashboard({
             })()}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <Container className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No images configured</h3>
-            <p className="text-muted-foreground mb-6">Add your first image to start monitoring for updates</p>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors mx-auto"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Your First Image</span>
-            </button>
+          <div className="bg-card border border-border rounded-lg p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <Container className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No images configured
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Add your first image to start monitoring for updates
+              </p>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors mx-auto"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Image</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
