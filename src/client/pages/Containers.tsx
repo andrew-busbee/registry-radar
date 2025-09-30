@@ -55,6 +55,17 @@ export function Containers({
     }
   };
 
+  const handleBulkDelete = async (indices: number[]) => {
+    try {
+      // Delete in descending order to maintain correct indices
+      for (const index of indices) {
+        await onDeleteContainer(index);
+      }
+    } catch (error) {
+      console.error('Error bulk deleting containers:', error);
+    }
+  };
+
   const handleCheckAll = async () => {
     // Show confirmation if there are 10 or more images
     if (containers.length >= 10) {
@@ -248,6 +259,7 @@ export function Containers({
           containerStates={containerStates}
           onUpdate={handleUpdateContainer}
           onDelete={handleDeleteContainer}
+          onBulkDelete={handleBulkDelete}
           onCheck={handleCheckSingle}
           checkingIndex={checkingIndex}
         />

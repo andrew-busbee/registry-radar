@@ -7,18 +7,20 @@ interface ContainerTableProps {
   containerStates: ContainerState[];
   onUpdate: (index: number, container: ContainerRegistry) => Promise<void>;
   onDelete: (index: number) => void;
+  onBulkDelete?: (indices: number[]) => void;
   onCheck: (index: number) => void;
   checkingIndex: number | null;
 }
 
-type SortField = 'name' | 'tag' | 'lastChecked' | 'lastUpdated' | 'status';
+type SortField = 'name' | 'tag' | 'lastChecked' | 'lastUpdated' | 'daysOld' | 'status';
 type SortDirection = 'asc' | 'desc';
 
 export function ContainerTable({ 
   containers, 
   containerStates, 
   onUpdate, 
-  onDelete, 
+  onDelete,
+  onBulkDelete, 
   onCheck,
   checkingIndex 
 }: ContainerTableProps) {
@@ -26,6 +28,7 @@ export function ContainerTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<ContainerRegistry | null>(null);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
 
   const getContainerState = (container: ContainerRegistry): ContainerState | undefined => {
     return containerStates.find(state => 
@@ -152,6 +155,11 @@ export function ContainerTable({
         const lastUpdatedB = stateB?.lastUpdated || '';
         comparison = lastUpdatedA.localeCompare(lastUpdatedB);
         break;
+      case 'daysOld':
+        const daysA = getDaysSinceUpdate(stateA) ?? 999999;
+        const daysB = getDaysSinceUpdate(stateB) ?? 999999;
+        comparison = daysA - daysB;
+        break;
       case 'status':
         const statusA = getStatusText(stateA);
         const statusB = getStatusText(stateB);
@@ -184,6 +192,37 @@ export function ContainerTable({
     setEditData(null);
   };
 
+  const handleToggleSelect = (index: number) => {
+    const newSelected = new Set(selectedIndices);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedIndices(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIndices.size === containers.length) {
+      setSelectedIndices(new Set());
+    } else {
+      setSelectedIndices(new Set(containers.map((_, i) => i)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIndices.size === 0) return;
+    
+    if (confirm(`Are you sure you want to delete ${selectedIndices.size} container(s)?`)) {
+      if (onBulkDelete) {
+        // Convert to array and sort in descending order (delete from end to start)
+        const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
+        onBulkDelete(indicesToDelete);
+        setSelectedIndices(new Set());
+      }
+    }
+  };
+
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
       return <ChevronUp className="w-4 h-4 opacity-30" />;
@@ -195,10 +234,33 @@ export function ContainerTable({
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
+      {selectedIndices.size > 0 && (
+        <div className="bg-muted/30 border-b border-border px-4 py-2 flex items-center justify-between">
+          <span className="text-sm text-foreground">
+            {selectedIndices.size} item{selectedIndices.size > 1 ? 's' : ''} selected
+          </span>
+          <button
+            onClick={handleBulkDelete}
+            className="flex items-center space-x-2 px-3 py-1.5 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors text-sm font-medium"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete Selected</span>
+          </button>
+        </div>
+      )}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[800px]">
           <thead className="bg-muted/50">
             <tr>
+              <th className="px-2 sm:px-4 py-3 text-center w-12">
+                <input
+                  type="checkbox"
+                  checked={selectedIndices.size === containers.length && containers.length > 0}
+                  onChange={handleSelectAll}
+                  className="w-4 h-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
+                  title="Select all"
+                />
+              </th>
               <th 
                 className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-foreground cursor-pointer hover:bg-muted/70 transition-colors min-w-[200px]"
                 onClick={() => handleSort('name')}
@@ -236,6 +298,15 @@ export function ContainerTable({
                 </div>
               </th>
               <th 
+                className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-foreground cursor-pointer hover:bg-muted/70 transition-colors min-w-[100px] hidden md:table-cell"
+                onClick={() => handleSort('daysOld')}
+              >
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <span>Days Old</span>
+                  <SortIcon field="daysOld" />
+                </div>
+              </th>
+              <th 
                 className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-foreground cursor-pointer hover:bg-muted/70 transition-colors min-w-[120px]"
                 onClick={() => handleSort('status')}
               >
@@ -256,6 +327,14 @@ export function ContainerTable({
               
               return (
                 <tr key={`${container.name}-${container.imagePath}`} className="hover:bg-muted/30 transition-colors">
+                  <td className="px-2 sm:px-4 py-3 sm:py-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIndices.has(index)}
+                      onChange={() => handleToggleSelect(index)}
+                      className="w-4 h-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
+                    />
+                  </td>
                   <td className="px-2 sm:px-4 py-3 sm:py-4">
                     {isEditing ? (
                       <input
@@ -302,10 +381,17 @@ export function ContainerTable({
                         new Date(containerState.lastUpdated).toLocaleDateString() : 
                         'Unknown'
                       }
-                      {containerState?.lastUpdated && (
-                        <div className="text-xs text-muted-foreground">
-                          {getDaysSinceUpdate(containerState)} days ago
-                        </div>
+                    </div>
+                  </td>
+                  <td className="px-2 sm:px-4 py-3 sm:py-4 hidden md:table-cell">
+                    <div className="text-xs sm:text-sm text-foreground">
+                      {containerState?.lastUpdated ? (
+                        <>
+                          <span className="font-medium">{getDaysSinceUpdate(containerState)}</span>
+                          <span className="text-muted-foreground ml-1">days</span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </div>
                   </td>
