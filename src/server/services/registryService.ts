@@ -12,26 +12,26 @@ interface ParsedImage {
 export class RegistryService {
   // Registry-specific delays to handle rate limiting
   private static readonly REGISTRY_DELAYS = {
-    'registry-1.docker.io': 2000,  // 2s for Docker Hub
-    'ghcr.io': 1000,               // 1s for GHCR
-    'lscr.io': 1000,               // 1s for LSCR
+    'registry-1.docker.io': 500,   // 500ms for Docker Hub (reduced from 2s)
+    'ghcr.io': 200,                // 200ms for GHCR (reduced from 1s)
+    'lscr.io': 200,                // 200ms for LSCR (reduced from 1s)
   } as const;
 
   // Registry-specific max retries
   private static readonly REGISTRY_MAX_RETRIES = {
-    'registry-1.docker.io': 5,     // 5 retries for Docker Hub (heavily rate limited)
-    'ghcr.io': 3,                  // 3 retries for GHCR
-    'lscr.io': 3,                  // 3 retries for LSCR
+    'registry-1.docker.io': 2,     // 2 retries for Docker Hub (reduced from 5)
+    'ghcr.io': 1,                  // 1 retry for GHCR (reduced from 3)
+    'lscr.io': 1,                  // 1 retry for LSCR (reduced from 3)
   } as const;
 
   // Helper method to get delay for a specific registry
   private static getRegistryDelay(host: string): number {
-    return this.REGISTRY_DELAYS[host as keyof typeof this.REGISTRY_DELAYS] || 1000;
+    return this.REGISTRY_DELAYS[host as keyof typeof this.REGISTRY_DELAYS] || 200;
   }
 
   // Helper method to get max retries for a specific registry
   private static getRegistryMaxRetries(host: string): number {
-    return this.REGISTRY_MAX_RETRIES[host as keyof typeof this.REGISTRY_MAX_RETRIES] || 3;
+    return this.REGISTRY_MAX_RETRIES[host as keyof typeof this.REGISTRY_MAX_RETRIES] || 1;
   }
 
   // Helper method to sleep for a specified duration
@@ -686,18 +686,9 @@ export class RegistryService {
         platform = result.platform;
         console.log(`[Check] Docker Hub OK`, { image: fullImagePath, tag, sha: latestSha.substring(0, 12), platform });
         
-        // Also resolve Latest Version by matching 'latest' digest to highest semver tag
-        try {
-          const latestResolved = await this.resolveDockerHubLatestByDigest(fullImagePath);
-          if (latestResolved) {
-            latestAvailableTag = latestResolved.tag;
-            latestAvailableUpdated = latestResolved.lastUpdated;
-            console.log(`[Check] Resolved latest version`, { image: fullImagePath, latestAvailableTag });
-          }
-        } catch (latestError) {
-          console.warn(`[Check] Could not resolve latest version for ${fullImagePath}:`, latestError);
-          // Don't fail the whole check if we can't get latest info
-        }
+        // Skip expensive latest version resolution for now - causes 60+ second delays
+        // TODO: Implement efficient latest version resolution or make it optional
+        console.log(`[Check] Skipping latest version resolution for performance`);
         } catch (e) {
         errorMessage = 'check image and tag and try again';
         console.error(`[Check] Docker Hub error`, { image: fullImagePath, tag, error: e instanceof Error ? e.message : String(e) });
@@ -756,7 +747,7 @@ export class RegistryService {
       // Add delay between images (except for the last one)
       if (i < containers.length - 1) {
         const parsed = this.parseImagePath(container.imagePath);
-        let delay = 1000; // Default delay
+        let delay = 200; // Default delay (reduced from 1000ms)
         
         if (parsed.registry === 'dockerhub') {
           delay = this.getRegistryDelay('registry-1.docker.io');
