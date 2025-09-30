@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, RefreshCw, Upload, Download } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, RefreshCw, Upload, Download, Search, X } from 'lucide-react';
 import { ContainerRegistry, ContainerState } from '../types';
 import { ContainerTable } from '../components/ContainerTable';
 import { AddContainerModal } from '../components/AddContainerModal';
@@ -32,6 +32,7 @@ export function Containers({
   const [isCheckingAll, setIsCheckingAll] = useState(false);
   const [checkingIndex, setCheckingIndex] = useState<number | null>(null);
   const [isCheckConfirmationOpen, setIsCheckConfirmationOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleAddContainer = async (container: ContainerRegistry) => {
     await onAddContainer(container);
@@ -188,6 +189,19 @@ export function Containers({
     }
   };
 
+  // Filter containers based on search query
+  const filteredContainers = useMemo(() => {
+    if (!searchQuery) return containers;
+    
+    const query = searchQuery.toLowerCase();
+    return containers.filter(container => {
+      const name = container.name.toLowerCase();
+      const imagePath = container.imagePath.toLowerCase();
+      const tag = (container.tag || 'latest').toLowerCase();
+      
+      return name.includes(query) || imagePath.includes(query) || tag.includes(query);
+    });
+  }, [containers, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -232,6 +246,36 @@ export function Containers({
         </div>
       </div>
 
+      {/* Search Bar */}
+      {containers.length > 0 && (
+        <div className="bg-muted/30 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Search</h2>
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, image, or tag..."
+              className="w-full pl-10 pr-10 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <div className="mt-3 text-sm text-muted-foreground">
+              Showing {filteredContainers.length} of {containers.length} containers
+            </div>
+          )}
+        </div>
+      )}
+
       {containers.length === 0 ? (
         <div className="bg-card border border-border rounded-lg p-12 text-center">
           <div className="max-w-md mx-auto">
@@ -253,15 +297,69 @@ export function Containers({
             </button>
           </div>
         </div>
+      ) : filteredContainers.length === 0 && searchQuery ? (
+        <div className="bg-card border border-border rounded-lg p-12 text-center">
+          <div className="max-w-md mx-auto">
+            <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              No containers found
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              No containers match your search "{searchQuery}"
+            </p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Clear Search
+            </button>
+          </div>
+        </div>
       ) : (
         <ContainerTable
-          containers={containers}
+          containers={filteredContainers}
           containerStates={containerStates}
-          onUpdate={handleUpdateContainer}
-          onDelete={handleDeleteContainer}
-          onBulkDelete={handleBulkDelete}
-          onCheck={handleCheckSingle}
-          checkingIndex={checkingIndex}
+          onUpdate={(index) => {
+            // Find the original index in the unfiltered array
+            const container = filteredContainers[index];
+            const originalIndex = containers.findIndex(
+              c => c.imagePath === container.imagePath && c.tag === container.tag
+            );
+            return handleUpdateContainer(originalIndex, container);
+          }}
+          onDelete={(index) => {
+            // Find the original index in the unfiltered array
+            const container = filteredContainers[index];
+            const originalIndex = containers.findIndex(
+              c => c.imagePath === container.imagePath && c.tag === container.tag
+            );
+            handleDeleteContainer(originalIndex);
+          }}
+          onBulkDelete={(indices) => {
+            // Map filtered indices to original indices
+            const originalIndices = indices.map(i => {
+              const container = filteredContainers[i];
+              return containers.findIndex(
+                c => c.imagePath === container.imagePath && c.tag === container.tag
+              );
+            });
+            handleBulkDelete(originalIndices);
+          }}
+          onCheck={(index) => {
+            // Find the original index in the unfiltered array
+            const container = filteredContainers[index];
+            const originalIndex = containers.findIndex(
+              c => c.imagePath === container.imagePath && c.tag === container.tag
+            );
+            handleCheckSingle(originalIndex);
+          }}
+          checkingIndex={checkingIndex !== null ? (
+            // Map checking index from original to filtered
+            filteredContainers.findIndex(c => 
+              c.imagePath === containers[checkingIndex]?.imagePath && 
+              c.tag === containers[checkingIndex]?.tag
+            )
+          ) : null}
         />
       )}
 

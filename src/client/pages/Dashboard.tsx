@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { RefreshCw, Container, AlertCircle, CheckCircle, Clock, Plus, X, Upload } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { RefreshCw, Container, AlertCircle, CheckCircle, Clock, Plus, X, Upload, Search, SlidersHorizontal } from 'lucide-react';
 import { ContainerRegistry, ContainerState, Notification } from '../types';
 import { AddContainerModal } from '../components/AddContainerModal';
 import { BulkImportModal } from '../components/BulkImportModal';
@@ -101,6 +101,11 @@ export function Dashboard({
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [checkingIndex, setCheckingIndex] = useState<number | null>(null);
   const [isCheckConfirmationOpen, setIsCheckConfirmationOpen] = useState(false);
+  
+  // Search, Sort, and Group state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'age' | 'status'>('name');
+  const [groupBy, setGroupBy] = useState<'none' | 'age' | 'registry' | 'status'>('none');
 
   const handleCheckRegistry = async () => {
     // Show confirmation if there are 10 or more images
@@ -273,6 +278,111 @@ export function Dashboard({
     );
   };
 
+  // Filter, sort, and group containers
+  const filteredAndSortedContainers = useMemo(() => {
+    // 1. Filter by search query
+    let filtered = containers.filter(container => {
+      if (!searchQuery) return true;
+      
+      const query = searchQuery.toLowerCase();
+      const name = container.name.toLowerCase();
+      const imagePath = container.imagePath.toLowerCase();
+      const tag = (container.tag || 'latest').toLowerCase();
+      
+      return name.includes(query) || imagePath.includes(query) || tag.includes(query);
+    });
+
+    // 2. Sort containers
+    filtered = [...filtered].sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      } else if (sortBy === 'age') {
+        const stateA = getContainerState(a);
+        const stateB = getContainerState(b);
+        const daysA = getDaysSinceUpdate(stateA) ?? 999999;
+        const daysB = getDaysSinceUpdate(stateB) ?? 999999;
+        return daysB - daysA; // Newest first
+      } else if (sortBy === 'status') {
+        const stateA = getContainerState(a);
+        const stateB = getContainerState(b);
+        const statusA = stateA?.hasUpdate ? 2 : stateA?.lastChecked ? 1 : 0;
+        const statusB = stateB?.hasUpdate ? 2 : stateB?.lastChecked ? 1 : 0;
+        return statusB - statusA; // Updates first
+      }
+      return 0;
+    });
+
+    // 3. Group containers if needed
+    if (groupBy === 'none') {
+      return [{ group: null, containers: filtered }];
+    }
+
+    const groups: { group: string; containers: ContainerRegistry[] }[] = [];
+    
+    if (groupBy === 'status') {
+      const updates = filtered.filter(c => getContainerState(c)?.hasUpdate);
+      const upToDate = filtered.filter(c => {
+        const state = getContainerState(c);
+        return state?.lastChecked && !state?.hasUpdate;
+      });
+      const neverChecked = filtered.filter(c => !getContainerState(c)?.lastChecked);
+      
+      if (updates.length > 0) groups.push({ group: 'Updates Available', containers: updates });
+      if (upToDate.length > 0) groups.push({ group: 'Up to Date', containers: upToDate });
+      if (neverChecked.length > 0) groups.push({ group: 'Never Checked', containers: neverChecked });
+    } else if (groupBy === 'registry') {
+      const registryMap = new Map<string, ContainerRegistry[]>();
+      
+      filtered.forEach(c => {
+        const registry = c.imagePath.includes('ghcr.io') ? 'GitHub Container Registry' :
+                        c.imagePath.includes('lscr.io') ? 'LinuxServer.io' :
+                        c.imagePath.includes('/') ? 'Docker Hub (User)' : 'Docker Hub (Official)';
+        
+        if (!registryMap.has(registry)) {
+          registryMap.set(registry, []);
+        }
+        registryMap.get(registry)!.push(c);
+      });
+      
+      registryMap.forEach((containers, registry) => {
+        groups.push({ group: registry, containers });
+      });
+    } else if (groupBy === 'age') {
+      const lastMonth = filtered.filter(c => {
+        const days = getDaysSinceUpdate(getContainerState(c));
+        return days !== null && days <= 30;
+      });
+      const twoToThree = filtered.filter(c => {
+        const days = getDaysSinceUpdate(getContainerState(c));
+        return days !== null && days > 30 && days <= 90;
+      });
+      const fourToSix = filtered.filter(c => {
+        const days = getDaysSinceUpdate(getContainerState(c));
+        return days !== null && days > 90 && days <= 180;
+      });
+      const sixToTwelve = filtered.filter(c => {
+        const days = getDaysSinceUpdate(getContainerState(c));
+        return days !== null && days > 180 && days <= 365;
+      });
+      const overYear = filtered.filter(c => {
+        const days = getDaysSinceUpdate(getContainerState(c));
+        return days !== null && days > 365;
+      });
+      const unknown = filtered.filter(c => getDaysSinceUpdate(getContainerState(c)) === null);
+      
+      if (lastMonth.length > 0) groups.push({ group: '🟢 Updated in Last Month (0-30 days)', containers: lastMonth });
+      if (twoToThree.length > 0) groups.push({ group: '🟡 Updated 2-3 Months Ago (31-90 days)', containers: twoToThree });
+      if (fourToSix.length > 0) groups.push({ group: '🟠 Updated 4-6 Months Ago (91-180 days)', containers: fourToSix });
+      if (sixToTwelve.length > 0) groups.push({ group: '🔴 Updated 6-12 Months Ago (181-365 days)', containers: sixToTwelve });
+      if (overYear.length > 0) groups.push({ group: '⚫ Updated Over 1 Year Ago (365+ days)', containers: overYear });
+      if (unknown.length > 0) groups.push({ group: '⚪ Update Status Unknown', containers: unknown });
+    }
+    
+    return groups.length > 0 ? groups : [{ group: null, containers: filtered }];
+  }, [containers, containerStates, searchQuery, sortBy, groupBy]);
+
+  const totalFiltered = filteredAndSortedContainers.reduce((sum, g) => sum + g.containers.length, 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -397,30 +507,119 @@ export function Dashboard({
         </div>
       )}
 
+      {/* Search, Sort, and Group Controls */}
+      {containers.length > 0 && (
+        <div className="bg-muted/30 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Search</h2>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, image, or tag..."
+                className="w-full pl-10 pr-10 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Sort and Group Controls */}
+            <div className="flex items-center gap-2">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'age' | 'status')}
+                className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="name">Sort: Name</option>
+                <option value="age">Sort: Age (Newest)</option>
+                <option value="status">Sort: Status</option>
+              </select>
+
+              <select
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as 'none' | 'age' | 'registry' | 'status')}
+                className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="none">Group: None</option>
+                <option value="age">Group: Age</option>
+                <option value="registry">Group: Registry</option>
+                <option value="status">Group: Status</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Results Count */}
+          {searchQuery && (
+            <div className="mt-3 text-sm text-muted-foreground">
+              Showing {totalFiltered} of {containers.length} containers
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Monitored Images */}
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Monitored Images</h2>
         {containers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {containers
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((container, index) => {
+          <>
+            {filteredAndSortedContainers.map((group, groupIndex) => (
+              <div key={groupIndex} className="mb-6 last:mb-0">
+                {group.group && (
+                  <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <SlidersHorizontal className="w-4 h-4" />
+                    {group.group} ({group.containers.length})
+                  </h3>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {group.containers.map((container, index) => {
                 const containerState = containerStates.find(
                   state => state.image === container.imagePath && state.tag === (container.tag || 'latest')
                 );
-                return (
-                  <ContainerCard
-                    key={`${container.name}-${container.imagePath}`}
-                    container={container}
-                    containerState={containerState}
-                    onUpdate={(updatedContainer) => handleUpdateContainer(index, updatedContainer)}
-                    onDelete={() => handleDeleteContainer(index)}
-                    onCheck={() => handleCheckSingle(index)}
-                    isChecking={checkingIndex === index}
-                  />
-                );
-              })}
-          </div>
+                    const originalIndex = containers.findIndex(
+                      c => c.imagePath === container.imagePath && c.tag === container.tag
+                    );
+                    return (
+                      <ContainerCard
+                        key={`${container.name}-${container.imagePath}`}
+                        container={container}
+                        containerState={containerState}
+                        onUpdate={(updatedContainer) => handleUpdateContainer(originalIndex, updatedContainer)}
+                        onDelete={() => handleDeleteContainer(originalIndex)}
+                        onCheck={() => handleCheckSingle(originalIndex)}
+                        isChecking={checkingIndex === originalIndex}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            
+            {/* No results message */}
+            {totalFiltered === 0 && searchQuery && (
+              <div className="text-center py-12">
+                <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">No containers found</h3>
+                <p className="text-muted-foreground mb-4">
+                  No containers match your search "{searchQuery}"
+                </p>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  Clear Search
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="bg-card border border-border rounded-lg p-12 text-center">
             <div className="max-w-md mx-auto">
