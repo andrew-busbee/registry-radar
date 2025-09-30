@@ -16,6 +16,7 @@ export function AddContainerModal({ isOpen, onClose, onAdd }: AddContainerModalP
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +97,22 @@ export function AddContainerModal({ isOpen, onClose, onAdd }: AddContainerModalP
             <input
               type="text"
               value={formData.imagePath}
-              onChange={(e) => setFormData({ ...formData, imagePath: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Autofill: if user types image:tag and tag field is empty, split it
+                const lastSlash = value.lastIndexOf('/');
+                const lastColon = value.lastIndexOf(':');
+                const hasDigest = value.includes('@sha256:');
+                if (!hasDigest && lastColon > lastSlash && (formData.tag || '').trim() === '') {
+                  const pathOnly = value.substring(0, lastColon);
+                  const tagPart = value.substring(lastColon + 1);
+                  setFormData({ ...formData, imagePath: pathOnly, tag: tagPart });
+                  setInfo(`Extracted tag "${tagPart}" from image path`);
+                } else {
+                  setFormData({ ...formData, imagePath: value });
+                  setInfo(null);
+                }
+              }}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
               placeholder="e.g., andrewbusbee/planning-poker, nginx, ghcr.io/user/repo"
               required
@@ -104,6 +120,9 @@ export function AddContainerModal({ isOpen, onClose, onAdd }: AddContainerModalP
             <p className="text-xs text-muted-foreground mt-1">
               Enter the full image path. Examples: <code>nginx</code>, <code>user/app</code>, <code>ghcr.io/user/app</code>
             </p>
+            {info && (
+              <p className="text-xs text-blue-600 mt-1">{info}</p>
+            )}
           </div>
 
           <div>

@@ -48,15 +48,10 @@ export class PushoverService {
     config: NotificationConfig['pushover'],
     containerName: string,
     image: string,
-    tag: string,
-    latestVersion?: string
+    tag: string
   ): Promise<boolean> {
     const title = 'Container Update Available';
-    let message = `New version available for ${containerName}\nImage: ${image}:${tag}`;
-    
-    if (latestVersion) {
-      message = `Newer version available for ${containerName}\nLatest: ${latestVersion} (you're using ${tag})\nImage: ${image}:${tag}`;
-    }
+    const message = `New version available for ${containerName}\nImage: ${image}:${tag}`;
     
     return this.sendNotification(config, title, message, 'normal');
   }

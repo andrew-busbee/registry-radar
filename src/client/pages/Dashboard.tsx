@@ -12,6 +12,7 @@ interface DashboardProps {
   containerStates: ContainerState[];
   notifications: Notification[];
   onCheckRegistry: () => Promise<void>;
+  onRefreshContainerStates: () => Promise<void>;
   onAddContainer: (container: ContainerRegistry) => Promise<void>;
   onUpdateContainer: (index: number, container: ContainerRegistry) => Promise<void>;
   onDeleteContainer: (index: number) => Promise<void>;
@@ -22,6 +23,7 @@ export function Dashboard({
   containerStates, 
   notifications, 
   onCheckRegistry,
+  onRefreshContainerStates,
   onAddContainer,
   onUpdateContainer,
   onDeleteContainer
@@ -76,9 +78,6 @@ export function Dashboard({
       return 'text-gray-500';
     }
     
-    if (state.dismissed) {
-      return 'text-gray-600';
-    }
     
     if (state.hasUpdate) {
       return 'text-orange-600';
@@ -158,40 +157,27 @@ export function Dashboard({
     }
   };
 
+  // Only consider states that correspond to current containers
+  const stateMatchesCurrent = containerStates.filter(state =>
+    containers.some(c => c.imagePath === state.image && (c.tag || 'latest') === (state.tag || 'latest'))
+  );
+
+  const upToDate = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && !state.hasUpdate && !state.hasNewerTag).length;
+  const updatesAvailable = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && (state.hasUpdate || state.hasNewerTag)).length;
+  const total = containers.length;
+  const neverCheckedRaw = total - upToDate - updatesAvailable;
+  const neverChecked = Math.max(0, neverCheckedRaw);
+
   const stats = {
-    total: containers.length,
-    upToDate: containerStates.filter(state => 
-      (state.lastChecked && state.lastChecked !== '') && 
-      (!state.hasUpdate || state.dismissed)
-    ).length,
-    updatesAvailable: containerStates.filter(state => 
-      (state.lastChecked && state.lastChecked !== '') && 
-      state.hasUpdate && !state.dismissed
-    ).length,
-    neverChecked: containerStates.filter(state => 
-      !state.lastChecked || state.lastChecked === ''
-    ).length + (containers.length - containerStates.length),
+    total,
+    upToDate,
+    updatesAvailable,
+    neverChecked,
   };
 
   const recentNotifications = notifications.slice(0, 5);
-  const recentUpdates = containerStates.filter(state => state.hasUpdate && !state.dismissed);
+  const recentUpdates = containerStates.filter(state => state.hasUpdate);
 
-  const handleDismissUpdate = async (image: string, tag: string) => {
-    try {
-      const response = await fetch(`/api/registry/dismiss/${encodeURIComponent(image)}/${encodeURIComponent(tag)}`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        // Refresh the data to update the UI
-        window.location.reload(); // Simple refresh for now
-      } else {
-        console.error('Failed to dismiss update');
-      }
-    } catch (error) {
-      console.error('Error dismissing update:', error);
-    }
-  };
 
   const handleBulkImport = async (containers: ContainerRegistry[]): Promise<{ success: boolean; errors: string[] }> => {
     try {
@@ -239,12 +225,22 @@ export function Dashboard({
   };
 
   const handleUpdateContainer = async (index: number, container: ContainerRegistry) => {
-    await onUpdateContainer(index, container);
+    try {
+      await onUpdateContainer(index, container);
+    } catch (error) {
+      console.error('Error updating container:', error);
+      // You could add a toast notification here
+    }
   };
 
   const handleDeleteContainer = async (index: number) => {
     if (confirm('Are you sure you want to delete this container?')) {
-      await onDeleteContainer(index);
+      try {
+        await onDeleteContainer(index);
+      } catch (error) {
+        console.error('Error deleting container:', error);
+        // You could add a toast notification here
+      }
     }
   };
 
@@ -256,18 +252,16 @@ export function Dashboard({
       });
       
       if (response.ok) {
-        // Refresh container states
-        const statesResponse = await fetch('/api/registry/states', { credentials: 'include' });
-        const states = await statesResponse.json();
-        // Note: In a real app, you'd update the parent state here
-        // For now, we'll just log success
-        console.log('Container checked successfully');
+        // Refresh only the container states (not all containers)
+        console.log('Container checked successfully, refreshing states...');
+        await onRefreshContainerStates();
       } else {
         const error = await response.json();
         throw new Error(error.error);
       }
     } catch (error) {
       console.error('Error checking single container:', error);
+      // You could add a toast notification here
     } finally {
       setCheckingIndex(null);
     }

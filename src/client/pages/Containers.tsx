@@ -14,6 +14,7 @@ interface ContainersProps {
   onUpdateContainer: (index: number, container: ContainerRegistry) => Promise<void>;
   onDeleteContainer: (index: number) => Promise<void>;
   onCheckRegistry: () => Promise<void>;
+  onRefreshContainerStates: () => Promise<void>;
 }
 
 export function Containers({
@@ -23,6 +24,7 @@ export function Containers({
   onUpdateContainer,
   onDeleteContainer,
   onCheckRegistry,
+  onRefreshContainerStates,
 }: ContainersProps) {
   const { progress, startCheck, updateProgress, completeCheck, cancelCheck } = useCheck();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -36,12 +38,20 @@ export function Containers({
   };
 
   const handleUpdateContainer = async (index: number, container: ContainerRegistry) => {
-    await onUpdateContainer(index, container);
+    try {
+      await onUpdateContainer(index, container);
+    } catch (error) {
+      console.error('Error updating container:', error);
+    }
   };
 
   const handleDeleteContainer = async (index: number) => {
     if (confirm('Are you sure you want to delete this container?')) {
-      await onDeleteContainer(index);
+      try {
+        await onDeleteContainer(index);
+      } catch (error) {
+        console.error('Error deleting container:', error);
+      }
     }
   };
 
@@ -108,12 +118,9 @@ export function Containers({
       });
       
       if (response.ok) {
-        // Refresh container states
-        const statesResponse = await fetch('/api/registry/states', { credentials: 'include' });
-        const states = await statesResponse.json();
-        // Note: In a real app, you'd update the parent state here
-        // For now, we'll just log success
-        console.log('Container checked successfully');
+        // Refresh only the container states (not all containers)
+        console.log('Container checked successfully, refreshing states...');
+        await onRefreshContainerStates();
       } else {
         const error = await response.json();
         throw new Error(error.error);

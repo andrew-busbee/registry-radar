@@ -62,9 +62,7 @@ router.post('/check/:index', async (req, res) => {
         container.name,
         `${result.image}:${result.tag}`,
         result.tag,
-        true, // This is a new update since SHA changed
-        result.latestAvailableVersion,
-        result.trackingMode
+        true // This is a new update since SHA changed
       );
     }
     
@@ -101,31 +99,5 @@ router.post('/reset/:image/:tag', async (req, res) => {
   }
 });
 
-// Dismiss container update
-router.post('/dismiss/:image/:tag', async (req, res) => {
-  try {
-    const { image, tag } = req.params;
-    
-    const states = await ConfigService.getContainerState();
-    const stateIndex = states.findIndex(s => s.image === image && s.tag === tag);
-    
-    if (stateIndex === -1) {
-      return res.status(404).json({ error: 'Container state not found' });
-    }
-    
-    // Mark as dismissed with the current latest SHA
-    states[stateIndex].dismissed = true;
-    states[stateIndex].dismissedSha = states[stateIndex].latestSha;
-    states[stateIndex].hasUpdate = false;
-    states[stateIndex].lastChecked = new Date().toISOString();
-    
-    await ConfigService.saveContainerState(states);
-    
-    res.json({ message: 'Update dismissed' });
-  } catch (error) {
-    console.error('Error dismissing update:', error);
-    res.status(500).json({ error: 'Failed to dismiss update' });
-  }
-});
 
 export { router as registryRouter };

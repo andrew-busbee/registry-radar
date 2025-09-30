@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { RefreshCw, Trash2, Edit, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { RefreshCw, Trash2, Edit, CheckCircle, AlertCircle, Clock, X } from 'lucide-react';
 import { ContainerRegistry, ContainerState } from '../types';
 
 interface ContainerCardProps {
   container: ContainerRegistry;
   containerState?: ContainerState;
-  onUpdate: (container: ContainerRegistry) => void;
+  onUpdate: (container: ContainerRegistry) => Promise<void>;
   onDelete: () => void;
   onCheck: () => void;
   isChecking?: boolean;
@@ -25,9 +25,14 @@ export function ContainerCard({
     tag: container.tag || 'latest'
   });
 
-  const handleSave = () => {
-    onUpdate(editData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      await onUpdate(editData);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving container:', error);
+      // Keep the edit form open so user can try again
+    }
   };
 
   const handleCancel = () => {
@@ -48,11 +53,16 @@ export function ContainerCard({
       return <Clock className="w-4 h-4 text-gray-400" />;
     }
     
+    // Error or unsupported status - show red X
+    if (containerState.error || containerState.statusMessage) {
+      return <X className="w-4 h-4 text-red-500" />;
+    }
+    
     if (containerState.isNew) {
       return <AlertCircle className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />;
     }
     
-    if (containerState.hasUpdate) {
+    if (containerState.hasUpdate || containerState.hasNewerTag) {
       return <AlertCircle className="w-4 h-4 text-orange-500" />;
     }
     
@@ -82,24 +92,17 @@ export function ContainerCard({
       return 'Never checked';
     }
     
+    // Error or unsupported status
+    if (containerState.error || containerState.statusMessage) {
+      return 'check image and tag and try again';
+    }
+    
     if (containerState.isNew) {
-      return 'New image to monitor (run a check to update)';
+      return 'New image to monitor';
     }
     
-    if (containerState.hasUpdate) {
-      // Check if we have version information for a more specific message
-      if (containerState.latestAvailableVersion && containerState.trackingMode === 'version') {
-        return `New version ${containerState.latestAvailableVersion} available`;
-      }
-      return 'Update available';
-    }
-    
-    const days = getDaysSinceUpdate();
-    if (days !== null) {
-      const lastUpdatedDate = new Date(containerState.lastUpdated!);
-      const dateStr = lastUpdatedDate.toLocaleDateString();
-      const dayStr = days === 1 ? 'day' : 'days';
-      return `Image last updated ${days} ${dayStr} ago on ${dateStr}`;
+    if (containerState.hasUpdate || containerState.hasNewerTag) {
+      return 'Update Available';
     }
     
     return 'Up to date';
@@ -116,15 +119,16 @@ export function ContainerCard({
       return 'text-gray-500';
     }
     
+    // Error or unsupported status - show red
+    if (containerState.error || containerState.statusMessage) {
+      return 'text-red-600';
+    }
+    
     if (containerState.isNew) {
       return 'text-yellow-600 dark:text-yellow-400';
     }
     
-    if (containerState.dismissed) {
-      return 'text-gray-600';
-    }
-    
-    if (containerState.hasUpdate) {
+    if (containerState.hasUpdate || containerState.hasNewerTag) {
       return 'text-orange-600';
     }
     
@@ -199,7 +203,19 @@ export function ContainerCard({
             <input
               type="text"
               value={editData.imagePath}
-              onChange={(e) => setEditData({ ...editData, imagePath: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                const lastSlash = value.lastIndexOf('/');
+                const lastColon = value.lastIndexOf(':');
+                const hasDigest = value.includes('@sha256:');
+                if (!hasDigest && lastColon > lastSlash && (editData.tag || '').trim() === '') {
+                  const pathOnly = value.substring(0, lastColon);
+                  const tagPart = value.substring(lastColon + 1);
+                  setEditData({ ...editData, imagePath: pathOnly, tag: tagPart });
+                } else {
+                  setEditData({ ...editData, imagePath: value });
+                }
+              }}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
               placeholder="e.g., andrewbusbee/planning-poker, nginx, ghcr.io/user/repo"
             />
@@ -243,9 +259,38 @@ export function ContainerCard({
           </div>
           
           <div className={`text-sm font-medium ${getStatusColor()}`}>
-            Status: {containerState?.dismissed ? 'Update dismissed' : getStatusText()}
+            Status: {getStatusText()}
           </div>
           
+          {containerState && containerState.currentSha && (
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Current SHA:</span> {containerState.currentSha.substring(0, 12)}...
+            </div>
+          )}
+          
+          {containerState && containerState.tag && (
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Monitored Version:</span> {containerState.tag}
+              {containerState.lastUpdated && (
+                <span className="ml-1">({new Date(containerState.lastUpdated).toLocaleDateString()})</span>
+              )}
+            </div>
+          )}
+          
+          {containerState && containerState.latestAvailableTag && containerState.latestAvailableTag !== containerState.tag && (
+            <div className="text-xs text-blue-600">
+              <span className="font-medium">Latest Version:</span> {containerState.latestAvailableTag}
+              {containerState.latestAvailableUpdated && (
+                <span className="ml-1">({new Date(containerState.latestAvailableUpdated).toLocaleDateString()})</span>
+              )}
+            </div>
+          )}
+          
+          {containerState && containerState.platform && (
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Platform:</span> {containerState.platform}
+            </div>
+          )}
           
           {containerState && containerState.lastChecked && (
             <div className="text-xs text-muted-foreground">

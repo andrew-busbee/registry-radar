@@ -25,6 +25,12 @@ router.post('/containers', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields: name and imagePath are required' });
     }
     
+    // Normalize: if imagePath contains ":tag", split it
+    if (newContainer.imagePath.includes(':')) {
+      const [pathOnly, tagPart] = newContainer.imagePath.split(':');
+      newContainer.imagePath = pathOnly;
+      newContainer.tag = newContainer.tag || tagPart || 'latest';
+    }
     // Set default tag if not provided
     if (!newContainer.tag) {
       newContainer.tag = 'latest';
@@ -37,7 +43,7 @@ router.post('/containers', async (req, res) => {
     
     const containers = await ConfigService.getContainers();
     
-    // Check for duplicates based on imagePath and tag
+    // Check for duplicates based on normalized imagePath and tag
     const existingContainer = containers.find(
       c => c.imagePath === newContainer.imagePath && c.tag === newContainer.tag
     );
@@ -86,6 +92,12 @@ router.put('/containers/:index', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields: name and imagePath are required' });
     }
     
+    // Normalize: if imagePath contains ":tag", split it
+    if (updatedContainer.imagePath.includes(':')) {
+      const [pathOnly, tagPart] = updatedContainer.imagePath.split(':');
+      updatedContainer.imagePath = pathOnly;
+      updatedContainer.tag = updatedContainer.tag || tagPart || 'latest';
+    }
     // Set default tag if not provided
     if (!updatedContainer.tag) {
       updatedContainer.tag = 'latest';
@@ -102,8 +114,20 @@ router.put('/containers/:index', async (req, res) => {
       return res.status(404).json({ error: 'Container not found' });
     }
     
+    const previous = containers[index];
     containers[index] = updatedContainer;
     await ConfigService.saveContainers(containers);
+
+    // If tag or image changed, prune old state entry so stats don't double count
+    try {
+      const states = await ConfigService.getContainerState();
+      const pruned = states.filter(s => !(s.image === previous.imagePath && (s.tag || 'latest') === (previous.tag || 'latest')));
+      if (pruned.length !== states.length) {
+        await ConfigService.saveContainerState(pruned);
+      }
+    } catch (e) {
+      console.warn('Warning: failed to prune old state on container update', e);
+    }
     
     res.json(updatedContainer);
   } catch (error) {

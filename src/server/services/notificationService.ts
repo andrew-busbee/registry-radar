@@ -64,14 +64,9 @@ export class NotificationService {
     await this.saveNotifications([]);
   }
 
-  static async createUpdateNotification(containerName: string, image: string, tag: string, isNewUpdate: boolean = true, latestVersion?: string, trackingMode?: 'latest' | 'version'): Promise<void> {
-    // Create notification message based on tracking mode
-    let message: string;
-    if (trackingMode === 'version' && latestVersion) {
-      message = `Newer version available for ${containerName}: ${latestVersion} (you're using ${tag})`;
-    } else {
-      message = `New version available for ${containerName} (tag: ${tag})`;
-    }
+  static async createUpdateNotification(containerName: string, image: string, tag: string, isNewUpdate: boolean = true): Promise<void> {
+    // Create simple notification message
+    const message = `New version available for ${containerName} (tag: ${tag})`;
 
     // Create internal notification
     await this.addNotification({
@@ -83,7 +78,7 @@ export class NotificationService {
     });
 
     // Send external notifications for all updates (both new and existing)
-    await this.sendExternalNotifications('update', containerName, image, tag, latestVersion);
+    await this.sendExternalNotifications('update', containerName, image, tag);
   }
 
   static async createErrorNotification(message: string, container?: string): Promise<void> {
@@ -116,7 +111,6 @@ export class NotificationService {
     containerName?: string,
     image?: string,
     tag?: string,
-    latestVersion?: string,
     errorMessage?: string,
     errorContainer?: string
   ): Promise<void> {
@@ -127,10 +121,10 @@ export class NotificationService {
         if (containerName && image && tag) {
           // Send update notifications
           if (config.pushover?.enabled) {
-            await PushoverService.sendUpdateNotification(config.pushover, containerName, image, tag, latestVersion);
+            await PushoverService.sendUpdateNotification(config.pushover, containerName, image, tag);
           }
           if (config.discord?.enabled) {
-            await DiscordService.sendUpdateNotification(config.discord, containerName, image, tag, latestVersion);
+            await DiscordService.sendUpdateNotification(config.discord, containerName, image, tag);
           }
         }
       } else if (type === 'error' && config.triggers.onErrors) {

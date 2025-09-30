@@ -81,11 +81,10 @@ export class DiscordService {
     config: NotificationConfig['discord'],
     containerName: string,
     image: string,
-    tag: string,
-    latestVersion?: string
+    tag: string
   ): Promise<boolean> {
     const title = '📦 Container Update Available';
-    let message = `A new version is available for one of your monitored containers.`;
+    const message = `A new version is available for one of your monitored containers.`;
     
     const fields = [
       {
@@ -99,16 +98,6 @@ export class DiscordService {
         inline: true
       }
     ];
-
-    // Add version information if available
-    if (latestVersion) {
-      fields.push({
-        name: 'Latest Version',
-        value: `\`${latestVersion}\``,
-        inline: true
-      });
-      message = `Newer version available: \`${latestVersion}\` (you're using \`${tag}\`)`;
-    }
     
     const embed: DiscordEmbed = {
       title: `Registry Radar: ${title}`,

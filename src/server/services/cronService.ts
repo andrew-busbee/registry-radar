@@ -98,9 +98,7 @@ export class CronService {
               container.name,
               `${state.image}:${state.tag}`,
               state.tag,
-              isNewUpdate,
-              state.latestAvailableVersion,
-              state.trackingMode
+              isNewUpdate
             );
             console.log(`Update detected for ${container.name}${isNewUpdate ? ' (new update)' : ' (existing update)'}`);
           }

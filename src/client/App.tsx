@@ -138,6 +138,22 @@ function AppContent() {
     }
   };
 
+  const refreshContainerStates = async () => {
+    try {
+      const statesRes = await fetch('/api/registry/states');
+      if (statesRes.ok) {
+        const statesData = await statesRes.json();
+        setContainerStates(statesData);
+        return true;
+      } else {
+        throw new Error('Failed to fetch container states');
+      }
+    } catch (error) {
+      console.error('Error refreshing container states:', error);
+      throw error;
+    }
+  };
+
   const handleCheckRegistry = async () => {
     try {
       const response = await fetch('/api/registry/check', {
@@ -281,6 +297,7 @@ function AppContent() {
             onUpdateContainer={handleUpdateContainer}
             onDeleteContainer={handleDeleteContainer}
             onCheckRegistry={handleCheckRegistry}
+            onRefreshContainerStates={refreshContainerStates}
           />
         );
       case 'settings':
@@ -309,6 +326,7 @@ function AppContent() {
             containerStates={containerStates}
             notifications={notifications}
             onCheckRegistry={handleCheckRegistry}
+            onRefreshContainerStates={refreshContainerStates}
             onAddContainer={handleAddContainer}
             onUpdateContainer={handleUpdateContainer}
             onDeleteContainer={handleDeleteContainer}
