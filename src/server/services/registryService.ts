@@ -45,7 +45,8 @@ export class RegistryService {
     baseUrl: string,
     repository: string,
     tag: string,
-    platform?: string
+    platform?: string,
+    token?: string
   ): Promise<{ sha: string; lastUpdated?: string; platform?: string }> {
       const digest = response.headers['docker-content-digest'] || response.data?.config?.digest || response.data?.digest || '';
       const sha = String(digest || '').replace('sha256:', '');
@@ -55,12 +56,16 @@ export class RegistryService {
         const configDigest = response.data?.config?.digest;
         if (configDigest) {
           const blobUrl = `${baseUrl}/v2/${repository}/blobs/${configDigest}`;
+          const headers: Record<string, string> = { 'Accept': 'application/octet-stream' };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
           const blobResp = await axios.get(blobUrl, {
-            headers: { 'Accept': 'application/octet-stream' },
+            headers,
             timeout: 10000,
             validateStatus: () => true,
           });
-        console.log(`[Registry] Blob fetch`, { host: baseUrl.replace('https://', ''), repository, tag, status: blobResp.status });
+        console.log(`[Registry] Blob fetch`, { host: baseUrl.replace('https://', ''), repository, tag, status: blobResp.status, hasAuth: !!token });
           if (blobResp.status === 200 && blobResp.data && typeof blobResp.data === 'object') {
             if (blobResp.data.created) {
               lastUpdated = blobResp.data.created;
@@ -143,7 +148,7 @@ export class RegistryService {
           if (platformResponse.status === 200) {
             console.log(`[Registry] Platform manifest OK`, { host, repository, tag, status: platformResponse.status });
             const platformString = `${selectedManifest.platform?.os || 'unknown'}/${selectedManifest.platform?.architecture || 'unknown'}`;
-            return this.extractDigestAndTimestamp(platformResponse, baseUrl, repository, tag, platformString);
+            return this.extractDigestAndTimestamp(platformResponse, baseUrl, repository, tag, platformString, undefined);
           } else {
             console.warn(`[Registry] Platform manifest failed`, { 
               host, repository, tag, 
@@ -160,7 +165,7 @@ export class RegistryService {
       } else {
         // Not a manifest list, treat as single manifest
         console.log(`[Registry] Single manifest (not list)`, { host, repository, tag });
-        return this.extractDigestAndTimestamp(response, baseUrl, repository, tag);
+        return this.extractDigestAndTimestamp(response, baseUrl, repository, tag, undefined, undefined);
       }
     } else if (response.status === 404) {
       console.log(`[Registry] Manifest list not found, trying single manifest`, { host, repository, tag });
@@ -194,7 +199,7 @@ export class RegistryService {
 
     if (response.status === 200) {
       console.log(`[Registry] Single manifest OK`, { host, repository, tag, status: response.status, contentType: response.headers['content-type'] });
-      return this.extractDigestAndTimestamp(response, baseUrl, repository, tag);
+      return this.extractDigestAndTimestamp(response, baseUrl, repository, tag, undefined, undefined);
     }
 
     if (response.status === 404) {
@@ -289,7 +294,7 @@ export class RegistryService {
             if (platformResponse.status === 200) {
               console.log(`[Registry] Authenticated platform manifest OK`, { host, repository, tag, status: platformResponse.status });
               const platformString = `${selectedManifest.platform?.os || 'unknown'}/${selectedManifest.platform?.architecture || 'unknown'}`;
-              return this.extractDigestAndTimestamp(platformResponse, baseUrl, repository, tag, platformString);
+              return this.extractDigestAndTimestamp(platformResponse, baseUrl, repository, tag, platformString, token);
             } else {
               console.warn(`[Registry] Authenticated platform manifest failed`, { 
                 host, repository, tag, 
@@ -306,7 +311,7 @@ export class RegistryService {
         } else {
           // Not a manifest list, treat as single manifest
           console.log(`[Registry] Authenticated single manifest (not list)`, { host, repository, tag });
-          return this.extractDigestAndTimestamp(authResponse, baseUrl, repository, tag);
+          return this.extractDigestAndTimestamp(authResponse, baseUrl, repository, tag, undefined, token);
         }
       } else if (authResponse.status === 404) {
         console.log(`[Registry] Authenticated manifest list not found, trying single manifest`);
@@ -342,7 +347,7 @@ export class RegistryService {
 
       if (authResponse.status === 200) {
         console.log(`[Registry] Authenticated single manifest OK`, { host, repository, tag, status: authResponse.status, contentType: authResponse.headers['content-type'] });
-        return this.extractDigestAndTimestamp(authResponse, baseUrl, repository, tag);
+        return this.extractDigestAndTimestamp(authResponse, baseUrl, repository, tag, undefined, token);
       } else if (authResponse.status === 429) {
         // Rate limited on authenticated single manifest - retry with exponential backoff
         const maxRetries = this.getRegistryMaxRetries(host);
