@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, RefreshCw, Upload, Download } from 'lucide-react';
 import { ContainerRegistry, ContainerState } from '../types';
-import { ContainerCard } from '../components/ContainerCard';
+import { ContainerTable } from '../components/ContainerTable';
 import { AddContainerModal } from '../components/AddContainerModal';
 import { BulkImportModal } from '../components/BulkImportModal';
 import { CheckConfirmationModal } from '../components/CheckConfirmationModal';
@@ -177,11 +177,6 @@ export function Containers({
     }
   };
 
-  const getContainerState = (container: ContainerRegistry): ContainerState | undefined => {
-    return containerStates.find(state => 
-      state.image === container.imagePath && state.tag === container.tag
-    );
-  };
 
   return (
     <div className="space-y-6">
@@ -248,26 +243,14 @@ export function Containers({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {containers
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((container, index) => {
-              const containerState = containerStates.find(
-                state => state.image === container.imagePath && state.tag === (container.tag || 'latest')
-              );
-              return (
-                <ContainerCard
-                  key={`${container.name}-${container.imagePath}`}
-                  container={container}
-                  containerState={containerState}
-                  onUpdate={(updatedContainer) => handleUpdateContainer(index, updatedContainer)}
-                  onDelete={() => handleDeleteContainer(index)}
-                  onCheck={() => handleCheckSingle(index)}
-                  isChecking={checkingIndex === index}
-                />
-              );
-            })}
-        </div>
+        <ContainerTable
+          containers={containers}
+          containerStates={containerStates}
+          onUpdate={handleUpdateContainer}
+          onDelete={handleDeleteContainer}
+          onCheck={handleCheckSingle}
+          checkingIndex={checkingIndex}
+        />
       )}
 
       <AddContainerModal

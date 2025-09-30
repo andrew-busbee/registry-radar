@@ -8,7 +8,14 @@ export function Footer() {
           {/* Left side - App name and version */}
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Registry Radar</span>
-            <span className="text-sm font-medium text-primary">v0.1.0-beta.1</span>
+            <a
+              href="https://github.com/andrew-busbee/registry-radar/releases/tag/v0.1.0-beta.2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              v0.1.0-beta.2
+            </a>
           </div>
           
           {/* Center - Copyright */}
