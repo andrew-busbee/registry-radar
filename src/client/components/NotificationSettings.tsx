@@ -13,10 +13,14 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
+  // Only sync with parent config if we don't have unsaved local changes
   useEffect(() => {
-    setLocalConfig(config);
-  }, [config]);
+    if (!hasLocalChanges) {
+      setLocalConfig(config);
+    }
+  }, [config, hasLocalChanges]);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -25,6 +29,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
 
     try {
       await onUpdateConfig(localConfig);
+      setHasLocalChanges(false); // Clear the flag after successful save
       setSuccess('Notification settings saved successfully');
       
       setTimeout(() => {
@@ -35,6 +40,12 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper to update local config and mark as changed
+  const updateLocalConfig = (updater: (prev: NotificationConfig) => NotificationConfig) => {
+    setLocalConfig(updater);
+    setHasLocalChanges(true);
   };
 
   const handleTestPushover = async () => {
@@ -80,7 +91,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   };
 
   const addDiscordWebhook = () => {
-    setLocalConfig(prev => ({
+    updateLocalConfig(prev => ({
       ...prev,
       discord: {
         ...prev.discord,
@@ -94,7 +105,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   };
 
   const removeDiscordWebhook = (index: number) => {
-    setLocalConfig(prev => ({
+    updateLocalConfig(prev => ({
       ...prev,
       discord: {
         ...prev.discord,
@@ -104,7 +115,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   };
 
   const updateDiscordWebhook = (index: number, field: 'url' | 'name', value: string) => {
-    setLocalConfig(prev => ({
+    updateLocalConfig(prev => ({
       ...prev,
       discord: {
         ...prev.discord,
@@ -136,7 +147,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <input
               type="checkbox"
               checked={localConfig.triggers.onEveryRun}
-              onChange={(e) => setLocalConfig(prev => ({
+              onChange={(e) => updateLocalConfig(prev => ({
                 ...prev,
                 triggers: { ...prev.triggers, onEveryRun: e.target.checked }
               }))}
@@ -152,7 +163,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <input
               type="checkbox"
               checked={localConfig.triggers.onNewUpdates}
-              onChange={(e) => setLocalConfig(prev => ({
+              onChange={(e) => updateLocalConfig(prev => ({
                 ...prev,
                 triggers: { ...prev.triggers, onNewUpdates: e.target.checked }
               }))}
@@ -168,7 +179,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <input
               type="checkbox"
               checked={localConfig.triggers.onErrors}
-              onChange={(e) => setLocalConfig(prev => ({
+              onChange={(e) => updateLocalConfig(prev => ({
                 ...prev,
                 triggers: { ...prev.triggers, onErrors: e.target.checked }
               }))}
@@ -184,7 +195,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <input
               type="checkbox"
               checked={localConfig.triggers.onManualCheck}
-              onChange={(e) => setLocalConfig(prev => ({
+              onChange={(e) => updateLocalConfig(prev => ({
                 ...prev,
                 triggers: { ...prev.triggers, onManualCheck: e.target.checked }
               }))}
@@ -195,102 +206,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
               <p className="text-sm text-muted-foreground">Send notification for manually triggered registry checks</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Pushover Settings */}
-      <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
-          <Smartphone className="w-5 h-5" />
-          <span>Pushover Notifications</span>
-        </h3>
-        
-        <div className="space-y-3">
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              checked={localConfig.pushover?.enabled || false}
-              onChange={(e) => setLocalConfig(prev => ({
-                ...prev,
-                pushover: {
-                  ...prev.pushover,
-                  enabled: e.target.checked,
-                  apiKey: prev.pushover?.apiKey || '',
-                  userKey: prev.pushover?.userKey || '',
-                  devices: prev.pushover?.devices || []
-                }
-              }))}
-              className="w-4 h-4 text-primary mt-0.5"
-            />
-            <div>
-              <label className="font-medium text-foreground">Enable Pushover</label>
-              <p className="text-sm text-muted-foreground">Send notifications to your mobile devices via Pushover</p>
-            </div>
-          </div>
-          
-          {localConfig.pushover?.enabled && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  API Key
-                </label>
-                <input
-                  type="text"
-                  value={localConfig.pushover?.apiKey || ''}
-                  onChange={(e) => setLocalConfig(prev => ({
-                    ...prev,
-                    pushover: { ...prev.pushover!, apiKey: e.target.value }
-                  }))}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                  placeholder="Your Pushover application API key"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  User Key
-                </label>
-                <input
-                  type="text"
-                  value={localConfig.pushover?.userKey || ''}
-                  onChange={(e) => setLocalConfig(prev => ({
-                    ...prev,
-                    pushover: { ...prev.pushover!, userKey: e.target.value }
-                  }))}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                  placeholder="Your Pushover user key"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Devices (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={localConfig.pushover?.devices?.join(', ') || ''}
-                  onChange={(e) => setLocalConfig(prev => ({
-                    ...prev,
-                    pushover: { 
-                      ...prev.pushover!, 
-                      devices: e.target.value.split(',').map(d => d.trim()).filter(d => d)
-                    }
-                  }))}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                  placeholder="device1, device2 (leave empty for all devices)"
-                />
-              </div>
-              
-              <button
-                onClick={handleTestPushover}
-                disabled={testing === 'pushover' || !localConfig.pushover?.apiKey || !localConfig.pushover?.userKey}
-                className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
-              >
-                <TestTube className="w-4 h-4" />
-                <span>{testing === 'pushover' ? 'Testing...' : 'Test Pushover'}</span>
-              </button>
-            </>
-          )}
         </div>
       </div>
 
@@ -306,7 +221,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <input
               type="checkbox"
               checked={localConfig.discord?.enabled || false}
-              onChange={(e) => setLocalConfig(prev => ({
+              onChange={(e) => updateLocalConfig(prev => ({
                 ...prev,
                 discord: {
                   ...prev.discord,
@@ -390,6 +305,102 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
               >
                 <TestTube className="w-4 h-4" />
                 <span>{testing === 'discord' ? 'Testing...' : 'Test Discord'}</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Pushover Settings */}
+      <div className="bg-card border border-border rounded-lg p-4">
+        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
+          <Smartphone className="w-5 h-5" />
+          <span>Pushover Notifications</span>
+        </h3>
+        
+        <div className="space-y-3">
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              checked={localConfig.pushover?.enabled || false}
+              onChange={(e) => updateLocalConfig(prev => ({
+                ...prev,
+                pushover: {
+                  ...prev.pushover,
+                  enabled: e.target.checked,
+                  apiKey: prev.pushover?.apiKey || '',
+                  userKey: prev.pushover?.userKey || '',
+                  devices: prev.pushover?.devices || []
+                }
+              }))}
+              className="w-4 h-4 text-primary mt-0.5"
+            />
+            <div>
+              <label className="font-medium text-foreground">Enable Pushover</label>
+              <p className="text-sm text-muted-foreground">Send notifications to your mobile devices via Pushover</p>
+            </div>
+          </div>
+          
+          {localConfig.pushover?.enabled && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  API Key
+                </label>
+                <input
+                  type="text"
+                  value={localConfig.pushover?.apiKey || ''}
+                  onChange={(e) => updateLocalConfig(prev => ({
+                    ...prev,
+                    pushover: { ...prev.pushover!, apiKey: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                  placeholder="Your Pushover application API key"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  User Key
+                </label>
+                <input
+                  type="text"
+                  value={localConfig.pushover?.userKey || ''}
+                  onChange={(e) => updateLocalConfig(prev => ({
+                    ...prev,
+                    pushover: { ...prev.pushover!, userKey: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                  placeholder="Your Pushover user key"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Devices (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={localConfig.pushover?.devices?.join(', ') || ''}
+                  onChange={(e) => updateLocalConfig(prev => ({
+                    ...prev,
+                    pushover: { 
+                      ...prev.pushover!, 
+                      devices: e.target.value.split(',').map(d => d.trim()).filter(d => d)
+                    }
+                  }))}
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                  placeholder="device1, device2 (leave empty for all devices)"
+                />
+              </div>
+              
+              <button
+                onClick={handleTestPushover}
+                disabled={testing === 'pushover' || !localConfig.pushover?.apiKey || !localConfig.pushover?.userKey}
+                className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
+              >
+                <TestTube className="w-4 h-4" />
+                <span>{testing === 'pushover' ? 'Testing...' : 'Test Pushover'}</span>
               </button>
             </>
           )}
