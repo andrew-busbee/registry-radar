@@ -102,7 +102,7 @@ export function GettingStartedGuide({
             <div className="flex items-center space-x-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
               <AlertCircle className="w-5 h-5 text-yellow-500" />
               <div className="text-left">
-                <p className="text-sm font-medium text-foreground">New to Monitor</p>
+                <p className="text-sm font-medium text-foreground">New Image to Monitor</p>
                 <p className="text-xs text-muted-foreground">First time checking</p>
               </div>
             </div>
