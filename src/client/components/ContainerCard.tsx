@@ -255,7 +255,7 @@ export function ContainerCard({
       ) : (
         <div className="space-y-2">
           <div className="text-sm text-muted-foreground">
-            <span className="font-medium">Monitoring Image:</span> {container.imagePath}:{container.tag || 'latest'}
+            <span className="font-medium">Monitored Image:</span> {container.imagePath}:{container.tag || 'latest'}
           </div>
           
           <div className={`text-sm font-medium ${getStatusColor()}`}>
@@ -270,10 +270,7 @@ export function ContainerCard({
           
           {containerState && containerState.tag && (
             <div className="text-xs text-muted-foreground">
-              <span className="font-medium">Monitored Version:</span> {containerState.tag}
-              {containerState.lastUpdated && (
-                <span className="ml-1">({new Date(containerState.lastUpdated).toLocaleDateString()})</span>
-              )}
+              <span className="font-medium">Image Last Updated:</span> {containerState.lastUpdated ? new Date(containerState.lastUpdated).toLocaleDateString() : 'Unknown'}
             </div>
           )}
           
@@ -294,7 +291,7 @@ export function ContainerCard({
           
           {containerState && containerState.lastChecked && (
             <div className="text-xs text-muted-foreground">
-              Last checked: {new Date(containerState.lastChecked).toLocaleString()}
+              This image was last checked: {new Date(containerState.lastChecked).toLocaleString()}
             </div>
           )}
         </div>
