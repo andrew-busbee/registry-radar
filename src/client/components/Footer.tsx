@@ -9,12 +9,12 @@ export function Footer() {
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Registry Radar</span>
             <a
-              href="https://github.com/andrew-busbee/registry-radar/releases/tag/v0.1.0-beta.2"
+              href={`https://github.com/andrew-busbee/registry-radar/releases/tag/v${__APP_VERSION__}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
-              v0.1.0-beta.2
+              v{__APP_VERSION__}
             </a>
           </div>
           

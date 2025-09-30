@@ -1,3 +1,8 @@
+// Global type declarations
+declare global {
+  const __APP_VERSION__: string;
+}
+
 export interface ContainerRegistry {
   name: string;
   imagePath: string; // Full image path like "andrewbusbee/planning-poker" or "nginx"
