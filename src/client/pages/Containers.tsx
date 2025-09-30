@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, RefreshCw, Upload, Download } from 'lucide-react';
-import { ContainerRegistry, ContainerState, groupContainersByAge, getAgeGroupInfo, GroupedContainer } from '../types';
+import { ContainerRegistry, ContainerState } from '../types';
 import { ContainerCard } from '../components/ContainerCard';
 import { AddContainerModal } from '../components/AddContainerModal';
 import { BulkImportModal } from '../components/BulkImportModal';
@@ -248,52 +248,25 @@ export function Containers({
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
-          {(() => {
-            const groupedContainers = groupContainersByAge(containers, containerStates);
-            const groupedByAge = groupedContainers.reduce((acc, groupedContainer) => {
-              if (!acc[groupedContainer.ageGroup]) {
-                acc[groupedContainer.ageGroup] = [];
-              }
-              acc[groupedContainer.ageGroup].push(groupedContainer);
-              return acc;
-            }, {} as Record<string, GroupedContainer[]>);
-            
-            return Object.entries(groupedByAge).map(([ageGroup, ageGroupContainers]) => {
-              const groupInfo = getAgeGroupInfo(ageGroup as any);
-              
-              return (
-                <div key={ageGroup}>
-                  <div className="mb-4 pb-2 border-b border-border">
-                    <h3 className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-                      <span>{groupInfo.emoji}</span>
-                      <span>{groupInfo.label}</span>
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {ageGroupContainers.map((groupedContainer) => {
-                      const originalIndex = containers.findIndex(c => 
-                        c.imagePath === groupedContainer.container.imagePath && 
-                        c.tag === groupedContainer.container.tag
-                      );
-                      
-                      return (
-                        <ContainerCard
-                          key={`${groupedContainer.container.imagePath}-${groupedContainer.container.tag}`}
-                          container={groupedContainer.container}
-                          containerState={groupedContainer.state}
-                          onUpdate={(updatedContainer) => handleUpdateContainer(originalIndex, updatedContainer)}
-                          onDelete={() => handleDeleteContainer(originalIndex)}
-                          onCheck={() => handleCheckSingle(originalIndex)}
-                          isChecking={checkingIndex === originalIndex}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {containers
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((container, index) => {
+              const containerState = containerStates.find(
+                state => state.image === container.imagePath && state.tag === (container.tag || 'latest')
               );
-            });
-          })()}
+              return (
+                <ContainerCard
+                  key={`${container.name}-${container.imagePath}`}
+                  container={container}
+                  containerState={containerState}
+                  onUpdate={(updatedContainer) => handleUpdateContainer(index, updatedContainer)}
+                  onDelete={() => handleDeleteContainer(index)}
+                  onCheck={() => handleCheckSingle(index)}
+                  isChecking={checkingIndex === index}
+                />
+              );
+            })}
         </div>
       )}
 

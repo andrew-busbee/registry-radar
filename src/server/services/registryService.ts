@@ -824,7 +824,7 @@ export class RegistryService {
         hasNewerTag: result.error ? existingState?.hasNewerTag : hasNewerTag,
         latestSha: result.error ? existingState?.latestSha : result.latestSha,
         lastUpdated: result.error ? existingState?.lastUpdated : result.lastUpdated,
-        isNew: result.error ? false : (isFirstTime || wasNeverChecked),
+        isNew: result.error ? false : isFirstTime,
         statusMessage: result.error ? 'check image and tag and try again' : undefined,
         error: result.error ? true : false,
         platform: result.error ? existingState?.platform : result.platform,

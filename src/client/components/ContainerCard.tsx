@@ -286,11 +286,11 @@ export function ContainerCard({
               </div>
             )}
             
-            {containerState && (
+            {containerState && containerState.lastUpdated && (
               <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
                 <div className="text-xs font-medium text-muted-foreground mb-1">Image Last Updated</div>
                 <div className="text-sm text-foreground">
-                  {containerState.lastUpdated ? new Date(containerState.lastUpdated).toLocaleDateString() : 'Unknown'}
+                  {new Date(containerState.lastUpdated).toLocaleDateString()}
                 </div>
               </div>
             )}
