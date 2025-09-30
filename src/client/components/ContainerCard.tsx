@@ -147,18 +147,26 @@ export function ContainerCard({
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+    <div className="group bg-card border-2 border-border rounded-2xl p-4 hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 shadow-lg">
+      {/* Header with status indicator */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          {getStatusIcon()}
-          <h3 className="font-semibold text-foreground">{container.name}</h3>
+        <div className="flex items-center space-x-3">
+          <div className={`p-2 rounded-lg ${containerState?.error ? 'bg-red-100 dark:bg-red-900/20' : containerState?.hasUpdate || containerState?.hasNewerTag ? 'bg-orange-100 dark:bg-orange-900/20' : containerState?.isNew ? 'bg-yellow-100 dark:bg-yellow-900/20' : 'bg-green-100 dark:bg-green-900/20'}`}>
+            {getStatusIcon()}
+          </div>
+          <div>
+            <h3 className="font-bold text-lg text-foreground">{container.name}</h3>
+            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
+              {getStatusText()}
+            </div>
+          </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
             onClick={onCheck}
             disabled={isChecking}
-            className="p-1.5 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200 disabled:opacity-50"
             title="Check for updates"
           >
             <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
@@ -166,7 +174,7 @@ export function ContainerCard({
           
           <button
             onClick={() => setIsEditing(true)}
-            className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200"
             title="Edit container"
           >
             <Edit className="w-4 h-4" />
@@ -174,7 +182,7 @@ export function ContainerCard({
           
           <button
             onClick={onDelete}
-            className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200"
             title="Delete container"
           >
             <Trash2 className="w-4 h-4" />
@@ -253,45 +261,63 @@ export function ContainerCard({
           </div>
         </div>
       ) : (
-        <div className="space-y-2">
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium">Monitored Image:</span> {container.imagePath}:{container.tag || 'latest'}
-          </div>
-          
-          <div className={`text-sm font-medium ${getStatusColor()}`}>
-            Status: {getStatusText()}
-          </div>
-          
-          {containerState && containerState.currentSha && (
-            <div className="text-xs text-muted-foreground">
-              <span className="font-medium">Current SHA:</span> {containerState.currentSha.substring(0, 12)}...
+        <div className="space-y-3">
+          {/* Image info section */}
+          <div className="bg-muted/50 rounded-lg p-3 border border-border/60">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold text-foreground">Monitored Image</h4>
+              <div className="text-xs text-muted-foreground bg-background/50 px-2 py-1 rounded-full">
+                Tag: {container.tag || 'latest'}
+              </div>
             </div>
-          )}
-          
-          {containerState && containerState.tag && (
-            <div className="text-xs text-muted-foreground">
-              <span className="font-medium">Image Last Updated:</span> {containerState.lastUpdated ? new Date(containerState.lastUpdated).toLocaleDateString() : 'Unknown'}
+            <div className="font-mono text-sm text-foreground break-all">
+              {container.imagePath}:{container.tag || 'latest'}
             </div>
-          )}
-          
+          </div>
+
+          {/* Status details grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {containerState && containerState.currentSha && (
+              <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
+                <div className="text-xs font-medium text-muted-foreground mb-1">Current SHA</div>
+                <div className="font-mono text-sm text-foreground">
+                  {containerState.currentSha.substring(0, 12)}...
+                </div>
+              </div>
+            )}
+            
+            {containerState && (
+              <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
+                <div className="text-xs font-medium text-muted-foreground mb-1">Image Last Updated</div>
+                <div className="text-sm text-foreground">
+                  {containerState.lastUpdated ? new Date(containerState.lastUpdated).toLocaleDateString() : 'Unknown'}
+                </div>
+              </div>
+            )}
+            
+            
+            {containerState && containerState.lastChecked && (
+              <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
+                <div className="text-xs font-medium text-muted-foreground mb-1">Last Checked</div>
+                <div className="text-sm text-foreground">
+                  {new Date(containerState.lastChecked).toLocaleString()}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Latest version info (if available) */}
           {containerState && containerState.latestAvailableTag && containerState.latestAvailableTag !== containerState.tag && (
-            <div className="text-xs text-blue-600">
-              <span className="font-medium">Latest Version:</span> {containerState.latestAvailableTag}
-              {containerState.latestAvailableUpdated && (
-                <span className="ml-1">({new Date(containerState.latestAvailableUpdated).toLocaleDateString()})</span>
-              )}
-            </div>
-          )}
-          
-          {containerState && containerState.platform && (
-            <div className="text-xs text-muted-foreground">
-              <span className="font-medium">Platform:</span> {containerState.platform}
-            </div>
-          )}
-          
-          {containerState && containerState.lastChecked && (
-            <div className="text-xs text-muted-foreground">
-              This image was last checked: {new Date(containerState.lastChecked).toLocaleString()}
+            <div className="bg-muted/50 border border-border/60 rounded-lg p-2">
+              <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Latest Version Available</div>
+              <div className="text-sm text-blue-900 dark:text-blue-100">
+                {containerState.latestAvailableTag}
+                {containerState.latestAvailableUpdated && (
+                  <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                    ({new Date(containerState.latestAvailableUpdated).toLocaleDateString()})
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
