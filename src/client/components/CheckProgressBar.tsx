@@ -27,6 +27,16 @@ export function CheckProgressBar() {
       <div className="px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
+            <div className="text-xs opacity-75">
+              {elapsedSeconds > 0 && (
+                <div>
+                  <div>Elapsed: {formatTime(elapsedSeconds)}</div>
+                  {remainingSeconds > 0 && (
+                    <div>Remaining: ~{formatTime(remainingSeconds)}</div>
+                  )}
+                </div>
+              )}
+            </div>
             <RefreshCw className="h-4 w-4 animate-spin" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
@@ -53,16 +63,6 @@ export function CheckProgressBar() {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="text-xs opacity-75">
-              {elapsedSeconds > 0 && (
-                <div>
-                  <div>Elapsed: {formatTime(elapsedSeconds)}</div>
-                  {remainingSeconds > 0 && (
-                    <div>Remaining: ~{formatTime(remainingSeconds)}</div>
-                  )}
-                </div>
-              )}
-            </div>
             <button
               onClick={cancelCheck}
               className="p-1 hover:bg-primary-foreground/20 rounded transition-colors"
