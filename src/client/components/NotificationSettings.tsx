@@ -8,12 +8,34 @@ interface NotificationSettingsProps {
 }
 
 export function NotificationSettings({ config, onUpdateConfig }: NotificationSettingsProps) {
-  const [localConfig, setLocalConfig] = useState<NotificationConfig>(config);
+  // Common function to get trigger value with fallback
+  const getTriggerValue = (triggerName: keyof typeof defaultTriggers, defaultValue: boolean) => {
+    return localConfig.triggers?.[triggerName] ?? defaultValue;
+  };
+
+  const defaultTriggers = {
+    sendSummaryOnScheduledRun: true,
+    sendIndividualReportsOnScheduledRun: false,
+    sendReportsWhenUpdatesFound: true,
+    sendReportsOnErrors: true,
+    sendReportsOnManualCheck: false,
+  };
+
+  const [localConfig, setLocalConfig] = useState<NotificationConfig>(() => {
+    return {
+      ...config,
+      triggers: {
+        ...defaultTriggers,
+        ...(config.triggers || {})
+      }
+    };
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const [isSendingTestReports, setIsSendingTestReports] = useState(false);
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({
     triggers: true,
     discord: !!config.discord?.enabled,
@@ -25,7 +47,22 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   // Only sync with parent config if we don't have unsaved local changes
   useEffect(() => {
     if (!hasLocalChanges) {
-      setLocalConfig(config);
+      const defaultTriggers = {
+        sendSummaryOnScheduledRun: true,
+        sendIndividualReportsOnScheduledRun: false,
+        sendReportsWhenUpdatesFound: true,
+        sendReportsOnErrors: true,
+        sendReportsOnManualCheck: false,
+      };
+      
+      setLocalConfig({
+        ...config,
+        triggers: {
+          ...defaultTriggers,
+          ...(config.triggers || {})
+        }
+      });
+      
       setExpanded(prev => ({
         ...prev,
         discord: !!config.discord?.enabled,
@@ -53,6 +90,45 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
       setError(err instanceof Error ? err.message : 'Failed to save settings');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendTestReports = async () => {
+    setIsSendingTestReports(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      // Send test reports for each notification type
+      const testReports = [
+        { type: 'update', name: 'Sample Update Report' },
+        { type: 'error', name: 'Sample Error Report' },
+        { type: 'summary', name: 'Sample Summary Report' },
+        { type: 'individual', name: 'Sample Individual Report' }
+      ];
+
+      for (const report of testReports) {
+        try {
+          const response = await fetch('/api/notifications/test-reports', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reportType: report.type })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to send ${report.name}`);
+          }
+        } catch (err) {
+          console.error(`Error sending ${report.name}:`, err);
+        }
+      }
+
+      setSuccess('Test reports sent successfully! Check your configured notification channels.');
+      setTimeout(() => setSuccess(null), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send test reports');
+    } finally {
+      setIsSendingTestReports(false);
     }
   };
 
@@ -316,7 +392,25 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             Configure external notifications for container updates and system events
           </p>
         </div>
-        <div className="hidden sm:flex">
+        <div className="hidden sm:flex space-x-2">
+          <button
+            onClick={handleSendTestReports}
+            disabled={isSendingTestReports}
+            className="flex items-center space-x-2 px-3 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors disabled:opacity-50"
+          >
+            {isSendingTestReports ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Sending...</span>
+              </>
+            ) : (
+              <>
+                <Bell className="w-4 h-4" />
+                <span>Send Test Reports</span>
+              </>
+            )}
+          </button>
+          
           <button
             onClick={handleSave}
             disabled={isLoading}
@@ -358,7 +452,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-1">
               <Toggle
-                checked={localConfig.triggers.sendSummaryOnScheduledRun}
+                checked={getTriggerValue('sendSummaryOnScheduledRun', true)}
                 onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendSummaryOnScheduledRun: next }
@@ -375,7 +469,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-1">
               <Toggle
-                checked={localConfig.triggers.sendIndividualReportsOnScheduledRun}
+                checked={getTriggerValue('sendIndividualReportsOnScheduledRun', false)}
                 onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendIndividualReportsOnScheduledRun: next }
@@ -392,7 +486,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-1">
               <Toggle
-                checked={localConfig.triggers.sendReportsWhenUpdatesFound}
+                checked={getTriggerValue('sendReportsWhenUpdatesFound', true)}
                 onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendReportsWhenUpdatesFound: next }
@@ -409,7 +503,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-1">
               <Toggle
-                checked={localConfig.triggers.sendReportsOnErrors}
+                checked={getTriggerValue('sendReportsOnErrors', true)}
                 onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendReportsOnErrors: next }
@@ -426,7 +520,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-1">
               <Toggle
-                checked={localConfig.triggers.sendReportsOnManualCheck}
+                checked={getTriggerValue('sendReportsOnManualCheck', false)}
                 onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendReportsOnManualCheck: next }
@@ -947,7 +1041,25 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
 
 
       {/* Sticky action bar for smaller screens */}
-      <div className="sm:hidden sticky bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border p-3 mt-2">
+      <div className="sm:hidden sticky bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border p-3 mt-2 space-y-2">
+        <button
+          onClick={handleSendTestReports}
+          disabled={isSendingTestReports}
+          className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+        >
+          {isSendingTestReports ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Sending Test Reports...</span>
+            </>
+          ) : (
+            <>
+              <Bell className="w-4 h-4" />
+              <span>Send Test Reports</span>
+            </>
+          )}
+        </button>
+        
         <button
           onClick={handleSave}
           disabled={isLoading}

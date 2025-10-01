@@ -27,7 +27,7 @@ The easiest way to run Registry Radar is with Docker Compose. You'll be up and r
 ```yml
 services:
   registry-radar:
-    image: ghcr.io/andrewbusbee/registry-radar:latest # NOTE: use beta release tags prior to first non-production release
+    image: ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.3 # Tag will become latest when released
     container_name: registry-radar
     ports:
       - "3001:3001"
@@ -36,15 +36,34 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+      - APPRISE_URL=http://apprise:8000
       # Docker Hub Authentication (optional)
       # Increases rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account)
       # Uncomment and set your credentials to enable:
       # - DOCKERHUB_USERNAME=your_username
       # - DOCKERHUB_PASSWORD=your_password_or_token
     restart: unless-stopped
+    networks:
+      - registry-radar-network
+
+  apprise:
+    image: caronc/apprise:latest
+    container_name: apprise
+    ports:
+      - "8000:8000"
+    environment:
+      - APPRISE_ALLOW_HOSTS=registry-radar # Only allow connections from registry-radar container
+    restart: unless-stopped
+    networks:
+      - registry-radar-network
 
 volumes:
   data:
+
+networks:
+  registry-radar-network:
+    driver: bridge
+    name: registry-radar-network
 ```
 
 2. **Start Registry Radar:**
@@ -62,18 +81,32 @@ That's it! Registry Radar is now running and ready to monitor your containers.
 If you prefer to use Docker commands directly:
 
 ```bash
-# Create a directory for your data
-mkdir registry-radar-data
+# Create named volume
+docker volume create data
 
-# Run Registry Radar
-docker run -d `
-  --name registry-radar `
-  -p 3001:3001 `
-  -v $(pwd)/registry-radar-data:/app/data `
-  -e NODE_ENV=production `
-  -e PORT=3001 `
-  --restart unless-stopped `
-  ghcr.io/andrewbusbee/registry-radar:latest
+# Create custom network
+docker network create registry-radar-network
+
+# Run apprise container
+docker run -d \
+  --name apprise \
+  --restart unless-stopped \
+  --network registry-radar-network \
+  -p 8000:8000 \
+  -e APPRISE_ALLOW_HOSTS=registry-radar \
+  caronc/apprise:latest
+
+# Run registry-radar container
+docker run -d \
+  --name registry-radar \
+  --restart unless-stopped \
+  --network registry-radar-network \
+  -p 3001:3001 \
+  -v data:/app/data \
+  -e NODE_ENV=production \
+  -e PORT=3001 \
+  -e APPRISE_URL=http://apprise:8000 \
+  ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.3
 
 ```
 
