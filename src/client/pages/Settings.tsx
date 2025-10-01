@@ -50,6 +50,26 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     }
   };
 
+  const handleToggleEnabled = async () => {
+    const newEnabled = !enabled;
+    setEnabled(newEnabled);
+    
+    // Auto-save when toggling
+    try {
+      if (newEnabled) {
+        // When enabling, save both enabled state and current schedule
+        await onUpdateCronConfig({ schedule, enabled: newEnabled });
+      } else {
+        // When disabling, only save the enabled state
+        await onUpdateCronConfig({ enabled: newEnabled });
+      }
+    } catch (err) {
+      // Revert on error
+      setEnabled(enabled);
+      setError(err instanceof Error ? err.message : 'Failed to save settings');
+    }
+  };
+
   const commonSchedules = [
     { label: 'Every hour', value: '0 * * * *' },
     { label: 'Every 6 hours', value: '0 */6 * * *' },
@@ -179,30 +199,43 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
 
           <div className="space-y-4">
             {/* Enable/Disable Toggle */}
-            <div className="flex items-center justify-between">
-              <div>
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <button
+                  onClick={handleToggleEnabled}
+                  aria-pressed={enabled}
+                  aria-label="Enable Automatic Checks"
+                  className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors border ${
+                    enabled ? 'bg-primary border-primary' : 'bg-gray-300 border-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                      enabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
                 <h3 className="font-medium text-foreground">Enable Automatic Checks</h3>
-                <p className="text-sm text-muted-foreground">
-                  Automatically check for container updates based on the schedule below.  Once a day is recommended.
-                  {" "}
-                  <span className="text-red-600">
-                    Note: Be aware that running the checks too often can cause rate limiting for docker hub hosted images. You can increase the rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account) by adding your docker credentials to the docker environment variables DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD
-                  </span>
-                </p>
+                <div className="flex items-center gap-2 ml-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="text-muted-foreground">{enabled ? 'Enabled' : 'Disabled'}</span>
+                </div>
               </div>
-              <button
-                onClick={() => setEnabled(!enabled)}
-                className="flex items-center space-x-2"
-              >
-                {enabled ? (
-                  <ToggleRight className="w-8 h-8 text-primary" />
-                ) : (
-                  <ToggleLeft className="w-8 h-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Automatically check for container updates based on the schedule below (Once a day is recommended)
+                {enabled && (
+                  <>
+                    <br />
+                    <span className="text-red-600">
+                      Note: Be aware that running the checks too often can cause rate limiting for docker hub hosted images. You can increase the rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account) by adding your docker credentials to the docker environment variables DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD
+                    </span>
+                  </>
                 )}
-              </button>
+              </p>
             </div>
 
-            {/* Schedule Configuration */}
+            {/* Schedule Configuration - Only show when enabled */}
+            {enabled && (
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
@@ -256,21 +289,9 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                 </p>
               </div>
             </div>
+            )}
 
-            {/* Status */}
-            <div className="p-3 bg-muted rounded-md">
-              <h4 className="text-sm font-medium text-foreground mb-2">Current Status</h4>
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    cronConfig.enabled ? 'bg-green-500' : 'bg-red-500'
-                  }`} />
-                  <span className="text-muted-foreground">
-                    {cronConfig.enabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Status removed and inlined near toggle */}
 
             {/* Error/Success Messages */}
             {error && (
@@ -285,7 +306,8 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
               </div>
             )}
 
-            {/* Save Button */}
+            {/* Save Button - Only show when enabled */}
+            {enabled && (
             <button
               onClick={handleSave}
               disabled={isLoading}
@@ -303,9 +325,11 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                 </>
               )}
             </button>
+            )}
           </div>
 
-          {/* Information Section */}
+          {/* Information Section - Only show when enabled */}
+          {enabled && (
           <div className="bg-card border border-border rounded-lg p-4">
             <h2 className="text-lg font-semibold text-foreground mb-3">About Cron Expressions</h2>
             <div className="space-y-2 text-sm text-muted-foreground">
@@ -326,6 +350,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
               </ul>
             </div>
           </div>
+          )}
         </div>
         </div>
 

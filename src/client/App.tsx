@@ -188,26 +188,51 @@ function AppContent() {
 
   const handleUpdateCronConfig = async (config: Partial<CronConfig>) => {
     try {
-      const updates = [];
+      // IMPORTANT: If both schedule and enabled are provided, update the schedule FIRST,
+      // then toggle enabled. Doing these in parallel can cause the enabled call to
+      // persist the previous schedule, overwriting the new one.
 
-      if (config.schedule !== undefined) {
-        updates.push(
-          fetch('/api/cron/config/schedule', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ schedule: config.schedule }),
-          }).then(response => {
-            if (!response.ok) {
-              throw new Error(`Failed to update schedule: ${response.statusText}`);
-            }
-            return response.json();
-          })
-        );
+      if (config.schedule !== undefined && config.enabled !== undefined) {
+        const scheduleResp = await fetch('/api/cron/config/schedule', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ schedule: config.schedule }),
+        });
+        if (!scheduleResp.ok) {
+          throw new Error(`Failed to update schedule: ${scheduleResp.statusText}`);
+        }
+        await scheduleResp.json();
+
+        const enabledResp = await fetch('/api/cron/config/enabled', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: config.enabled }),
+        });
+        if (!enabledResp.ok) {
+          throw new Error(`Failed to update enabled state: ${enabledResp.statusText}`);
+        }
+        await enabledResp.json();
+      } else if (config.schedule !== undefined) {
+        const scheduleResp = await fetch('/api/cron/config/schedule', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ schedule: config.schedule }),
+        });
+        if (!scheduleResp.ok) {
+          throw new Error(`Failed to update schedule: ${scheduleResp.statusText}`);
+        }
+        await scheduleResp.json();
+      } else if (config.enabled !== undefined) {
+        const enabledResp = await fetch('/api/cron/config/enabled', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: config.enabled }),
+        });
+        if (!enabledResp.ok) {
+          throw new Error(`Failed to update enabled state: ${enabledResp.statusText}`);
+        }
+        await enabledResp.json();
       }
-
-      // Don't make separate enabled call - schedule call handles both
-
-      await Promise.all(updates);
       
       // Refresh cron configuration from server to ensure we have the latest data
       try {
