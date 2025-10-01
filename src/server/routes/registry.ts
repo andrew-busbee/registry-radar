@@ -51,19 +51,32 @@ router.post('/check/:index', async (req, res) => {
     const currentStates = await ConfigService.getContainerState();
     const updatedStates = await RegistryService.updateContainerStates([result], currentStates);
     
+    // Get the updated state to check if it's new
+    const updatedState = updatedStates.find(
+      s => s.image === result.image && s.tag === result.tag
+    );
+    
     // Check if this is a new update (only for existing containers)
     const previousState = currentStates.find(
       s => s.image === result.image && s.tag === result.tag
     );
     
-    // Only create notification if this is an existing container with a different SHA
-    if (previousState && result.latestSha !== previousState.currentSha) {
+    // Only create notification if:
+    // 1. Previous state exists AND
+    // 2. Previous state had a SHA (not first check) AND
+    // 3. SHA has changed AND
+    // 4. Not marked as new container
+    const wasNeverChecked = !previousState || !previousState.currentSha || previousState.currentSha === '';
+    if (previousState && !wasNeverChecked && result.latestSha !== previousState.currentSha && !updatedState?.isNew) {
       await NotificationService.createUpdateNotification(
         container.name,
         `${result.image}:${result.tag}`,
         result.tag,
         true // This is a new update since SHA changed
       );
+      console.log(`Update notification created for ${container.name}`);
+    } else if (wasNeverChecked) {
+      console.log(`Skipping notification for first check of ${container.name} (establishing baseline)`);
     }
     
     await ConfigService.saveContainerState(updatedStates);

@@ -171,7 +171,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                   id="container-list"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Paste your image list here, one per line:&#10;andrewbusbee/registry-radar:latest&#10;andrewbusbee/planning-poker:latest&#10;ghcr.io/blakeblackshear/frigate:stable&#10;portainer/portainer-ce:lts&#10;ghcr.io/gethomepage/homepage&#10;..."
+                  placeholder="Paste your image list here, one per line:&#10;andrewbusbee/registry-radar:latest&#10;andrewbusbee/planning-poker:latest&#10;ghcr.io/blakeblackshear/frigate:stable&#10;ghcr.io/gethomepage/homepage&#10;..."
                   className="w-full h-32 px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
                   disabled={isImporting}
                 />

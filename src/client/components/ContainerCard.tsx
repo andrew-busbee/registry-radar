@@ -282,21 +282,20 @@ export function ContainerCard({
 
           {/* Status details grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {containerState && containerState.lastChecked && (
+              <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
+                <div className="text-xs font-medium text-muted-foreground mb-1">Image Last Checked</div>
+                <div className="text-sm text-foreground">
+                  {new Date(containerState.lastChecked).toLocaleString()}
+                </div>
+              </div>
+            )}
+            
             {containerState && containerState.lastUpdated && (
               <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
                 <div className="text-xs font-medium text-muted-foreground mb-1">Image Last Updated</div>
                 <div className="text-sm text-foreground">
                   {new Date(containerState.lastUpdated).toLocaleDateString()}
-                </div>
-              </div>
-            )}
-            
-            
-            {containerState && containerState.lastChecked && (
-              <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
-                <div className="text-xs font-medium text-muted-foreground mb-1">Last Checked</div>
-                <div className="text-sm text-foreground">
-                  {new Date(containerState.lastChecked).toLocaleString()}
                 </div>
               </div>
             )}

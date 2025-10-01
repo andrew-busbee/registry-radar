@@ -85,7 +85,8 @@ export class CronService {
           s => s.image === state.image && s.tag === state.tag
         );
         
-        if (state.hasUpdate) {
+        // Skip notification if this is a new container (isNew flag)
+        if (state.hasUpdate && !state.isNew) {
           const container = containers.find(
             c => c.imagePath === state.image && c.tag === state.tag
           );
@@ -102,6 +103,8 @@ export class CronService {
             );
             console.log(`Update detected for ${container.name}${isNewUpdate ? ' (new update)' : ' (existing update)'}`);
           }
+        } else if (state.isNew) {
+          console.log(`Skipping notification for new container: ${state.image}:${state.tag} (isNew=true, establishing baseline)`);
         }
       }
       

@@ -108,13 +108,13 @@ export function Dashboard({
   const [groupBy, setGroupBy] = useState<'none' | 'age' | 'registry' | 'status'>('none');
 
   const handleCheckRegistry = async () => {
-    // Show confirmation if there are 10 or more images
-    if (containers.length >= 10) {
+    // Show confirmation if there are 50 or more images
+    if (containers.length >= 50) {
       setIsCheckConfirmationOpen(true);
       return;
     }
     
-    // Proceed directly if less than 10 images
+    // Proceed directly if less than 50 images
     await performCheckRegistry();
   };
 

@@ -801,6 +801,13 @@ export class RegistryService {
       const existingState = existingStateIndex >= 0 ? updatedStates[existingStateIndex] : undefined;
       const wasNeverChecked = existingState ? (!existingState.currentSha || existingState.currentSha === '') : false;
       
+      // A container is "new" ONLY if we're establishing the baseline SHA for the first time
+      // Once we have a SHA, it's no longer "new" even if it was marked as such before
+      const isNewContainer = (isFirstTime || wasNeverChecked) && !result.error;
+      
+      // Important: If we're successfully getting a SHA now, we're establishing the baseline,
+      // so after this update isNew should be false on subsequent checks
+      
       // Determine if a newer semver tag exists compared to the monitored tag
       let hasNewerTag: boolean = false;
       const monitoredSemver = this.parseSemver(result.tag);
@@ -829,7 +836,7 @@ export class RegistryService {
         hasNewerTag: result.error ? existingState?.hasNewerTag : hasNewerTag,
         latestSha: result.error ? existingState?.latestSha : result.latestSha,
         lastUpdated: result.error ? existingState?.lastUpdated : result.lastUpdated,
-        isNew: result.error ? false : isFirstTime,
+        isNew: result.error ? false : isNewContainer,
         statusMessage: result.error ? 'check image and tag and try again' : undefined,
         error: result.error ? true : false,
         platform: result.error ? existingState?.platform : result.platform,
