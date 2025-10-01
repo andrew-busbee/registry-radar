@@ -171,18 +171,43 @@ export function Dashboard({
     containers.some(c => c.imagePath === state.image && (c.tag || 'latest') === (state.tag || 'latest'))
   );
 
-  const errors = stateMatchesCurrent.filter(state => state.error || state.statusMessage).length;
+  // Helper: identify v-prefixed semantic version tags like v1.2.3
+  const isVPrefixedVersionedTag = (tag?: string): boolean => {
+    const normalizedTag = tag || 'latest';
+    const vPrefixedPattern = /^v\d+\.\d+\.\d+/;
+    return vPrefixedPattern.test(normalizedTag);
+  };
+
+  // Compute stats
+  const errorsSet = new Set(
+    stateMatchesCurrent
+      .filter(state => state.error || state.statusMessage)
+      .map(state => `${state.image}@@${state.tag || 'latest'}`)
+  );
+
+  const warningsSet = new Set(
+    containers
+      .filter(c => isVPrefixedVersionedTag(c.tag))
+      .map(c => `${c.imagePath}@@${c.tag || 'latest'}`)
+  );
+
+  // Union of errors and warnings for display count on the card and filter results
+  const errorsAndWarningsSet = new Set<string>([...errorsSet, ...warningsSet]);
+
+  const errorsAndWarnings = errorsAndWarningsSet.size;
   const upToDate = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && !state.hasUpdate && !state.hasNewerTag && !state.error && !state.statusMessage).length;
   const updatesAvailable = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && (state.hasUpdate || state.hasNewerTag) && !state.error).length;
   const total = containers.length;
-  const neverCheckedRaw = total - upToDate - updatesAvailable - errors;
+  // Preserve original neverChecked calculation based only on actual error states
+  const errorsOnlyCount = stateMatchesCurrent.filter(state => state.error || state.statusMessage).length;
+  const neverCheckedRaw = total - upToDate - updatesAvailable - errorsOnlyCount;
   const neverChecked = Math.max(0, neverCheckedRaw);
 
   const stats = {
     total,
     upToDate,
     updatesAvailable,
-    errors,
+    errors: errorsAndWarnings,
     neverChecked,
   };
 
@@ -308,7 +333,10 @@ export function Dashboard({
         } else if (statusFilter === 'updates') {
           return state?.lastChecked && (state.hasUpdate || state.hasNewerTag) && !state.error;
         } else if (statusFilter === 'errors') {
-          return state?.error || state?.statusMessage;
+          // Include actual errors/status plus v-prefixed version-tagged containers (tip case)
+          const hasErrorOrStatus = !!(state?.error || state?.statusMessage);
+          const isVVersionTag = isVPrefixedVersionedTag(container.tag);
+          return hasErrorOrStatus || isVVersionTag;
         } else if (statusFilter === 'neverChecked') {
           return !state?.lastChecked || state.lastChecked === '';
         }
@@ -501,7 +529,7 @@ export function Dashboard({
           >
             <div className="flex items-center space-x-2">
               <XCircle className="w-5 h-5 text-red-500" />
-              <span className="text-sm font-medium text-muted-foreground">Errors</span>
+              <span className="text-sm font-medium text-muted-foreground">Errors & Warnings</span>
             </div>
             <p className="text-2xl font-bold text-foreground mt-2">{stats.errors}</p>
           </div>
