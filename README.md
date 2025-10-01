@@ -1,16 +1,8 @@
 # Registry Radar
 
-**Keep your Docker containers up to date automatically!**
+**Get notified of Docker container updates automatically!**
 
 Registry Radar is a simple web application that monitors your Docker container images for updates and sends you notifications when new versions are available. Instead of manually checking for updates, let Registry Radar do the work for you.
-
-
-
-
-
-
-
-[Learn how to set up email notifications →](#notification-options)
 
 ## What does it do?
 
