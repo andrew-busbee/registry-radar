@@ -68,13 +68,13 @@ export function Containers({
   };
 
   const handleCheckAll = async () => {
-    // Show confirmation if there are 50 or more images
-    if (containers.length >= 50) {
+    // Show confirmation if there are 40 or more images
+    if (containers.length >= 40) {
       setIsCheckConfirmationOpen(true);
       return;
     }
     
-    // Proceed directly if less than 50 images
+    // Proceed directly if less than 40 images
     await performCheckAll();
   };
 
