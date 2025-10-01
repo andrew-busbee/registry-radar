@@ -39,6 +39,54 @@ export class RegistryService {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  // Helper method to normalize SHA values for consistent comparison
+  static normalizeSha(sha: string): string {
+    if (!sha || sha === '') {
+      return '';
+    }
+    
+    // Remove common prefixes and normalize format
+    let normalized = sha.trim().toLowerCase();
+    
+    // Remove 'sha256:' prefix if present
+    if (normalized.startsWith('sha256:')) {
+      normalized = normalized.substring(7);
+    }
+    
+    // Remove 'sha1:' prefix if present
+    if (normalized.startsWith('sha1:')) {
+      normalized = normalized.substring(5);
+    }
+    
+    // Ensure we have a valid hex string (basic validation)
+    if (!/^[a-f0-9]+$/.test(normalized)) {
+      console.warn(`Invalid SHA format detected: ${sha}, returning original`);
+      return sha;
+    }
+    
+    return normalized;
+  }
+
+  // Helper method to compare two SHA values consistently
+  static compareShas(sha1: string, sha2: string): boolean {
+    const normalized1 = this.normalizeSha(sha1);
+    const normalized2 = this.normalizeSha(sha2);
+    
+    // If either is empty, they're only equal if both are empty
+    if (!normalized1 || !normalized2) {
+      return normalized1 === normalized2;
+    }
+    
+    const areEqual = normalized1 === normalized2;
+    
+    // Log SHA comparison for debugging (only when they differ)
+    if (!areEqual) {
+      console.log(`SHA comparison - Original: "${sha1}" vs "${sha2}" | Normalized: "${normalized1}" vs "${normalized2}" | Equal: ${areEqual}`);
+    }
+    
+    return areEqual;
+  }
+
   // Helper method to extract digest and timestamp from a manifest response
   private static async extractDigestAndTimestamp(
     response: any,
@@ -784,13 +832,14 @@ export class RegistryService {
       let hasUpdate: boolean = false;
       
       if (!result.error) {
-      if (existingStateIndex >= 0) {
-        const existingState = updatedStates[existingStateIndex];
-        const isFirstCheck = !existingState.currentSha || existingState.currentSha === '';
-        if (isFirstCheck) {
-          hasUpdate = false;
+        if (existingStateIndex >= 0) {
+          const existingState = updatedStates[existingStateIndex];
+          const isFirstCheck = !existingState.currentSha || existingState.currentSha === '';
+          if (isFirstCheck) {
+            hasUpdate = false;
           } else {
-            hasUpdate = existingState.currentSha !== result.latestSha;
+            // Use normalized SHA comparison to handle different formats
+            hasUpdate = !this.compareShas(existingState.currentSha, result.latestSha);
           }
         } else {
           hasUpdate = false;

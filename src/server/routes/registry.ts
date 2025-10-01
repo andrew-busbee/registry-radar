@@ -67,7 +67,7 @@ router.post('/check/:index', async (req, res) => {
     // 3. SHA has changed AND
     // 4. Not marked as new container
     const wasNeverChecked = !previousState || !previousState.currentSha || previousState.currentSha === '';
-    if (previousState && !wasNeverChecked && result.latestSha !== previousState.currentSha && !updatedState?.isNew) {
+    if (previousState && !wasNeverChecked && !RegistryService.compareShas(result.latestSha, previousState.currentSha) && !updatedState?.isNew) {
       await NotificationService.createUpdateNotification(
         container.name,
         `${result.image}:${result.tag}`,

@@ -93,7 +93,7 @@ export class CronService {
           
           if (container) {
             // Check if this is a new update (different SHA) to avoid spam
-            const isNewUpdate = !previousState || previousState.currentSha !== state.currentSha;
+            const isNewUpdate = !previousState || !RegistryService.compareShas(previousState.currentSha, state.currentSha);
             
             await NotificationService.createUpdateNotification(
               container.name,
