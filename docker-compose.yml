@@ -1,6 +1,6 @@
 services:
   registry-radar:
-    image: andrewbusbee/registry-radar:0.1.0-beta.1 # Tag will become latest when released
+    image: ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.3 # Tag will become latest when released
     container_name: registry-radar
     ports:
       - "3001:3001"
