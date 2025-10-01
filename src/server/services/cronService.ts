@@ -85,9 +85,10 @@ export class CronService {
           s => s.image === state.image && s.tag === state.tag
         );
         
-        // Skip notification if this is a new container (isNew flag)
-        // Notify if there's an update (SHA change) OR a newer version available
-        if ((state.hasUpdate || state.hasNewerTag) && !state.isNew) {
+        // For manual checks, always send notifications regardless of update status
+        // For scheduled checks, only send if there's an update and it's not a new container
+        console.log(`[CronService] Checking ${state.image}:${state.tag} - isManual: ${isManual}, hasUpdate: ${state.hasUpdate}, hasNewerTag: ${state.hasNewerTag}, isNew: ${state.isNew}`);
+        if (isManual || ((state.hasUpdate || state.hasNewerTag) && !state.isNew)) {
           const container = containers.find(
             c => c.imagePath === state.image && c.tag === state.tag
           );
@@ -102,6 +103,8 @@ export class CronService {
             let notificationMessage = `New version available for ${container.name} (tag: ${state.tag})`;
             if (state.hasNewerTag && state.latestAvailableTag) {
               notificationMessage = `Newer version available for ${container.name}: ${state.latestAvailableTag} (currently monitoring ${state.tag})`;
+            } else if (isManual && !state.hasUpdate && !state.hasNewerTag) {
+              notificationMessage = `Manual check completed for ${container.name} (tag: ${state.tag}) - up to date`;
             }
             
             await NotificationService.createUpdateNotification(

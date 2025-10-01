@@ -102,9 +102,15 @@ export class NotificationService {
     console.log(`[NotificationService] sendRunNotification called - isManual: ${isManual}, sendReportsOnManualCheck: ${config.triggers.sendReportsOnManualCheck}, sendSummaryOnScheduledRun: ${config.triggers.sendSummaryOnScheduledRun}`);
     
     // For manual checks, only send if manual check notifications are enabled AND summary is enabled
-    if (isManual && (!config.triggers.sendReportsOnManualCheck || !config.triggers.sendSummaryOnScheduledRun)) {
-      console.log('[NotificationService] Skipping run notification for manual check - conditions not met');
-      return;
+    if (isManual) {
+      if (!config.triggers.sendReportsOnManualCheck) {
+        console.log('[NotificationService] Skipping run notification for manual check - manual check notifications disabled');
+        return;
+      }
+      if (!config.triggers.sendSummaryOnScheduledRun) {
+        console.log('[NotificationService] Skipping run notification for manual check - summary notifications disabled');
+        return;
+      }
     }
     
     // For scheduled runs, check the scheduled run trigger
@@ -124,9 +130,15 @@ export class NotificationService {
     console.log(`[NotificationService] sendIndividualContainerReports called - isManual: ${isManual}, sendReportsOnManualCheck: ${config.triggers.sendReportsOnManualCheck}, sendIndividualReportsOnScheduledRun: ${config.triggers.sendIndividualReportsOnScheduledRun}`);
     
     // For manual checks, only send if manual check notifications are enabled AND individual reports are enabled
-    if (isManual && (!config.triggers.sendReportsOnManualCheck || !config.triggers.sendIndividualReportsOnScheduledRun)) {
-      console.log('[NotificationService] Skipping individual reports for manual check - conditions not met');
-      return;
+    if (isManual) {
+      if (!config.triggers.sendReportsOnManualCheck) {
+        console.log('[NotificationService] Skipping individual reports for manual check - manual check notifications disabled');
+        return;
+      }
+      if (!config.triggers.sendIndividualReportsOnScheduledRun) {
+        console.log('[NotificationService] Skipping individual reports for manual check - individual reports disabled');
+        return;
+      }
     }
     
     // For scheduled runs, check the scheduled run trigger
