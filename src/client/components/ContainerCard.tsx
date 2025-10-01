@@ -162,7 +162,7 @@ export function ContainerCard({
           </div>
         </div>
         
-        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center space-x-1">
           <button
             onClick={onCheck}
             disabled={isChecking}
@@ -182,7 +182,7 @@ export function ContainerCard({
           
           <button
             onClick={onDelete}
-            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200"
+            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
             title="Delete container"
           >
             <Trash2 className="w-4 h-4" />
