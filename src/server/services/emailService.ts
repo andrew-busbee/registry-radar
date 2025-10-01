@@ -268,7 +268,7 @@ Registry Radar - Docker Image Monitoring
     config: NotificationConfig['email'],
     containers: Array<{name: string, image: string, tag: string, status: string}>
   ): Promise<boolean> {
-    const subject = `Registry Radar - Individual Container Status Report (${containers.length} containers)`;
+    const subject = `Registry Radar - Image Status Report (${containers.length} images)`;
     
     const textContent = `
 Registry Radar Notification
@@ -305,10 +305,10 @@ Registry Radar - Docker Image Monitoring
 <body>
   <div class="container">
     <div class="header">
-      <h1 style="margin: 0;">📋 Individual Container Status Report</h1>
+      <h1 style="margin: 0;">Registry Radar: 📋 Image Status Report</h1>
     </div>
     <div class="content">
-      <p>Status report for all monitored containers:</p>
+      <p>Status report for all monitored images:</p>
       
       ${containers.map(container => `
         <div class="container-item">
