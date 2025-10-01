@@ -255,6 +255,74 @@ Registry Radar - Docker Container Monitoring
     return this.sendNotification(config, subject, htmlContent, textContent);
   }
 
+  static async sendIndividualReports(
+    config: NotificationConfig['email'],
+    containers: Array<{name: string, image: string, tag: string, status: string}>
+  ): Promise<boolean> {
+    const subject = `Registry Radar - Individual Container Status Report (${containers.length} containers)`;
+    
+    const textContent = `
+Registry Radar Notification
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Individual status report for all monitored containers:
+
+${containers.map(container => 
+  `Container: ${container.name}
+Image: ${container.image}:${container.tag}
+Status: ${container.status}`
+).join('\n\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Registry Radar - Docker Container Monitoring
+    `.trim();
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+    .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; }
+    .container-item { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }
+    .container-name { font-weight: bold; color: #1f2937; margin-bottom: 5px; }
+    .container-details { font-size: 14px; color: #6b7280; }
+    .status { font-weight: bold; }
+    .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0;">📋 Individual Container Status Report</h1>
+    </div>
+    <div class="content">
+      <p>Status report for all monitored containers:</p>
+      
+      ${containers.map(container => `
+        <div class="container-item">
+          <div class="container-name">${container.name}</div>
+          <div class="container-details">
+            <strong>Image:</strong> <code>${container.image}:${container.tag}</code><br>
+            <strong>Status:</strong> <span class="status">${container.status}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="footer">
+      Registry Radar - Docker Container Monitoring<br>
+      Automated notification system
+    </div>
+  </div>
+</body>
+</html>
+    `.trim();
+
+    return this.sendNotification(config, subject, htmlContent, textContent);
+  }
+
   static async sendTestNotification(
     config: NotificationConfig['email']
   ): Promise<boolean> {

@@ -91,10 +91,11 @@ export interface NotificationConfig {
     toEmails: string[];
   };
   triggers: {
-    onEveryRun: boolean;
-    onNewUpdates: boolean;
-    onErrors: boolean;
-    onManualCheck: boolean;
+    sendSummaryOnScheduledRun: boolean;
+    sendIndividualReportsOnScheduledRun: boolean;
+    sendReportsWhenUpdatesFound: boolean;
+    sendReportsOnErrors: boolean;
+    sendReportsOnManualCheck: boolean;
   };
 }
 

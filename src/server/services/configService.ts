@@ -77,21 +77,51 @@ export class ConfigService {
     try {
       const content = await fs.readFile(NOTIFICATIONS_FILE, 'utf-8');
       const parsed = yaml.parse(content);
-      return parsed.notifications || {
+      const defaults: NotificationConfig = {
         triggers: {
-          onEveryRun: false,
-          onNewUpdates: true,
-          onErrors: true,
-          onManualCheck: false,
+          sendSummaryOnScheduledRun: true,
+          sendIndividualReportsOnScheduledRun: false,
+          sendReportsWhenUpdatesFound: true,
+          sendReportsOnErrors: true,
+          sendReportsOnManualCheck: false,
         }
       };
+
+      const loaded: NotificationConfig = parsed.notifications || {};
+      const loadedTriggers: any = (loaded as any).triggers || {};
+
+      // Migrate legacy trigger keys if present
+      if (typeof loadedTriggers.onEveryRun === 'boolean') {
+        loadedTriggers.sendSummaryOnScheduledRun = loadedTriggers.onEveryRun;
+      }
+      if (typeof loadedTriggers.onNewUpdates === 'boolean') {
+        loadedTriggers.sendReportsWhenUpdatesFound = loadedTriggers.onNewUpdates;
+      }
+      if (typeof loadedTriggers.onErrors === 'boolean') {
+        loadedTriggers.sendReportsOnErrors = loadedTriggers.onErrors;
+      }
+      if (typeof loadedTriggers.onManualCheck === 'boolean') {
+        loadedTriggers.sendReportsOnManualCheck = loadedTriggers.onManualCheck;
+      }
+
+      const merged: NotificationConfig = {
+        ...defaults,
+        ...loaded,
+        triggers: {
+          ...defaults.triggers,
+          ...loadedTriggers,
+        }
+      };
+
+      return merged;
     } catch (error) {
       return {
         triggers: {
-          onEveryRun: false,
-          onNewUpdates: true,
-          onErrors: true,
-          onManualCheck: false,
+          sendSummaryOnScheduledRun: true,
+          sendIndividualReportsOnScheduledRun: false,
+          sendReportsWhenUpdatesFound: true,
+          sendReportsOnErrors: true,
+          sendReportsOnManualCheck: false,
         }
       };
     }

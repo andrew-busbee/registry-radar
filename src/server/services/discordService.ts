@@ -182,6 +182,33 @@ export class DiscordService {
     return this.sendEmbedNotification(config, embed);
   }
 
+  static async sendIndividualReports(
+    config: NotificationConfig['discord'],
+    containers: Array<{name: string, image: string, tag: string, status: string}>
+  ): Promise<boolean> {
+    const title = '📋 Individual Container Status Report';
+    const message = `Status report for all monitored containers:`;
+    
+    const fields = containers.map(container => ({
+      name: container.name,
+      value: `**Image:** \`${container.image}:${container.tag}\`\n**Status:** ${container.status}`,
+      inline: false
+    }));
+    
+    const embed: DiscordEmbed = {
+      title: `Registry Radar: ${title}`,
+      description: message,
+      color: 0x0099ff,
+      fields,
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: 'Registry Radar'
+      }
+    };
+
+    return this.sendEmbedNotification(config, embed);
+  }
+
   static async testNotification(config: NotificationConfig['discord']): Promise<boolean> {
     const title = '🧪 Test Notification';
     const message = 'This is a test notification from Registry Radar to verify your Discord webhook configuration.';

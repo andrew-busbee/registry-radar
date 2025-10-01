@@ -21,10 +21,11 @@ function AppContent() {
   const [cronConfig, setCronConfig] = useState<CronConfig>({ schedule: '0 9 * * *', enabled: true });
   const [notificationConfig, setNotificationConfig] = useState<NotificationConfig>({
     triggers: {
-      onEveryRun: false,
-      onNewUpdates: true,
-      onErrors: true,
-      onManualCheck: false,
+      sendSummaryOnScheduledRun: true,
+      sendIndividualReportsOnScheduledRun: false,
+      sendReportsWhenUpdatesFound: true,
+      sendReportsOnErrors: true,
+      sendReportsOnManualCheck: false,
     }
   });
   const [isLoading, setIsLoading] = useState(true);

@@ -81,6 +81,18 @@ export class PushoverService {
     return this.sendNotification(config, title, message, 'low');
   }
 
+  static async sendIndividualReports(
+    config: NotificationConfig['pushover'],
+    containers: Array<{name: string, image: string, tag: string, status: string}>
+  ): Promise<boolean> {
+    const title = 'Individual Container Status Report';
+    const message = `Status report for all monitored containers:\n\n${containers.map(container => 
+      `${container.name} (${container.image}:${container.tag})\nStatus: ${container.status}`
+    ).join('\n\n')}`;
+    
+    return this.sendNotification(config, title, message, 'normal');
+  }
+
   static async testNotification(config: NotificationConfig['pushover']): Promise<boolean> {
     const title = 'Test Notification';
     const message = 'This is a test notification from Registry Radar to verify your Pushover configuration.';

@@ -63,7 +63,7 @@ export class CronService {
     }
   }
 
-  static async runScheduledCheck(): Promise<void> {
+  static async runScheduledCheck(isManual: boolean = false): Promise<void> {
     try {
       const containers = await ConfigService.getContainers();
       
@@ -120,12 +120,33 @@ export class CronService {
       
       await ConfigService.saveContainerState(updatedStates);
       
-      // Send run completion notification
+      // Send run completion notification (summary)
       await NotificationService.sendRunNotification(
         containers.length,
         updatedStates.filter(state => state.hasUpdate).length,
-        0 // errors would be caught in the catch block
+        0, // errors would be caught in the catch block
+        isManual
       );
+
+      // Send individual container status reports
+      const containerStatuses = updatedStates.map(state => {
+        const container = containers.find(c => c.imagePath === state.image && c.tag === state.tag);
+        let status = 'Up to date';
+        if (state.hasUpdate) {
+          status = 'Update available';
+        } else if (state.hasNewerTag) {
+          status = `Newer version available: ${state.latestAvailableTag}`;
+        }
+        
+        return {
+          name: container?.name || state.image,
+          image: state.image,
+          tag: state.tag,
+          status
+        };
+      });
+
+      await NotificationService.sendIndividualContainerReports(containerStatuses, isManual);
       
       console.log('Scheduled check completed successfully');
       
@@ -139,7 +160,7 @@ export class CronService {
 
   static async runManualCheck(): Promise<void> {
     console.log('Running manual registry check...');
-    await this.runScheduledCheck();
+    await this.runScheduledCheck(true); // Pass true to indicate this is a manual check
   }
 
   static getCurrentTask(): cron.ScheduledTask | null {

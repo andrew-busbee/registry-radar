@@ -266,64 +266,89 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
       <div className="bg-card border border-border rounded-lg p-4">
         <SectionHeader icon={Bell} title="Notification Triggers" sectionKey="triggers" />
         {expanded.triggers && (
-        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="mt-3 space-y-4">
           <div className="flex items-start space-x-3">
-            <Toggle
-              checked={localConfig.triggers.onEveryRun}
-              onChange={(next) => updateLocalConfig(prev => ({
-                ...prev,
-                triggers: { ...prev.triggers, onEveryRun: next }
-              }))}
-              ariaLabel="On Every Scheduled Run"
-            />
-            <div>
-              <label className="font-medium text-foreground">On Every Scheduled Run</label>
-              <p className="text-sm text-muted-foreground">Send notification for every scheduled check, even if no updates are found</p>
+            <div className="flex-shrink-0 mt-1">
+              <Toggle
+                checked={localConfig.triggers.sendSummaryOnScheduledRun}
+                onChange={(next) => updateLocalConfig(prev => ({
+                  ...prev,
+                  triggers: { ...prev.triggers, sendSummaryOnScheduledRun: next }
+                }))}
+                ariaLabel="Send summary notifications on every scheduled run"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <label className="font-medium text-foreground">Send summary notifications on every scheduled run</label>
+              <p className="text-sm text-muted-foreground mt-1">Send a summary notification after each scheduled check showing total number of images checked, updates found, and errors</p>
             </div>
           </div>
           
           <div className="flex items-start space-x-3">
-            <Toggle
-              checked={localConfig.triggers.onNewUpdates}
-              onChange={(next) => updateLocalConfig(prev => ({
-                ...prev,
-                triggers: { ...prev.triggers, onNewUpdates: next }
-              }))}
-              ariaLabel="On New Updates Found"
-            />
-            <div>
-              <label className="font-medium text-foreground">On New Updates Found</label>
-              <p className="text-sm text-muted-foreground">Send notification when new container versions are detected</p>
+            <div className="flex-shrink-0 mt-1">
+              <Toggle
+                checked={localConfig.triggers.sendIndividualReportsOnScheduledRun}
+                onChange={(next) => updateLocalConfig(prev => ({
+                  ...prev,
+                  triggers: { ...prev.triggers, sendIndividualReportsOnScheduledRun: next }
+                }))}
+                ariaLabel="Send individual reports on every scheduled run"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <label className="font-medium text-foreground">Send individual reports on every scheduled run</label>
+              <p className="text-sm text-muted-foreground mt-1">Send detailed status report for each image after every scheduled check</p>
             </div>
           </div>
           
           <div className="flex items-start space-x-3">
-            <Toggle
-              checked={localConfig.triggers.onErrors}
-              onChange={(next) => updateLocalConfig(prev => ({
-                ...prev,
-                triggers: { ...prev.triggers, onErrors: next }
-              }))}
-              ariaLabel="On Errors"
-            />
-            <div>
-              <label className="font-medium text-foreground">On Errors</label>
-              <p className="text-sm text-muted-foreground">Send notification when registry checks fail</p>
+            <div className="flex-shrink-0 mt-1">
+              <Toggle
+                checked={localConfig.triggers.sendReportsWhenUpdatesFound}
+                onChange={(next) => updateLocalConfig(prev => ({
+                  ...prev,
+                  triggers: { ...prev.triggers, sendReportsWhenUpdatesFound: next }
+                }))}
+                ariaLabel="Send reports when updates found"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <label className="font-medium text-foreground">Send reports when updates found</label>
+              <p className="text-sm text-muted-foreground mt-1">Send notification when new versions are detected with a custom message for each updated image</p>
             </div>
           </div>
           
           <div className="flex items-start space-x-3">
-            <Toggle
-              checked={localConfig.triggers.onManualCheck}
-              onChange={(next) => updateLocalConfig(prev => ({
-                ...prev,
-                triggers: { ...prev.triggers, onManualCheck: next }
-              }))}
-              ariaLabel="On Manual Checks"
-            />
-            <div>
-              <label className="font-medium text-foreground">On Manual Checks</label>
-              <p className="text-sm text-muted-foreground">Send notification for manually triggered registry checks</p>
+            <div className="flex-shrink-0 mt-1">
+              <Toggle
+                checked={localConfig.triggers.sendReportsOnErrors}
+                onChange={(next) => updateLocalConfig(prev => ({
+                  ...prev,
+                  triggers: { ...prev.triggers, sendReportsOnErrors: next }
+                }))}
+                ariaLabel="Send reports on errors"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <label className="font-medium text-foreground">Send reports on errors</label>
+              <p className="text-sm text-muted-foreground mt-1">Send notification when registry checks fail</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0 mt-1">
+              <Toggle
+                checked={localConfig.triggers.sendReportsOnManualCheck}
+                onChange={(next) => updateLocalConfig(prev => ({
+                  ...prev,
+                  triggers: { ...prev.triggers, sendReportsOnManualCheck: next }
+                }))}
+                ariaLabel="Send the above reports on manual checks as well"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <label className="font-medium text-foreground">Send the above reports on manual checks as well</label>
+              <p className="text-sm text-muted-foreground mt-1">When enabled, manual checks will send the same notifications as scheduled runs based on the settings above</p>
             </div>
           </div>
         </div>

@@ -96,15 +96,38 @@ export class NotificationService {
     await this.sendExternalNotifications('error', undefined, undefined, undefined, message, container);
   }
 
-  static async sendRunNotification(totalContainers: number, updatesFound: number, errors: number): Promise<void> {
+  static async sendRunNotification(totalContainers: number, updatesFound: number, errors: number, isManual: boolean = false): Promise<void> {
     const config = await ConfigService.getNotificationConfig();
     
-    if (!config.triggers.onEveryRun) {
+    // For manual checks, only send if manual check notifications are enabled
+    if (isManual && !config.triggers.sendReportsOnManualCheck) {
+      return;
+    }
+    
+    // For scheduled runs, check the scheduled run trigger
+    if (!isManual && !config.triggers.sendSummaryOnScheduledRun) {
       return;
     }
 
     // Send external notifications for run completion
     await this.sendExternalRunNotifications(totalContainers, updatesFound, errors);
+  }
+
+  static async sendIndividualContainerReports(containers: Array<{name: string, image: string, tag: string, status: string}>, isManual: boolean = false): Promise<void> {
+    const config = await ConfigService.getNotificationConfig();
+    
+    // For manual checks, only send if manual check notifications are enabled
+    if (isManual && !config.triggers.sendReportsOnManualCheck) {
+      return;
+    }
+    
+    // For scheduled runs, check the scheduled run trigger
+    if (!isManual && !config.triggers.sendIndividualReportsOnScheduledRun) {
+      return;
+    }
+
+    // Send individual container status reports
+    await this.sendExternalIndividualReports(containers);
   }
 
   private static async sendExternalNotifications(
@@ -118,7 +141,7 @@ export class NotificationService {
     try {
       const config = await ConfigService.getNotificationConfig();
 
-      if (type === 'update' && config.triggers.onNewUpdates) {
+      if (type === 'update' && config.triggers.sendReportsWhenUpdatesFound) {
         if (containerName && image && tag) {
           // Send update notifications
           if (config.pushover?.enabled) {
@@ -131,7 +154,7 @@ export class NotificationService {
             await EmailService.sendUpdateNotification(config.email, containerName, image, tag);
           }
         }
-      } else if (type === 'error' && config.triggers.onErrors) {
+      } else if (type === 'error' && config.triggers.sendReportsOnErrors) {
         if (errorMessage) {
           // Send error notifications
           if (config.pushover?.enabled) {
@@ -170,6 +193,27 @@ export class NotificationService {
       }
     } catch (error) {
       console.error('Error sending run notifications:', error);
+    }
+  }
+
+  private static async sendExternalIndividualReports(
+    containers: Array<{name: string, image: string, tag: string, status: string}>
+  ): Promise<void> {
+    try {
+      const config = await ConfigService.getNotificationConfig();
+
+      // Send individual container status reports
+      if (config.pushover?.enabled) {
+        await PushoverService.sendIndividualReports(config.pushover, containers);
+      }
+      if (config.discord?.enabled) {
+        await DiscordService.sendIndividualReports(config.discord, containers);
+      }
+      if (config.email?.enabled) {
+        await EmailService.sendIndividualReports(config.email, containers);
+      }
+    } catch (error) {
+      console.error('Error sending individual reports:', error);
     }
   }
 }
