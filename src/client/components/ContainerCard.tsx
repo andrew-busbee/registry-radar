@@ -283,7 +283,7 @@ export function ContainerCard({
                 <div className="flex items-start gap-2">
                   <div className="text-blue-600 dark:text-blue-400 text-sm">💡</div>
                   <div className="text-xs text-blue-700 dark:text-blue-300">
-                    <strong>Tip:</strong> Consider monitoring the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">latest</code> tag instead of v-prefixed versions like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> to ensure automatic update notifications when new versions are released.
+                    <strong>Warning:</strong> Consider monitoring the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">latest</code> tag instead of v-prefixed versions like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> to ensure automatic update notifications when new versions are released.
                   </div>
                 </div>
               </div>
