@@ -19,9 +19,7 @@ export class AppriseTemplates {
   static updateAvailable(containerName: string, image: string, tag: string, updatedDate?: string): { title: string; body: string } {
     return {
       title: '📡 Registry Radar: Monitored Image Update Available',
-      body: `📡 Registry Radar: Monitored Image Update Available
-
-Name: ${containerName}
+      body: `Name: ${containerName}
 Image: ${image}:${tag}
 ${updatedDate ? `Image Updated: ${updatedDate}` : ''}
 
@@ -33,9 +31,7 @@ Registry Radar - Simple Docker Image Monitoring`
   static errorOccurred(errorMessage: string, container?: string): { title: string; body: string } {
     return {
       title: '📡 Registry Radar Image Check Error',
-      body: `📡 Registry Radar Image Check Error
-
-An error occurred during the registry check:
+      body: `An error occurred during the registry check:
 
 Name: ${container || 'N/A'}
 Error Details:
@@ -51,9 +47,7 @@ Registry Radar - Simple Docker Image Monitoring`
   static checkComplete(totalImages: number, updatesFound: number, errors: number): { title: string; body: string } {
     return {
       title: '📡 Registry Radar Check Complete',
-      body: `📡 Registry Radar Check Complete
-
-Scheduled registry check has completed with the following results:
+      body: `Scheduled registry check has completed with the following results:
 
 Total Images Checked: ${totalImages}
 Updates Found: ${updatesFound}
@@ -73,9 +67,7 @@ Registry Radar - Simple Docker Image Monitoring`
 
     return {
       title: '📡 Registry Radar Image Status Report',
-      body: `📡 Registry Radar Image Status Report
-
-Status report for all monitored images:
+      body: `Status report for all monitored images:
 
 ${containerList}
 
@@ -87,9 +79,7 @@ Registry Radar - Simple Docker Image Monitoring`
   static testNotification(): { title: string; body: string } {
     return {
       title: '📡 Registry Radar Test Notification',
-      body: `📡 Registry Radar Test Notification
-
-This is a test notification from Registry Radar.
+      body: `This is a test notification from Registry Radar.
 
 ✅ Success: If you received this message, your Apprise configuration is working correctly!
 
