@@ -99,16 +99,21 @@ export class NotificationService {
   static async sendRunNotification(totalContainers: number, updatesFound: number, errors: number, isManual: boolean = false): Promise<void> {
     const config = await ConfigService.getNotificationConfig();
     
-    // For manual checks, only send if manual check notifications are enabled
-    if (isManual && !config.triggers.sendReportsOnManualCheck) {
+    console.log(`[NotificationService] sendRunNotification called - isManual: ${isManual}, sendReportsOnManualCheck: ${config.triggers.sendReportsOnManualCheck}, sendSummaryOnScheduledRun: ${config.triggers.sendSummaryOnScheduledRun}`);
+    
+    // For manual checks, only send if manual check notifications are enabled AND summary is enabled
+    if (isManual && (!config.triggers.sendReportsOnManualCheck || !config.triggers.sendSummaryOnScheduledRun)) {
+      console.log('[NotificationService] Skipping run notification for manual check - conditions not met');
       return;
     }
     
     // For scheduled runs, check the scheduled run trigger
     if (!isManual && !config.triggers.sendSummaryOnScheduledRun) {
+      console.log('[NotificationService] Skipping run notification for scheduled run - trigger disabled');
       return;
     }
 
+    console.log('[NotificationService] Sending run notification');
     // Send external notifications for run completion
     await this.sendExternalRunNotifications(totalContainers, updatesFound, errors);
   }
@@ -116,16 +121,21 @@ export class NotificationService {
   static async sendIndividualContainerReports(containers: Array<{name: string, image: string, tag: string, status: string}>, isManual: boolean = false): Promise<void> {
     const config = await ConfigService.getNotificationConfig();
     
-    // For manual checks, only send if manual check notifications are enabled
-    if (isManual && !config.triggers.sendReportsOnManualCheck) {
+    console.log(`[NotificationService] sendIndividualContainerReports called - isManual: ${isManual}, sendReportsOnManualCheck: ${config.triggers.sendReportsOnManualCheck}, sendIndividualReportsOnScheduledRun: ${config.triggers.sendIndividualReportsOnScheduledRun}`);
+    
+    // For manual checks, only send if manual check notifications are enabled AND individual reports are enabled
+    if (isManual && (!config.triggers.sendReportsOnManualCheck || !config.triggers.sendIndividualReportsOnScheduledRun)) {
+      console.log('[NotificationService] Skipping individual reports for manual check - conditions not met');
       return;
     }
     
     // For scheduled runs, check the scheduled run trigger
     if (!isManual && !config.triggers.sendIndividualReportsOnScheduledRun) {
+      console.log('[NotificationService] Skipping individual reports for scheduled run - trigger disabled');
       return;
     }
 
+    console.log('[NotificationService] Sending individual container reports');
     // Send individual container status reports
     await this.sendExternalIndividualReports(containers);
   }

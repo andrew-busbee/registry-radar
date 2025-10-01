@@ -144,13 +144,13 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
   const tabs = [
     {
       id: 'general' as const,
-      label: 'General',
+      label: 'Schedule Settings',
       icon: SettingsIcon,
       description: 'Cron schedule and basic settings'
     },
     {
       id: 'notifications' as const,
-      label: 'Notifications',
+      label: 'Notification Settings',
       icon: Bell,
       description: 'Discord, Pushover, and notification triggers'
     }

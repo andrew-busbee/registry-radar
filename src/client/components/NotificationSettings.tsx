@@ -60,6 +60,23 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     setHasLocalChanges(true);
   };
 
+  // Helper to update trigger config and auto-save
+  const updateTriggerConfig = async (updater: (prev: NotificationConfig) => NotificationConfig) => {
+    const newConfig = updater(localConfig);
+    setLocalConfig(newConfig);
+    setHasLocalChanges(false); // Clear the flag since we're auto-saving
+    
+    // Auto-save trigger changes
+    try {
+      await onUpdateConfig(newConfig);
+      setSuccess('Settings saved automatically');
+      setTimeout(() => setSuccess(null), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save settings');
+      setHasLocalChanges(true); // Mark as changed if save failed
+    }
+  };
+
   const handleTestPushover = async () => {
     setTesting('pushover');
     try {
@@ -271,7 +288,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <div className="flex-shrink-0 mt-1">
               <Toggle
                 checked={localConfig.triggers.sendSummaryOnScheduledRun}
-                onChange={(next) => updateLocalConfig(prev => ({
+                onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendSummaryOnScheduledRun: next }
                 }))}
@@ -288,7 +305,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <div className="flex-shrink-0 mt-1">
               <Toggle
                 checked={localConfig.triggers.sendIndividualReportsOnScheduledRun}
-                onChange={(next) => updateLocalConfig(prev => ({
+                onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendIndividualReportsOnScheduledRun: next }
                 }))}
@@ -305,7 +322,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <div className="flex-shrink-0 mt-1">
               <Toggle
                 checked={localConfig.triggers.sendReportsWhenUpdatesFound}
-                onChange={(next) => updateLocalConfig(prev => ({
+                onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendReportsWhenUpdatesFound: next }
                 }))}
@@ -322,7 +339,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <div className="flex-shrink-0 mt-1">
               <Toggle
                 checked={localConfig.triggers.sendReportsOnErrors}
-                onChange={(next) => updateLocalConfig(prev => ({
+                onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendReportsOnErrors: next }
                 }))}
@@ -339,7 +356,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <div className="flex-shrink-0 mt-1">
               <Toggle
                 checked={localConfig.triggers.sendReportsOnManualCheck}
-                onChange={(next) => updateLocalConfig(prev => ({
+                onChange={(next) => updateTriggerConfig(prev => ({
                   ...prev,
                   triggers: { ...prev.triggers, sendReportsOnManualCheck: next }
                 }))}

@@ -8,7 +8,16 @@ export class EmailService {
     htmlContent: string,
     textContent: string
   ): Promise<boolean> {
+    console.log('[EmailService] sendNotification called with config:', {
+      enabled: config?.enabled,
+      host: config?.host,
+      port: config?.port,
+      username: config?.username,
+      toEmails: config?.toEmails
+    });
+    
     if (!config || !config.enabled) {
+      console.log('[EmailService] Email notifications disabled or config missing');
       return false;
     }
 
@@ -77,7 +86,7 @@ Image: ${image}:${tag}
 Please update your container to get the latest version.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Registry Radar - Docker Container Monitoring
+Registry Radar - Docker Image Monitoring
     `.trim();
 
     const htmlContent = `
@@ -110,7 +119,7 @@ Registry Radar - Docker Container Monitoring
       <p>Please update your container to get the latest version.</p>
     </div>
     <div class="footer">
-      Registry Radar - Docker Container Monitoring<br>
+      Registry Radar - Docker Image Monitoring<br>
       Automated notification system
     </div>
   </div>
@@ -139,7 +148,7 @@ ${container ? `Container: ${container}\n` : ''}Error: ${errorMessage}
 Please check your container configuration and try again.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Registry Radar - Docker Container Monitoring
+Registry Radar - Docker Image Monitoring
     `.trim();
 
     const htmlContent = `
@@ -171,7 +180,7 @@ Registry Radar - Docker Container Monitoring
       <p>Please check your container configuration and try again.</p>
     </div>
     <div class="footer">
-      Registry Radar - Docker Container Monitoring<br>
+      Registry Radar - Docker Image Monitoring<br>
       Automated notification system
     </div>
   </div>
@@ -201,7 +210,7 @@ Updates Found: ${updatesFound}
 Errors: ${errors}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Registry Radar - Docker Container Monitoring
+Registry Radar - Docker Image Monitoring
     `.trim();
 
     const htmlContent = `
@@ -244,7 +253,7 @@ Registry Radar - Docker Container Monitoring
       </div>
     </div>
     <div class="footer">
-      Registry Radar - Docker Container Monitoring<br>
+      Registry Radar - Docker Image Monitoring<br>
       Automated notification system
     </div>
   </div>
@@ -274,7 +283,7 @@ Status: ${container.status}`
 ).join('\n\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Registry Radar - Docker Container Monitoring
+Registry Radar - Docker Image Monitoring
     `.trim();
 
     const htmlContent = `
@@ -312,7 +321,7 @@ Registry Radar - Docker Container Monitoring
       `).join('')}
     </div>
     <div class="footer">
-      Registry Radar - Docker Container Monitoring<br>
+      Registry Radar - Docker Image Monitoring<br>
       Automated notification system
     </div>
   </div>
@@ -326,6 +335,14 @@ Registry Radar - Docker Container Monitoring
   static async sendTestNotification(
     config: NotificationConfig['email']
   ): Promise<boolean> {
+    console.log('[EmailService] sendTestNotification called with config:', {
+      enabled: config?.enabled,
+      host: config?.host,
+      port: config?.port,
+      username: config?.username,
+      toEmails: config?.toEmails
+    });
+    
     const subject = 'Registry Radar - Test Email';
     
     const textContent = `
@@ -334,7 +351,7 @@ This is a test email from Registry Radar.
 If you received this email, your SMTP configuration is working correctly!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Registry Radar - Docker Container Monitoring
+Registry Radar - Docker Image Monitoring
     `.trim();
 
     const htmlContent = `
@@ -370,7 +387,7 @@ Registry Radar - Docker Container Monitoring
       </ul>
     </div>
     <div class="footer">
-      Registry Radar - Docker Container Monitoring<br>
+      Registry Radar - Docker Image Monitoring<br>
       Automated notification system
     </div>
   </div>

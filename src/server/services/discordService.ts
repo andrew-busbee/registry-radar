@@ -83,8 +83,8 @@ export class DiscordService {
     image: string,
     tag: string
   ): Promise<boolean> {
-    const title = '📦 Container Update Available';
-    const message = `A new version is available for one of your monitored containers.`;
+    const title = '📦 Image Update Available';
+    const message = `A new version is available for the following image:`;
     
     const fields = [
       {
@@ -94,7 +94,7 @@ export class DiscordService {
       },
       {
         name: 'Image',
-        value: `\`${image}:${tag}\``,
+        value: `\`${image}\``,
         inline: true
       }
     ];
@@ -149,7 +149,7 @@ export class DiscordService {
     updatesFound: number,
     errors: number
   ): Promise<boolean> {
-    const title = '🔍 Registry Check Complete';
+    const title = '🔍 Check Complete';
     const message = `Scheduled registry check has completed.`;
     
     const embed: DiscordEmbed = {
@@ -158,7 +158,7 @@ export class DiscordService {
       color: 0x0099ff,
       fields: [
         {
-          name: 'Total Containers',
+          name: 'Total Containers Checked',
           value: totalContainers.toString(),
           inline: true
         },

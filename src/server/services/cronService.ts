@@ -160,7 +160,9 @@ export class CronService {
 
   static async runManualCheck(): Promise<void> {
     console.log('Running manual registry check...');
+    console.log('[CronService] Manual check started');
     await this.runScheduledCheck(true); // Pass true to indicate this is a manual check
+    console.log('[CronService] Manual check completed');
   }
 
   static getCurrentTask(): cron.ScheduledTask | null {

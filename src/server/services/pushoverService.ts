@@ -50,8 +50,8 @@ export class PushoverService {
     image: string,
     tag: string
   ): Promise<boolean> {
-    const title = 'Container Update Available';
-    const message = `New version available for ${containerName}\nImage: ${image}:${tag}`;
+    const title = 'Image Update Available';
+    const message = `New version available for ${containerName}\nImage: ${image}`;
     
     return this.sendNotification(config, title, message, 'normal');
   }
@@ -75,8 +75,8 @@ export class PushoverService {
     updatesFound: number,
     errors: number
   ): Promise<boolean> {
-    const title = 'Registry Check Complete';
-    const message = `Checked ${totalContainers} containers\nUpdates found: ${updatesFound}\nErrors: ${errors}`;
+    const title = 'Check Complete';
+    const message = `Checked ${totalContainers} images\nUpdates found: ${updatesFound}\nErrors: ${errors}`;
     
     return this.sendNotification(config, title, message, 'low');
   }
