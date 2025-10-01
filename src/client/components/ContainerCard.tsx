@@ -105,7 +105,7 @@ export function ContainerCard({
     }
     
     if (containerState.isNew) {
-      return 'New image to monitor';
+      return 'New image added. Will compare with registry on next scheduled or manual check';
     }
     
     if (containerState.hasUpdate || containerState.hasNewerTag) {
