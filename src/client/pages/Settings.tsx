@@ -183,7 +183,11 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
               <div>
                 <h3 className="font-medium text-foreground">Enable Automatic Checks</h3>
                 <p className="text-sm text-muted-foreground">
-                  Automatically check for container updates based on the schedule below
+                  Automatically check for container updates based on the schedule below.  Once a day is recommended.
+                  {" "}
+                  <span className="text-red-600">
+                    Note: Be aware that running the checks too often can cause rate limiting for docker hub hosted images. You can increase the rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account) by adding your docker credentials to the docker environment variables DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD
+                  </span>
                 </p>
               </div>
               <button
