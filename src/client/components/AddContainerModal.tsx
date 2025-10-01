@@ -78,20 +78,6 @@ export function AddContainerModal({ isOpen, onClose, onAdd }: AddContainerModalP
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
-              Name *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-              placeholder="e.g., My App"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
               Image Path *
             </label>
             <input
@@ -103,13 +89,27 @@ export function AddContainerModal({ isOpen, onClose, onAdd }: AddContainerModalP
                 const lastSlash = value.lastIndexOf('/');
                 const lastColon = value.lastIndexOf(':');
                 const hasDigest = value.includes('@sha256:');
+                
                 if (!hasDigest && lastColon > lastSlash && (formData.tag || '').trim() === '') {
                   const pathOnly = value.substring(0, lastColon);
                   const tagPart = value.substring(lastColon + 1);
-                  setFormData({ ...formData, imagePath: pathOnly, tag: tagPart });
-                  setInfo(`Extracted tag "${tagPart}" from image path`);
+                  // Auto-fill name from image path (same logic as bulk import)
+                  const autoName = pathOnly.split('/').pop() || pathOnly;
+                  setFormData({ 
+                    ...formData, 
+                    imagePath: pathOnly, 
+                    tag: tagPart,
+                    name: (formData.name || '').trim() === '' ? autoName : formData.name
+                  });
+                  setInfo(`Extracted tag "${tagPart}" and name "${autoName}" from image path`);
                 } else {
-                  setFormData({ ...formData, imagePath: value });
+                  // Auto-fill name from image path even without tag
+                  const autoName = value.split('/').pop() || value;
+                  setFormData({ 
+                    ...formData, 
+                    imagePath: value,
+                    name: (formData.name || '').trim() === '' ? autoName : formData.name
+                  });
                   setInfo(null);
                 }
               }}
@@ -123,6 +123,20 @@ export function AddContainerModal({ isOpen, onClose, onAdd }: AddContainerModalP
             {info && (
               <p className="text-xs text-blue-600 mt-1">{info}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Name *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+              placeholder="e.g., My App"
+              required
+            />
           </div>
 
           <div>

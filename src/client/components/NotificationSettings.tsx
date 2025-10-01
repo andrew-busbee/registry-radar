@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Bell, Smartphone, MessageSquare, TestTube, Plus, Trash2, Mail, ChevronDown, ChevronRight } from 'lucide-react';
+import { Save, Bell, Smartphone, MessageSquare, TestTube, Plus, Trash2, Mail, ChevronDown, ChevronRight, Zap } from 'lucide-react';
 import { NotificationConfig } from '../types';
 
 interface NotificationSettingsProps {
@@ -19,6 +19,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     discord: !!config.discord?.enabled,
     pushover: !!config.pushover?.enabled,
     email: !!config.email?.enabled,
+    apprise: !!config.apprise?.enabled,
   });
 
   // Only sync with parent config if we don't have unsaved local changes
@@ -30,6 +31,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         discord: !!config.discord?.enabled,
         pushover: !!config.pushover?.enabled,
         email: !!config.email?.enabled,
+        apprise: !!config.apprise?.enabled,
       }));
     }
   }, [config, hasLocalChanges]);
@@ -97,6 +99,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send test notification');
+      // Auto-clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     } finally {
       setTesting(null);
     }
@@ -122,6 +126,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send test notification');
+      // Auto-clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     } finally {
       setTesting(null);
     }
@@ -147,9 +153,74 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send test email');
+      // Auto-clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     } finally {
       setTesting(null);
     }
+  };
+
+  const handleTestApprise = async () => {
+    setTesting('apprise');
+    try {
+      // Save settings first
+      await onUpdateConfig(localConfig);
+      setHasLocalChanges(false);
+      
+      const response = await fetch('/api/notification-config/test/apprise', {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        setSuccess('Apprise test notification sent successfully');
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to send test notification');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send test notification');
+      // Auto-clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setTesting(null);
+    }
+  };
+
+  const addAppriseChannel = () => {
+    updateLocalConfig(prev => ({
+      ...prev,
+      apprise: {
+        ...prev.apprise,
+        enabled: prev.apprise?.enabled || false,
+        channels: [
+          ...(prev.apprise?.channels || []),
+          { name: '', url: '', enabled: true }
+        ]
+      }
+    }));
+  };
+
+  const removeAppriseChannel = (index: number) => {
+    updateLocalConfig(prev => ({
+      ...prev,
+      apprise: {
+        ...prev.apprise!,
+        channels: prev.apprise!.channels.filter((_, i) => i !== index)
+      }
+    }));
+  };
+
+  const updateAppriseChannel = (index: number, field: 'name' | 'url' | 'enabled', value: string | boolean) => {
+    updateLocalConfig(prev => ({
+      ...prev,
+      apprise: {
+        ...prev.apprise!,
+        channels: prev.apprise!.channels.map((channel, i) => 
+          i === index ? { ...channel, [field]: value } : channel
+        )
+      }
+    }));
   };
 
   const addDiscordWebhook = () => {
@@ -369,6 +440,134 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             </div>
           </div>
         </div>
+        )}
+      </div>
+
+      {/* Apprise Settings */}
+      <div className="bg-card border border-border rounded-lg p-4">
+        <SectionHeader
+          icon={Zap}
+          title="Apprise Notifications"
+          sectionKey="apprise"
+          toggle={
+            <div className="inline-flex items-center gap-2 text-sm" onClick={(e) => e.stopPropagation()}>
+              <span className="text-muted-foreground">Enable</span>
+              <Toggle
+                checked={localConfig.apprise?.enabled || false}
+                onChange={(next) => {
+                  updateLocalConfig(prev => ({
+                    ...prev,
+                    apprise: {
+                      ...prev.apprise,
+                      enabled: next,
+                      channels: next
+                        ? (prev.apprise?.channels || [])
+                        : (prev.apprise?.channels || [])
+                    }
+                  }));
+                  setExpanded(prev => ({ ...prev, apprise: next }));
+                }}
+                ariaLabel="Enable Apprise"
+              />
+            </div>
+          }
+        />
+        {!localConfig.apprise?.enabled && !expanded.apprise && (
+          <p className="mt-2 text-sm text-muted-foreground">Enable Apprise to configure notification channels</p>
+        )}
+
+        {expanded.apprise && (
+          <div className="mt-4 space-y-4">
+            {localConfig.apprise?.enabled ? (
+              <>
+                <div>
+                  <h4 className="font-medium text-foreground mb-3">Notification Channels</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Configure Apprise notification channels. Each channel can send to different services like Discord, Slack, Email, etc.
+                  </p>
+                  <button
+                    onClick={addAppriseChannel}
+                    className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Channel</span>
+                  </button>
+                </div>
+
+                {localConfig.apprise?.channels?.map((channel, index) => (
+                  <div key={index} className="border border-border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium text-foreground">Channel {index + 1}</h5>
+                      <button
+                        onClick={() => removeAppriseChannel(index)}
+                        className="text-destructive hover:text-destructive/80 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1">Channel Name</label>
+                        <input
+                          type="text"
+                          value={channel.name}
+                          onChange={(e) => updateAppriseChannel(index, 'name', e.target.value)}
+                          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                          placeholder="e.g., Discord Alerts"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={channel.enabled}
+                            onChange={(e) => updateAppriseChannel(index, 'enabled', e.target.checked)}
+                            className="rounded border-input"
+                          />
+                          <span className="text-sm text-foreground">Enabled</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">Apprise URL</label>
+                      <input
+                        type="text"
+                        value={channel.url}
+                        onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
+                        className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                        placeholder="e.g., discord://webhook_id/webhook_token"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Supported formats: discord://, slack://, mailto://, pushover://, etc. 
+                        <a href="https://github.com/caronc/apprise#supported-notifications" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                          See all supported services
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {(!localConfig.apprise?.channels || localConfig.apprise.channels.length === 0) && (
+                  <p className="text-muted-foreground text-center py-4">
+                    No channels configured. Click "Add Channel" to add your first Apprise channel.
+                  </p>
+                )}
+
+                <div>
+                  <button
+                    onClick={handleTestApprise}
+                    disabled={testing === 'apprise' || !localConfig.apprise?.channels?.some(c => c.url && c.enabled)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
+                  >
+                    <TestTube className="w-4 h-4" />
+                    <span>{testing === 'apprise' ? 'Testing...' : 'Test Apprise'}</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Enable Apprise to configure notification channels</p>
+            )}
+          </div>
         )}
       </div>
 
@@ -745,6 +944,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         </div>
         )}
       </div>
+
 
       {/* Sticky action bar for smaller screens */}
       <div className="sm:hidden sticky bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border p-3 mt-2">

@@ -9,6 +9,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+      - APPRISE_URL=http://apprise:8000
       # Docker Hub Authentication (optional)
       # Increases rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account)
       # Uncomment and set your credentials to enable:
@@ -21,6 +22,24 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - registry-radar-network
+
+  apprise:
+    image: caronc/apprise:latest
+    container_name: apprise
+    ports:
+      - "8000:8000"
+    environment:
+      - APPRISE_ALLOW_HOSTS=registry-radar # Only allow connections from registry-radar container
+    restart: unless-stopped
+    networks:
+      - registry-radar-network
 
 volumes:
   data:
+
+networks:
+  registry-radar-network:
+    driver: bridge
+    name: registry-radar-network

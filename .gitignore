@@ -7,6 +7,7 @@
 # ===========================================
 # Docker override files (local development)
 docker-compose.override.yml
+docker-compose.dev.yml
 
 # Documentation files (not needed in repo)
 AUTHENTICATION.md
@@ -16,6 +17,8 @@ DEMO.md
 # Setup scripts (not needed in repo)
 setup.bat
 setup.sh
+dev-up.bat
+dev-down.bat
 
 # ===========================================
 # Data directory (runtime configuration)

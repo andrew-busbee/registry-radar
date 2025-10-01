@@ -221,12 +221,26 @@ export function ContainerCard({
                 const lastSlash = value.lastIndexOf('/');
                 const lastColon = value.lastIndexOf(':');
                 const hasDigest = value.includes('@sha256:');
+                
                 if (!hasDigest && lastColon > lastSlash && (editData.tag || '').trim() === '') {
                   const pathOnly = value.substring(0, lastColon);
                   const tagPart = value.substring(lastColon + 1);
-                  setEditData({ ...editData, imagePath: pathOnly, tag: tagPart });
+                  // Auto-fill name from image path (same logic as bulk import)
+                  const autoName = pathOnly.split('/').pop() || pathOnly;
+                  setEditData({ 
+                    ...editData, 
+                    imagePath: pathOnly, 
+                    tag: tagPart,
+                    name: (editData.name || '').trim() === '' ? autoName : editData.name
+                  });
                 } else {
-                  setEditData({ ...editData, imagePath: value });
+                  // Auto-fill name from image path even without tag
+                  const autoName = value.split('/').pop() || value;
+                  setEditData({ 
+                    ...editData, 
+                    imagePath: value,
+                    name: (editData.name || '').trim() === '' ? autoName : editData.name
+                  });
                 }
               }}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"

@@ -5,6 +5,7 @@ import { ConfigService } from './configService';
 import { PushoverService } from './pushoverService';
 import { DiscordService } from './discordService';
 import { EmailService } from './emailService';
+import { AppriseService } from './appriseService';
 
 const NOTIFICATIONS_FILE = path.join(process.cwd(), 'data', 'notifications.json');
 
@@ -175,6 +176,9 @@ export class NotificationService {
           if (config.email?.enabled) {
             await EmailService.sendUpdateNotification(config.email, containerName, image, tag);
           }
+          if (config.apprise?.enabled) {
+            await AppriseService.sendUpdateNotification(config.apprise, containerName, image, tag);
+          }
         }
       } else if (type === 'error' && config.triggers.sendReportsOnErrors) {
         if (errorMessage) {
@@ -187,6 +191,9 @@ export class NotificationService {
           }
           if (config.email?.enabled) {
             await EmailService.sendErrorNotification(config.email, errorMessage, errorContainer);
+          }
+          if (config.apprise?.enabled) {
+            await AppriseService.sendErrorNotification(config.apprise, errorMessage, errorContainer);
           }
         }
       }
@@ -213,6 +220,9 @@ export class NotificationService {
       if (config.email?.enabled) {
         await EmailService.sendRunNotification(config.email, totalContainers, updatesFound, errors);
       }
+      if (config.apprise?.enabled) {
+        await AppriseService.sendRunNotification(config.apprise, totalContainers, updatesFound, errors);
+      }
     } catch (error) {
       console.error('Error sending run notifications:', error);
     }
@@ -233,6 +243,9 @@ export class NotificationService {
       }
       if (config.email?.enabled) {
         await EmailService.sendIndividualReports(config.email, containers);
+      }
+      if (config.apprise?.enabled) {
+        await AppriseService.sendIndividualReports(config.apprise, containers);
       }
     } catch (error) {
       console.error('Error sending individual reports:', error);

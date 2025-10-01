@@ -3,6 +3,7 @@ import { ConfigService } from '../services/configService';
 import { PushoverService } from '../services/pushoverService';
 import { DiscordService } from '../services/discordService';
 import { EmailService } from '../services/emailService';
+import { AppriseService } from '../services/appriseService';
 
 const router = express.Router();
 
@@ -129,6 +130,27 @@ router.post('/test/email', async (req, res) => {
   } catch (error) {
     console.error('Error testing email notification:', error);
     res.status(500).json({ error: 'Failed to test email notification' });
+  }
+});
+
+router.post('/test/apprise', async (req, res) => {
+  try {
+    const config = await ConfigService.getNotificationConfig();
+    
+    if (!config.apprise?.enabled) {
+      return res.status(400).json({ error: 'Apprise notifications are not enabled' });
+    }
+
+    const success = await AppriseService.sendTestNotification(config.apprise);
+    
+    if (success) {
+      res.json({ message: 'Apprise test notification sent successfully' });
+    } else {
+      res.status(500).json({ error: 'Failed to send Apprise test notification' });
+    }
+  } catch (error) {
+    console.error('Error testing Apprise notification:', error);
+    res.status(500).json({ error: 'Failed to test Apprise notification' });
   }
 });
 

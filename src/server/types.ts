@@ -60,6 +60,17 @@ export interface RegistryCheckResult {
   latestAvailableUpdated?: string;
 }
 
+export interface AppriseChannel {
+  name: string;
+  url: string;
+  enabled: boolean;
+}
+
+export interface AppriseConfig {
+  enabled: boolean;
+  channels: AppriseChannel[];
+}
+
 export interface NotificationConfig {
   pushover?: {
     enabled: boolean;
@@ -84,6 +95,7 @@ export interface NotificationConfig {
     fromName?: string;
     toEmails: string[];
   };
+  apprise?: AppriseConfig;
   triggers: {
     sendSummaryOnScheduledRun: boolean;
     sendIndividualReportsOnScheduledRun: boolean;
