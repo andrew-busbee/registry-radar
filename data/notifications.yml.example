@@ -21,3 +21,14 @@ notifications:
         url: "https://discord.com/api/webhooks/..."
       - name: "Development Updates"
         url: "https://discord.com/api/webhooks/..."
+
+  # Email configuration (optional)
+  email:
+    enabled: false
+    host: "smtp.gmail.com"        # Your email provider's SMTP server
+    port: 587                     # Usually 587 for STARTTLS or 465 for SSL
+    username: "your-email@gmail.com"
+    password: "your-app-password" # Use app-specific passwords for Gmail
+    fromEmail: "your-email@gmail.com"  # Optional: custom sender email
+    fromName: "Registry Radar"    # Optional: custom sender name
+    toEmails: ["admin@company.com", "dev-team@company.com"]
