@@ -10,6 +10,9 @@ interface ParsedImage {
 }
 
 export class RegistryService {
+  // Token cache to reduce API calls
+  private static tokenCache: Map<string, { token: string; expiresAt: number }> = new Map();
+
   // Registry-specific delays to handle rate limiting
   private static readonly REGISTRY_DELAYS = {
     'registry-1.docker.io': 500,   // 500ms for Docker Hub (reduced from 2s)
@@ -19,7 +22,7 @@ export class RegistryService {
 
   // Registry-specific max retries
   private static readonly REGISTRY_MAX_RETRIES = {
-    'registry-1.docker.io': 2,     // 2 retries for Docker Hub (reduced from 5)
+    'registry-1.docker.io': 0,     // 0 retries for Docker Hub (fail fast to reduce API calls)
     'ghcr.io': 1,                  // 1 retry for GHCR (reduced from 3)
     'lscr.io': 1,                  // 1 retry for LSCR (reduced from 3)
   } as const;
@@ -37,6 +40,39 @@ export class RegistryService {
   // Helper method to sleep for a specified duration
   private static async sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Helper method to get cached token
+  private static getCachedToken(cacheKey: string): string | null {
+    const cached = this.tokenCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      console.log(`[Registry] Using cached token`, { cacheKey, expiresIn: Math.round((cached.expiresAt - Date.now()) / 1000) + 's' });
+      return cached.token;
+    }
+    if (cached) {
+      this.tokenCache.delete(cacheKey); // Clean up expired token
+    }
+    return null;
+  }
+
+  // Helper method to cache token
+  private static cacheToken(cacheKey: string, token: string, expiresIn: number = 300): void {
+    const expiresAt = Date.now() + (expiresIn * 1000); // Default 5 minutes
+    this.tokenCache.set(cacheKey, { token, expiresAt });
+    console.log(`[Registry] Cached token`, { cacheKey, expiresIn: expiresIn + 's' });
+  }
+
+  // Helper method to get Docker Hub credentials from environment variables
+  private static getDockerHubCredentials(): { username: string; password: string } | null {
+    const username = process.env.DOCKERHUB_USERNAME;
+    const password = process.env.DOCKERHUB_PASSWORD;
+    
+    if (username && password) {
+      console.log(`[DockerHub] Using authenticated access`, { username });
+      return { username, password };
+    }
+    
+    return null;
   }
 
   // Helper method to normalize SHA values for consistent comparison
@@ -285,20 +321,54 @@ export class RegistryService {
       const scope = scopeMatch?.[1] || `repository:${repository}:pull`;
       if (!realm || !service) throw new Error(`Malformed WWW-Authenticate header from ${host}`);
 
-      console.log(`[Registry] Token request`, { realm, service, scope });
-      const tokenResp = await axios.get(realm, {
-        params: { service, scope },
-        timeout: 15000, // Increased timeout for token requests
-        validateStatus: () => true,
-      });
+      // Check token cache first
+      const tokenCacheKey = `${host}:${service}:${scope}`;
+      let token = this.getCachedToken(tokenCacheKey);
       
-      console.log(`[Registry] Token response`, { status: tokenResp.status, hasToken: !!tokenResp.data?.token });
-      if (tokenResp.status !== 200 || !tokenResp.data?.token) {
-        console.warn(`[Registry] Token request failed`, { status: tokenResp.status, data: tokenResp.data });
-        throw new Error(`Token service failed with status ${tokenResp.status}: ${JSON.stringify(tokenResp.data)}`);
-      }
+      if (!token) {
+        // Check if Docker Hub credentials are available for authenticated requests
+        const credentials = host === 'registry-1.docker.io' ? this.getDockerHubCredentials() : null;
+        const isAuthenticated = !!credentials;
+        
+        console.log(`[Registry] Token request ${isAuthenticated ? '(authenticated)' : '(anonymous)'}`, { realm, service, scope });
+        
+        // Prepare request headers with Basic Auth if credentials available
+        const headers: Record<string, string> = {};
+        if (credentials) {
+          const authString = Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64');
+          headers['Authorization'] = `Basic ${authString}`;
+        }
+        
+        const tokenResp = await axios.get(realm, {
+          params: { service, scope },
+          headers: headers,
+          timeout: 15000, // Increased timeout for token requests
+          validateStatus: () => true,
+        });
+        
+        // Parse rate limit headers if available
+        const rateLimitRemaining = tokenResp.headers['ratelimit-remaining'];
+        const rateLimitLimit = tokenResp.headers['ratelimit-limit'];
+        const rateLimitReset = tokenResp.headers['ratelimit-reset'];
+        
+        console.log(`[Registry] Token response`, { 
+          status: tokenResp.status, 
+          hasToken: !!tokenResp.data?.token,
+          authenticated: isAuthenticated,
+          rateLimit: rateLimitLimit ? `${rateLimitRemaining}/${rateLimitLimit}` : undefined,
+          resetTime: rateLimitReset ? new Date(parseInt(rateLimitReset) * 1000).toISOString() : undefined
+        });
+        
+        if (tokenResp.status !== 200 || !tokenResp.data?.token) {
+          console.warn(`[Registry] Token request failed`, { status: tokenResp.status, data: tokenResp.data });
+          throw new Error(`Token service failed with status ${tokenResp.status}: ${JSON.stringify(tokenResp.data)}`);
+        }
 
-      const token = tokenResp.data.token as string;
+        token = tokenResp.data.token as string;
+        
+        // Cache the token (Docker tokens typically expire in 5 minutes)
+        this.cacheToken(tokenCacheKey, token, 300);
+      }
       
       // Retry with authentication - try manifest list first, then single manifest
       console.log(`[Registry] Retrying with Bearer token - trying manifest list first`);

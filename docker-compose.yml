@@ -9,6 +9,11 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+      # Docker Hub Authentication (optional)
+      # Increases rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account)
+      # Uncomment and set your credentials to enable:
+      # - DOCKERHUB_USERNAME=your_username
+      # - DOCKERHUB_PASSWORD=your_password_or_token
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/cron/status', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]

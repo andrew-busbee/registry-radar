@@ -44,6 +44,16 @@ InitService.initialize().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Registry Radar server running on port ${PORT}`);
     console.log(`📱 Open http://localhost:${PORT} to view the application`);
+    
+    // Log Docker Hub authentication status
+    const dockerHubUsername = process.env.DOCKERHUB_USERNAME;
+    const dockerHubPassword = process.env.DOCKERHUB_PASSWORD;
+    
+    if (dockerHubUsername && dockerHubPassword) {
+      console.log(`🔐 Docker Hub: Authenticated as "${dockerHubUsername}" (200 pulls/6hr or unlimited if Pro)`);
+    } else {
+      console.log(`⚠️  Docker Hub: Anonymous mode (100 pulls/6hr) - Add DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD to increase limit`);
+    }
   });
 }).catch((error) => {
   console.error('Failed to start Registry Radar:', error);
