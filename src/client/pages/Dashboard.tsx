@@ -455,8 +455,8 @@ export function Dashboard({
         </div>
       )}
 
-      {/* Recent Updates - Only show if there are updates */}
-      {recentUpdates.length > 0 && (
+      {/* Recent Updates - Disabled */}
+      {false && recentUpdates.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Recent Updates Available</h2>
           <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
