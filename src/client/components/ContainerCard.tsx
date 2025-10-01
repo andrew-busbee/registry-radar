@@ -266,26 +266,22 @@ export function ContainerCard({
           <div className="bg-muted/50 rounded-lg p-3 border border-border/60">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-semibold text-foreground">Monitored Image</h4>
-              <div className="text-xs text-muted-foreground bg-background/50 px-2 py-1 rounded-full">
+              <div className="text-xs text-primary-foreground bg-primary px-2 py-1 rounded-full font-medium">
                 Tag: {container.tag || 'latest'}
               </div>
             </div>
             <div className="font-mono text-sm text-foreground break-all">
               {container.imagePath}:{container.tag || 'latest'}
             </div>
+            {containerState && containerState.currentSha && (
+              <div className="text-xs text-muted-foreground mt-2">
+                Current SHA: {containerState.currentSha.substring(0, 12)}...
+              </div>
+            )}
           </div>
 
           {/* Status details grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {containerState && containerState.currentSha && (
-              <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
-                <div className="text-xs font-medium text-muted-foreground mb-1">Current SHA</div>
-                <div className="font-mono text-sm text-foreground">
-                  {containerState.currentSha.substring(0, 12)}...
-                </div>
-              </div>
-            )}
-            
             {containerState && containerState.lastUpdated && (
               <div className="bg-muted/50 rounded-lg p-2 border border-border/60">
                 <div className="text-xs font-medium text-muted-foreground mb-1">Image Last Updated</div>
