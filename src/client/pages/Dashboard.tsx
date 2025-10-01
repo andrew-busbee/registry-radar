@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { RefreshCw, Container, AlertCircle, CheckCircle, Clock, Plus, X, Upload, Search, SlidersHorizontal } from 'lucide-react';
+import { RefreshCw, Container, AlertCircle, CheckCircle, Clock, Plus, X, Upload, Search, SlidersHorizontal, XCircle } from 'lucide-react';
 import { ContainerRegistry, ContainerState, Notification } from '../types';
 import { AddContainerModal } from '../components/AddContainerModal';
 import { BulkImportModal } from '../components/BulkImportModal';
@@ -167,16 +167,18 @@ export function Dashboard({
     containers.some(c => c.imagePath === state.image && (c.tag || 'latest') === (state.tag || 'latest'))
   );
 
-  const upToDate = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && !state.hasUpdate && !state.hasNewerTag).length;
-  const updatesAvailable = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && (state.hasUpdate || state.hasNewerTag)).length;
+  const errors = stateMatchesCurrent.filter(state => state.error || state.statusMessage).length;
+  const upToDate = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && !state.hasUpdate && !state.hasNewerTag && !state.error && !state.statusMessage).length;
+  const updatesAvailable = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && (state.hasUpdate || state.hasNewerTag) && !state.error).length;
   const total = containers.length;
-  const neverCheckedRaw = total - upToDate - updatesAvailable;
+  const neverCheckedRaw = total - upToDate - updatesAvailable - errors;
   const neverChecked = Math.max(0, neverCheckedRaw);
 
   const stats = {
     total,
     upToDate,
     updatesAvailable,
+    errors,
     neverChecked,
   };
 
@@ -420,7 +422,7 @@ export function Dashboard({
 
       {/* Stats Cards - Only show when there are containers */}
       {containers.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center space-x-2">
               <Container className="w-5 h-5 text-blue-500" />
@@ -443,6 +445,14 @@ export function Dashboard({
               <span className="text-sm font-medium text-muted-foreground">Updates Available</span>
             </div>
             <p className="text-2xl font-bold text-foreground mt-2">{stats.updatesAvailable}</p>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <XCircle className="w-5 h-5 text-red-500" />
+              <span className="text-sm font-medium text-muted-foreground">Errors</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.errors}</p>
           </div>
 
           <div className="bg-card border border-border rounded-lg p-4">
