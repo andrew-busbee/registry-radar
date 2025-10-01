@@ -65,9 +65,9 @@ export class NotificationService {
     await this.saveNotifications([]);
   }
 
-  static async createUpdateNotification(containerName: string, image: string, tag: string, isNewUpdate: boolean = true): Promise<void> {
-    // Create simple notification message
-    const message = `New version available for ${containerName} (tag: ${tag})`;
+  static async createUpdateNotification(containerName: string, image: string, tag: string, isNewUpdate: boolean = true, customMessage?: string): Promise<void> {
+    // Create notification message (use custom message if provided, otherwise default)
+    const message = customMessage || `New version available for ${containerName} (tag: ${tag})`;
 
     // Create internal notification
     await this.addNotification({

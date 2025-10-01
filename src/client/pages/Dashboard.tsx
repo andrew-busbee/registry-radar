@@ -151,9 +151,12 @@ export function Dashboard({
       }
       
       // Refresh container states after all checks
-      const statesResponse = await fetch('/api/registry/states', { credentials: 'include' });
-      const states = await statesResponse.json();
-      // Note: In a real app, you'd update the parent state here
+      await onRefreshContainerStates();
+      
+      // Force page refresh to ensure UI is updated with latest data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000); // 1 second delay to allow any final processing
       
     } catch (error) {
       console.error('Error checking registry:', error);

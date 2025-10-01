@@ -86,22 +86,32 @@ export class CronService {
         );
         
         // Skip notification if this is a new container (isNew flag)
-        if (state.hasUpdate && !state.isNew) {
+        // Notify if there's an update (SHA change) OR a newer version available
+        if ((state.hasUpdate || state.hasNewerTag) && !state.isNew) {
           const container = containers.find(
             c => c.imagePath === state.image && c.tag === state.tag
           );
           
           if (container) {
-            // Check if this is a new update (different SHA) to avoid spam
-            const isNewUpdate = !previousState || !RegistryService.compareShas(previousState.currentSha, state.currentSha);
+            // Check if this is a new update (different SHA or newer version) to avoid spam
+            const isNewShaUpdate = !previousState || !RegistryService.compareShas(previousState.currentSha, state.currentSha);
+            const isNewVersionUpdate = !previousState || previousState.hasNewerTag !== state.hasNewerTag;
+            const isNewUpdate = isNewShaUpdate || isNewVersionUpdate;
+            
+            // Create appropriate notification message
+            let notificationMessage = `New version available for ${container.name} (tag: ${state.tag})`;
+            if (state.hasNewerTag && state.latestAvailableTag) {
+              notificationMessage = `Newer version available for ${container.name}: ${state.latestAvailableTag} (currently monitoring ${state.tag})`;
+            }
             
             await NotificationService.createUpdateNotification(
               container.name,
               `${state.image}:${state.tag}`,
               state.tag,
-              isNewUpdate
+              isNewUpdate,
+              notificationMessage
             );
-            console.log(`Update detected for ${container.name}${isNewUpdate ? ' (new update)' : ' (existing update)'}`);
+            console.log(`Update detected for ${container.name}${isNewUpdate ? ' (new update)' : ' (existing update)'} - SHA: ${state.hasUpdate}, Newer: ${state.hasNewerTag}`);
           }
         } else if (state.isNew) {
           console.log(`Skipping notification for new container: ${state.image}:${state.tag} (isNew=true, establishing baseline)`);

@@ -617,6 +617,110 @@ export class RegistryService {
     }
   }
 
+  private static async getLatestSemverVersionForGHCR(namespace: string, image: string, currentTag: string): Promise<{latestTag: string, latestUpdated?: string}> {
+    try {
+      // Try to get package versions from GitHub API
+      // Note: This may require authentication for some repositories
+      const response = await axios.get(`https://api.github.com/orgs/${namespace}/packages/container/${image}/versions`, {
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'User-Agent': 'registry-radar',
+        },
+        timeout: 30000, // 30 second timeout for this expensive operation
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`GitHub API returned status ${response.status}`);
+      }
+
+      const versions = response.data || [];
+      console.log(`[GHCR] Found ${versions.length} total versions for ${namespace}/${image}`);
+
+      // Extract tags from versions and filter to only semver tags
+      const allTags: string[] = [];
+      versions.forEach((version: any) => {
+        if (version.metadata?.container?.tags) {
+          allTags.push(...version.metadata.container.tags);
+        }
+      });
+
+      const semverTags = allTags
+        .filter((tagName: string) => this.parseSemver(tagName))
+        .sort((a: string, b: string) => {
+          const aParsed = this.parseSemver(a)!;
+          const bParsed = this.parseSemver(b)!;
+          return this.compareSemver(bParsed, aParsed); // Descending order (newest first)
+        });
+
+      console.log(`[GHCR] Found ${semverTags.length} semver tags for ${namespace}/${image}`);
+
+      if (semverTags.length === 0) {
+        return { latestTag: currentTag }; // No semver tags found, return current tag
+      }
+
+      // Return the highest semver version
+      const latestTag = semverTags[0];
+      return {
+        latestTag: latestTag,
+        latestUpdated: undefined // GitHub API doesn't provide last updated info in versions list
+      };
+
+    } catch (error) {
+      // If authentication is required or API fails, gracefully fall back
+      console.warn(`[GHCR] Version checking not available for ${namespace}/${image} (authentication required or API unavailable):`, error instanceof Error ? error.message : String(error));
+      
+      // Return the current tag to indicate no newer version was found
+      // This ensures the check doesn't fail and maintains existing functionality
+      return { latestTag: currentTag };
+    }
+  }
+
+  private static async getLatestSemverVersion(image: string, currentTag: string): Promise<{latestTag: string, latestUpdated?: string}> {
+    try {
+      // Fetch all tags for the image
+      const response = await axios.get(`https://hub.docker.com/v2/repositories/${image}/tags/?page_size=100`, {
+        headers: {
+          'Accept': 'application/json',
+        },
+        timeout: 30000, // 30 second timeout for this expensive operation
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`Docker Hub tags API returned status ${response.status}`);
+      }
+
+      const tags = response.data.results || [];
+      console.log(`[DockerHub] Found ${tags.length} total tags for ${image}`);
+
+      // Filter to only semver tags and parse them
+      const semverTags = tags
+        .map((t: any) => ({ name: t.name, updated: t.last_updated || t.tag_last_pushed }))
+        .filter((t: any) => this.parseSemver(t.name))
+        .sort((a: any, b: any) => {
+          const aParsed = this.parseSemver(a.name)!;
+          const bParsed = this.parseSemver(b.name)!;
+          return this.compareSemver(bParsed, aParsed); // Descending order (newest first)
+        });
+
+      console.log(`[DockerHub] Found ${semverTags.length} semver tags for ${image}`);
+
+      if (semverTags.length === 0) {
+        return { latestTag: currentTag }; // No semver tags found, return current tag
+      }
+
+      // Return the highest semver version
+      const latestTag = semverTags[0];
+      return {
+        latestTag: latestTag.name,
+        latestUpdated: latestTag.updated
+      };
+
+    } catch (error) {
+      console.error(`[DockerHub] Error fetching latest semver version for ${image}:`, error);
+      throw error;
+    }
+  }
+
   private static async getDockerHubManifest(image: string, tag: string, retryCount: number = 0): Promise<{sha: string, lastUpdated?: string, platform?: string}> {
     // Prefer Docker Registry v2 token flow via registry-1.docker.io to avoid Hub API 429s
     try {
@@ -739,9 +843,31 @@ export class RegistryService {
         platform = result.platform;
         console.log(`[Check] Docker Hub OK`, { image: fullImagePath, tag, sha: latestSha.substring(0, 12), platform });
         
-        // Skip expensive latest version resolution for now - causes 60+ second delays
-        // TODO: Implement efficient latest version resolution or make it optional
-        console.log(`[Check] Skipping latest version resolution for performance`);
+        // Only do expensive version resolution for semver tags WITHOUT v prefix (e.g., 1.2.1)
+        // Skip version checking for v-prefixed tags (e.g., v1.2.1) as they're typically static release tags
+        const monitoredSemver = this.parseSemver(tag);
+        const isVPrefixed = tag.startsWith('v');
+        
+        if (monitoredSemver && !isVPrefixed) {
+          console.log(`[Check] Tag "${tag}" is semver format (no v prefix), checking for newer versions...`);
+          try {
+            const latestInfo = await this.getLatestSemverVersion(fullImagePath, tag);
+            latestAvailableTag = latestInfo.latestTag;
+            latestAvailableUpdated = latestInfo.latestUpdated;
+            console.log(`[Check] Latest semver version found`, { 
+              current: tag, 
+              latest: latestAvailableTag,
+              hasNewer: latestAvailableTag !== tag 
+            });
+          } catch (versionError) {
+            console.warn(`[Check] Failed to get latest semver version for ${fullImagePath}:${tag}`, versionError);
+            // Don't fail the entire check, just skip version resolution
+          }
+        } else if (monitoredSemver && isVPrefixed) {
+          console.log(`[Check] Tag "${tag}" is v-prefixed semver format, skipping version resolution (typically static release tag)`);
+        } else {
+          console.log(`[Check] Tag "${tag}" is not semver format, skipping version resolution`);
+        }
         } catch (e) {
         errorMessage = 'check image and tag and try again';
         console.error(`[Check] Docker Hub error`, { image: fullImagePath, tag, error: e instanceof Error ? e.message : String(e) });
@@ -753,6 +879,32 @@ export class RegistryService {
           lastUpdated = result.lastUpdated;
         platform = result.platform;
         console.log(`[Check] GHCR OK`, { image: `${parsed.namespace}/${parsed.image}`, tag, sha: latestSha.substring(0, 12), platform });
+        
+        // Only do expensive version resolution for semver tags WITHOUT v prefix (e.g., 1.2.1)
+        // Skip version checking for v-prefixed tags (e.g., v1.2.1) as they're typically static release tags
+        const monitoredSemver = this.parseSemver(tag);
+        const isVPrefixed = tag.startsWith('v');
+        
+        if (monitoredSemver && !isVPrefixed) {
+          console.log(`[Check] Tag "${tag}" is semver format (no v prefix), checking for newer versions...`);
+          try {
+            const latestInfo = await this.getLatestSemverVersionForGHCR(parsed.namespace, parsed.image, tag);
+            latestAvailableTag = latestInfo.latestTag;
+            latestAvailableUpdated = latestInfo.latestUpdated;
+            console.log(`[Check] Latest semver version found`, { 
+              current: tag, 
+              latest: latestAvailableTag,
+              hasNewer: latestAvailableTag !== tag 
+            });
+          } catch (versionError) {
+            console.warn(`[Check] Failed to get latest semver version for ${parsed.namespace}/${parsed.image}:${tag}`, versionError);
+            // Don't fail the entire check, just skip version resolution
+          }
+        } else if (monitoredSemver && isVPrefixed) {
+          console.log(`[Check] Tag "${tag}" is v-prefixed semver format, skipping version resolution (typically static release tag)`);
+        } else {
+          console.log(`[Check] Tag "${tag}" is not semver format, skipping version resolution`);
+        }
         } catch (e) {
         errorMessage = 'check image and tag and try again';
         console.error(`[Check] GHCR error`, { image: `${parsed.namespace}/${parsed.image}`, tag, error: e instanceof Error ? e.message : String(e) });

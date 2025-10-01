@@ -19,6 +19,13 @@ export function ContainerCard({
   onCheck,
   isChecking = false 
 }: ContainerCardProps) {
+  
+  // Helper function to check if a tag is a v-prefixed versioned tag (like v1.2.3)
+  const isVPrefixedVersionedTag = (tag: string): boolean => {
+    const vPrefixedPattern = /^v\d+\.\d+\.\d+/;
+    return vPrefixedPattern.test(tag);
+  };
+
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<ContainerRegistry>({
     ...container,
@@ -273,6 +280,16 @@ export function ContainerCard({
             <div className="font-mono text-sm text-foreground break-all">
               {container.imagePath}:{container.tag || 'latest'}
             </div>
+            {isVPrefixedVersionedTag(container.tag || 'latest') && (
+              <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                <div className="flex items-start gap-2">
+                  <div className="text-blue-600 dark:text-blue-400 text-sm">💡</div>
+                  <div className="text-xs text-blue-700 dark:text-blue-300">
+                    <strong>Tip:</strong> Consider monitoring the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">latest</code> tag instead of v-prefixed versions like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> to ensure automatic update notifications when new versions are released.
+                  </div>
+                </div>
+              </div>
+            )}
             {containerState && containerState.currentSha && (
               <div className="text-xs text-muted-foreground mt-2">
                 Current SHA: {containerState.currentSha.substring(0, 12)}...
