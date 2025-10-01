@@ -106,6 +106,7 @@ export function Dashboard({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'age' | 'status'>('name');
   const [groupBy, setGroupBy] = useState<'none' | 'age' | 'registry' | 'status'>('none');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'upToDate' | 'updates' | 'errors' | 'neverChecked'>('all');
 
   const handleCheckRegistry = async () => {
     // Show confirmation if there are 50 or more images
@@ -294,6 +295,25 @@ export function Dashboard({
       return name.includes(query) || imagePath.includes(query) || tag.includes(query);
     });
 
+    // 2. Filter by status (from stat cards)
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(container => {
+        const state = getContainerState(container);
+        
+        if (statusFilter === 'upToDate') {
+          return state?.lastChecked && !state.hasUpdate && !state.hasNewerTag && !state.error && !state.statusMessage;
+        } else if (statusFilter === 'updates') {
+          return state?.lastChecked && (state.hasUpdate || state.hasNewerTag) && !state.error;
+        } else if (statusFilter === 'errors') {
+          return state?.error || state?.statusMessage;
+        } else if (statusFilter === 'neverChecked') {
+          return !state?.lastChecked || state.lastChecked === '';
+        }
+        
+        return true;
+      });
+    }
+
     // 2. Sort containers
     filtered = [...filtered].sort((a, b) => {
       if (sortBy === 'name') {
@@ -381,7 +401,7 @@ export function Dashboard({
     }
     
     return groups.length > 0 ? groups : [{ group: null, containers: filtered }];
-  }, [containers, containerStates, searchQuery, sortBy, groupBy]);
+  }, [containers, containerStates, searchQuery, sortBy, groupBy, statusFilter]);
 
   const totalFiltered = filteredAndSortedContainers.reduce((sum, g) => sum + g.containers.length, 0);
 
@@ -423,7 +443,14 @@ export function Dashboard({
       {/* Stats Cards - Only show when there are containers */}
       {containers.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-card border border-border rounded-lg p-4">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === 'all' ? 'all' : 'all')}
+            className={`bg-card border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              statusFilter === 'all' 
+                ? 'border-blue-500 shadow-lg shadow-blue-500/20' 
+                : 'border-border hover:border-blue-300 hover:shadow-md'
+            }`}
+          >
             <div className="flex items-center space-x-2">
               <Container className="w-5 h-5 text-blue-500" />
               <span className="text-sm font-medium text-muted-foreground">Monitored Images</span>
@@ -431,7 +458,14 @@ export function Dashboard({
             <p className="text-2xl font-bold text-foreground mt-2">{stats.total}</p>
           </div>
 
-          <div className="bg-card border border-border rounded-lg p-4">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === 'upToDate' ? 'all' : 'upToDate')}
+            className={`bg-card border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              statusFilter === 'upToDate' 
+                ? 'border-green-500 shadow-lg shadow-green-500/20' 
+                : 'border-border hover:border-green-300 hover:shadow-md'
+            }`}
+          >
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-green-500" />
               <span className="text-sm font-medium text-muted-foreground">Up to Date</span>
@@ -439,7 +473,14 @@ export function Dashboard({
             <p className="text-2xl font-bold text-foreground mt-2">{stats.upToDate}</p>
           </div>
 
-          <div className="bg-card border border-border rounded-lg p-4">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === 'updates' ? 'all' : 'updates')}
+            className={`bg-card border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              statusFilter === 'updates' 
+                ? 'border-orange-500 shadow-lg shadow-orange-500/20' 
+                : 'border-border hover:border-orange-300 hover:shadow-md'
+            }`}
+          >
             <div className="flex items-center space-x-2">
               <AlertCircle className="w-5 h-5 text-orange-500" />
               <span className="text-sm font-medium text-muted-foreground">Updates Available</span>
@@ -447,7 +488,14 @@ export function Dashboard({
             <p className="text-2xl font-bold text-foreground mt-2">{stats.updatesAvailable}</p>
           </div>
 
-          <div className="bg-card border border-border rounded-lg p-4">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === 'errors' ? 'all' : 'errors')}
+            className={`bg-card border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              statusFilter === 'errors' 
+                ? 'border-red-500 shadow-lg shadow-red-500/20' 
+                : 'border-border hover:border-red-300 hover:shadow-md'
+            }`}
+          >
             <div className="flex items-center space-x-2">
               <XCircle className="w-5 h-5 text-red-500" />
               <span className="text-sm font-medium text-muted-foreground">Errors</span>
@@ -455,7 +503,14 @@ export function Dashboard({
             <p className="text-2xl font-bold text-foreground mt-2">{stats.errors}</p>
           </div>
 
-          <div className="bg-card border border-border rounded-lg p-4">
+          <div 
+            onClick={() => setStatusFilter(statusFilter === 'neverChecked' ? 'all' : 'neverChecked')}
+            className={`bg-card border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              statusFilter === 'neverChecked' 
+                ? 'border-gray-500 shadow-lg shadow-gray-500/20' 
+                : 'border-border hover:border-gray-300 hover:shadow-md'
+            }`}
+          >
             <div className="flex items-center space-x-2">
               <Clock className="w-5 h-5 text-gray-500" />
               <span className="text-sm font-medium text-muted-foreground">Never Checked</span>
