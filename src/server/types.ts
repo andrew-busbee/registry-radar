@@ -74,6 +74,16 @@ export interface NotificationConfig {
       name: string;
     }[];
   };
+  email?: {
+    enabled: boolean;
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    fromEmail?: string;
+    fromName?: string;
+    toEmails: string[];
+  };
   triggers: {
     onEveryRun: boolean;
     onNewUpdates: boolean;

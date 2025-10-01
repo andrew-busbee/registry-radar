@@ -4,6 +4,7 @@ import * as path from 'path';
 import { ConfigService } from './configService';
 import { PushoverService } from './pushoverService';
 import { DiscordService } from './discordService';
+import { EmailService } from './emailService';
 
 const NOTIFICATIONS_FILE = path.join(process.cwd(), 'data', 'notifications.json');
 
@@ -126,6 +127,9 @@ export class NotificationService {
           if (config.discord?.enabled) {
             await DiscordService.sendUpdateNotification(config.discord, containerName, image, tag);
           }
+          if (config.email?.enabled) {
+            await EmailService.sendUpdateNotification(config.email, containerName, image, tag);
+          }
         }
       } else if (type === 'error' && config.triggers.onErrors) {
         if (errorMessage) {
@@ -135,6 +139,9 @@ export class NotificationService {
           }
           if (config.discord?.enabled) {
             await DiscordService.sendErrorNotification(config.discord, errorMessage, errorContainer);
+          }
+          if (config.email?.enabled) {
+            await EmailService.sendErrorNotification(config.email, errorMessage, errorContainer);
           }
         }
       }
@@ -157,6 +164,9 @@ export class NotificationService {
       }
       if (config.discord?.enabled) {
         await DiscordService.sendRunNotification(config.discord, totalContainers, updatesFound, errors);
+      }
+      if (config.email?.enabled) {
+        await EmailService.sendRunNotification(config.email, totalContainers, updatesFound, errors);
       }
     } catch (error) {
       console.error('Error sending run notifications:', error);

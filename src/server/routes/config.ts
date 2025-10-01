@@ -154,6 +154,22 @@ router.delete('/containers/:index', async (req, res) => {
     const deletedContainer = containers.splice(index, 1)[0];
     await ConfigService.saveContainers(containers);
     
+    // Clean up associated state data
+    try {
+      const states = await ConfigService.getContainerState();
+      const cleanedStates = states.filter(
+        s => !(s.image === deletedContainer.imagePath && s.tag === (deletedContainer.tag || 'latest'))
+      );
+      
+      if (cleanedStates.length !== states.length) {
+        await ConfigService.saveContainerState(cleanedStates);
+        console.log(`Cleaned up state data for deleted container: ${deletedContainer.imagePath}:${deletedContainer.tag || 'latest'}`);
+      }
+    } catch (stateError) {
+      console.warn('Warning: Failed to clean up state data for deleted container:', stateError);
+      // Don't fail the delete operation if state cleanup fails
+    }
+    
     res.json(deletedContainer);
   } catch (error) {
     console.error('Error deleting container:', error);

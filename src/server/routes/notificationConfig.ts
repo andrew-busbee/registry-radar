@@ -2,6 +2,7 @@ import express from 'express';
 import { ConfigService } from '../services/configService';
 import { PushoverService } from '../services/pushoverService';
 import { DiscordService } from '../services/discordService';
+import { EmailService } from '../services/emailService';
 
 const router = express.Router();
 
@@ -106,6 +107,28 @@ router.post('/test/discord', async (req, res) => {
   } catch (error) {
     console.error('Error testing Discord notification:', error);
     res.status(500).json({ error: 'Failed to test Discord notification' });
+  }
+});
+
+// Test Email notification
+router.post('/test/email', async (req, res) => {
+  try {
+    const config = await ConfigService.getNotificationConfig();
+    
+    if (!config.email?.enabled) {
+      return res.status(400).json({ error: 'Email notifications are not enabled' });
+    }
+
+    const success = await EmailService.sendTestNotification(config.email);
+    
+    if (success) {
+      res.json({ message: 'Test email sent successfully' });
+    } else {
+      res.status(500).json({ error: 'Failed to send test email' });
+    }
+  } catch (error) {
+    console.error('Error testing email notification:', error);
+    res.status(500).json({ error: 'Failed to test email notification' });
   }
 });
 
