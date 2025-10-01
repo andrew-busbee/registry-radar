@@ -45,12 +45,12 @@ export function Dashboard({
 
   const getStatusText = (state: ContainerState | undefined) => {
     if (!state) {
-      return 'Never checked';
+      return 'Never Checked. Will compare with registry on next scheduled or manual check';
     }
     
     // Check if container has never been checked (empty lastChecked)
     if (!state.lastChecked || state.lastChecked === '') {
-      return 'Never checked';
+      return 'Never Checked. Will compare with registry on next scheduled or manual check';
     }
     
     if (state.hasUpdate) {

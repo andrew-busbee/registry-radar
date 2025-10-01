@@ -77,7 +77,7 @@ export function GettingStartedGuide({
         {/* Status Indicators Guide */}
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground">Understanding Status Indicators</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
               <Clock className="w-5 h-5 text-gray-400" />
               <div className="text-left">
@@ -97,13 +97,6 @@ export function GettingStartedGuide({
               <div className="text-left">
                 <p className="text-sm font-medium text-foreground">Update Available</p>
                 <p className="text-xs text-muted-foreground">New version found</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-500" />
-              <div className="text-left">
-                <p className="text-sm font-medium text-foreground">New Image to Monitor</p>
-                <p className="text-xs text-muted-foreground">First time checking</p>
               </div>
             </div>
           </div>

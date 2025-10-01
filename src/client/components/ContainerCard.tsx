@@ -65,10 +65,6 @@ export function ContainerCard({
       return <X className="w-4 h-4 text-red-500" />;
     }
     
-    if (containerState.isNew) {
-      return <AlertCircle className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />;
-    }
-    
     if (containerState.hasUpdate || containerState.hasNewerTag) {
       return <AlertCircle className="w-4 h-4 text-orange-500" />;
     }
@@ -91,12 +87,12 @@ export function ContainerCard({
 
   const getStatusText = () => {
     if (!containerState) {
-      return 'Never checked';
+      return 'Never Checked. Will compare with registry on next scheduled or manual check';
     }
     
     // Check if container has never been checked (empty lastChecked)
     if (!containerState.lastChecked || containerState.lastChecked === '') {
-      return 'Never checked';
+      return 'Never Checked. Will compare with registry on next scheduled or manual check';
     }
     
     // Error or unsupported status
@@ -104,9 +100,7 @@ export function ContainerCard({
       return 'check image and tag and try again';
     }
     
-    if (containerState.isNew) {
-      return 'New image added. Will compare with registry on next scheduled or manual check';
-    }
+    // Note: Do not use an interim "new image" status after first check; show normal statuses instead
     
     if (containerState.hasUpdate || containerState.hasNewerTag) {
       return 'Update Available';
@@ -129,10 +123,6 @@ export function ContainerCard({
     // Error or unsupported status - show red
     if (containerState.error || containerState.statusMessage) {
       return 'text-red-600';
-    }
-    
-    if (containerState.isNew) {
-      return 'text-yellow-600 dark:text-yellow-400';
     }
     
     if (containerState.hasUpdate || containerState.hasNewerTag) {
@@ -158,7 +148,15 @@ export function ContainerCard({
       {/* Header with status indicator */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${containerState?.error ? 'bg-red-100 dark:bg-red-900/20' : containerState?.hasUpdate || containerState?.hasNewerTag ? 'bg-orange-100 dark:bg-orange-900/20' : containerState?.isNew ? 'bg-yellow-100 dark:bg-yellow-900/20' : 'bg-green-100 dark:bg-green-900/20'}`}>
+          <div className={`p-2 rounded-lg ${
+            containerState?.error
+              ? 'bg-red-100 dark:bg-red-900/20'
+              : (!containerState || !containerState.lastChecked || containerState.lastChecked === '')
+                ? 'bg-gray-100 dark:bg-gray-800/40'
+                : (containerState.hasUpdate || containerState.hasNewerTag)
+                  ? 'bg-orange-100 dark:bg-orange-900/20'
+                  : 'bg-green-100 dark:bg-green-900/20'
+          }`}>
             {getStatusIcon()}
           </div>
           <div>

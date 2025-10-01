@@ -49,10 +49,6 @@ export function ContainerTable({
       return <X className="w-4 h-4 text-red-500" />;
     }
     
-    if (containerState.isNew) {
-      return <AlertCircle className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />;
-    }
-    
     if (containerState.hasUpdate || containerState.hasNewerTag) {
       return <AlertCircle className="w-4 h-4 text-orange-500" />;
     }
@@ -62,20 +58,18 @@ export function ContainerTable({
 
   const getStatusText = (containerState?: ContainerState) => {
     if (!containerState) {
-      return 'Never checked';
+      return 'Never Checked. Will compare with registry on next scheduled or manual check';
     }
     
     if (!containerState.lastChecked || containerState.lastChecked === '') {
-      return 'Never checked';
+      return 'Never Checked. Will compare with registry on next scheduled or manual check';
     }
     
     if (containerState.error || containerState.statusMessage) {
       return 'Error - check image and tag';
     }
     
-    if (containerState.isNew) {
-      return 'New image added. Will compare with registry on next scheduled or manual check';
-    }
+    // Note: Do not use an interim "new image" status after first check; show normal statuses instead
     
     if (containerState.hasUpdate || containerState.hasNewerTag) {
       return 'Update Available';
@@ -95,10 +89,6 @@ export function ContainerTable({
     
     if (containerState.error || containerState.statusMessage) {
       return 'text-red-600';
-    }
-    
-    if (containerState.isNew) {
-      return 'text-yellow-600 dark:text-yellow-400';
     }
     
     if (containerState.hasUpdate || containerState.hasNewerTag) {
