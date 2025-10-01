@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Bell, Smartphone, MessageSquare, TestTube, Plus, Trash2, Mail } from 'lucide-react';
+import { Save, Bell, Smartphone, MessageSquare, TestTube, Plus, Trash2, Mail, ChevronDown, ChevronRight } from 'lucide-react';
 import { NotificationConfig } from '../types';
 
 interface NotificationSettingsProps {
@@ -14,11 +14,23 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   const [success, setSuccess] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({
+    triggers: true,
+    discord: !!config.discord?.enabled,
+    pushover: !!config.pushover?.enabled,
+    email: !!config.email?.enabled,
+  });
 
   // Only sync with parent config if we don't have unsaved local changes
   useEffect(() => {
     if (!hasLocalChanges) {
       setLocalConfig(config);
+      setExpanded(prev => ({
+        ...prev,
+        discord: !!config.discord?.enabled,
+        pushover: !!config.pushover?.enabled,
+        email: !!config.email?.enabled,
+      }));
     }
   }, [config, hasLocalChanges]);
 
@@ -51,6 +63,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   const handleTestPushover = async () => {
     setTesting('pushover');
     try {
+      // Save settings first
+      await onUpdateConfig(localConfig);
+      setHasLocalChanges(false);
+      
       const response = await fetch('/api/notification-config/test/pushover', {
         method: 'POST',
       });
@@ -72,6 +88,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   const handleTestDiscord = async () => {
     setTesting('discord');
     try {
+      // Save settings first
+      await onUpdateConfig(localConfig);
+      setHasLocalChanges(false);
+      
       const response = await fetch('/api/notification-config/test/discord', {
         method: 'POST',
       });
@@ -93,6 +113,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   const handleTestEmail = async () => {
     setTesting('email');
     try {
+      // Save settings first
+      await onUpdateConfig(localConfig);
+      setHasLocalChanges(false);
+      
       const response = await fetch('/api/notification-config/test/email', {
         method: 'POST',
       });
@@ -147,32 +171,110 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     }));
   };
 
+  const SectionHeader = ({
+    icon: Icon,
+    title,
+    sectionKey,
+    toggle,
+  }: { icon: any; title: string; sectionKey: string; toggle?: React.ReactNode }) => (
+    <button
+      type="button"
+      onClick={() => setExpanded(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }))}
+      className="w-full flex items-center justify-between text-left"
+      aria-expanded={expanded[sectionKey]}
+    >
+      <div className="flex items-center gap-2">
+        <Icon className="w-5 h-5" />
+        <span className="text-lg font-semibold text-foreground">{title}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        {toggle}
+        {expanded[sectionKey] ? (
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        )}
+      </div>
+    </button>
+  );
+
+  const Toggle = ({ checked, onChange, ariaLabel }: { checked: boolean; onChange: (next: boolean) => void; ariaLabel?: string }) => (
+    <button
+      type="button"
+      aria-pressed={checked}
+      aria-label={ariaLabel || 'Toggle'}
+      onClick={(e) => {
+        e.stopPropagation();
+        onChange(!checked);
+      }}
+      className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors border ${
+        checked ? 'bg-primary border-primary' : 'bg-gray-300 border-gray-300'
+      }`}
+    >
+      <span
+        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+          checked ? 'translate-x-5' : 'translate-x-0'
+        }`}
+      />
+    </button>
+  );
+
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Notification Settings</h2>
-        <p className="text-muted-foreground text-sm">
-          Configure external notifications for container updates and system events
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-1">Notification Settings</h2>
+          <p className="text-muted-foreground text-sm">
+            Configure external notifications for container updates and system events
+          </p>
+        </div>
+        <div className="hidden sm:flex">
+          <button
+            onClick={handleSave}
+            disabled={isLoading}
+            className="flex items-center space-x-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Save</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Global feedback */}
+      {error && (
+        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+          <p className="text-sm text-green-700">{success}</p>
+        </div>
+      )}
 
       {/* Trigger Settings */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
-          <Bell className="w-5 h-5" />
-          <span>Notification Triggers</span>
-        </h3>
-        
-        <div className="space-y-3">
+        <SectionHeader icon={Bell} title="Notification Triggers" sectionKey="triggers" />
+        {expanded.triggers && (
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
+            <Toggle
               checked={localConfig.triggers.onEveryRun}
-              onChange={(e) => updateLocalConfig(prev => ({
+              onChange={(next) => updateLocalConfig(prev => ({
                 ...prev,
-                triggers: { ...prev.triggers, onEveryRun: e.target.checked }
+                triggers: { ...prev.triggers, onEveryRun: next }
               }))}
-              className="w-4 h-4 text-primary mt-0.5"
+              ariaLabel="On Every Scheduled Run"
             />
             <div>
               <label className="font-medium text-foreground">On Every Scheduled Run</label>
@@ -181,14 +283,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           </div>
           
           <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
+            <Toggle
               checked={localConfig.triggers.onNewUpdates}
-              onChange={(e) => updateLocalConfig(prev => ({
+              onChange={(next) => updateLocalConfig(prev => ({
                 ...prev,
-                triggers: { ...prev.triggers, onNewUpdates: e.target.checked }
+                triggers: { ...prev.triggers, onNewUpdates: next }
               }))}
-              className="w-4 h-4 text-primary mt-0.5"
+              ariaLabel="On New Updates Found"
             />
             <div>
               <label className="font-medium text-foreground">On New Updates Found</label>
@@ -197,14 +298,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           </div>
           
           <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
+            <Toggle
               checked={localConfig.triggers.onErrors}
-              onChange={(e) => updateLocalConfig(prev => ({
+              onChange={(next) => updateLocalConfig(prev => ({
                 ...prev,
-                triggers: { ...prev.triggers, onErrors: e.target.checked }
+                triggers: { ...prev.triggers, onErrors: next }
               }))}
-              className="w-4 h-4 text-primary mt-0.5"
+              ariaLabel="On Errors"
             />
             <div>
               <label className="font-medium text-foreground">On Errors</label>
@@ -213,14 +313,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           </div>
           
           <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
+            <Toggle
               checked={localConfig.triggers.onManualCheck}
-              onChange={(e) => updateLocalConfig(prev => ({
+              onChange={(next) => updateLocalConfig(prev => ({
                 ...prev,
-                triggers: { ...prev.triggers, onManualCheck: e.target.checked }
+                triggers: { ...prev.triggers, onManualCheck: next }
               }))}
-              className="w-4 h-4 text-primary mt-0.5"
+              ariaLabel="On Manual Checks"
             />
             <div>
               <label className="font-medium text-foreground">On Manual Checks</label>
@@ -228,66 +327,72 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Discord Settings */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
-          <MessageSquare className="w-5 h-5" />
-          <span>Discord Notifications</span>
-        </h3>
-        
-        <div className="space-y-3">
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              checked={localConfig.discord?.enabled || false}
-              onChange={(e) => updateLocalConfig(prev => ({
-                ...prev,
-                discord: {
-                  ...prev.discord,
-                  enabled: e.target.checked,
-                  webhooks: prev.discord?.webhooks || []
-                }
-              }))}
-              className="w-4 h-4 text-primary mt-0.5"
-            />
-            <div>
-              <label className="font-medium text-foreground">Enable Discord</label>
-              <p className="text-sm text-muted-foreground">Send notifications to Discord channels via webhooks</p>
+        <SectionHeader
+          icon={MessageSquare}
+          title="Discord Notifications"
+          sectionKey="discord"
+          toggle={
+            <div className="inline-flex items-center gap-2 text-sm" onClick={(e) => e.stopPropagation()}>
+              <span className="text-muted-foreground">Enable</span>
+              <Toggle
+                checked={localConfig.discord?.enabled || false}
+                onChange={(next) => {
+                  updateLocalConfig(prev => ({
+                    ...prev,
+                    discord: {
+                      ...prev.discord,
+                      enabled: next,
+                      webhooks: next
+                        ? ((prev.discord?.webhooks && prev.discord.webhooks.length > 0)
+                            ? prev.discord.webhooks
+                            : [{ url: '', name: '' }])
+                        : (prev.discord?.webhooks || [])
+                    }
+                  }));
+                  setExpanded(prev => ({ ...prev, discord: next }));
+                }}
+                ariaLabel="Enable Discord"
+              />
             </div>
-          </div>
-          
-          {localConfig.discord?.enabled && (
+          }
+        />
+        {!localConfig.discord?.enabled && !expanded.discord && (
+          <p className="mt-2 text-sm text-muted-foreground">Enable Discord to configure webhooks</p>
+        )}
+
+        {expanded.discord && (
+        <div className="mt-3 space-y-3">
+          {localConfig.discord?.enabled ? (
             <>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-foreground">Webhooks</h4>
-                  <button
-                    onClick={addDiscordWebhook}
-                    className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Webhook</span>
-                  </button>
-                </div>
-                
-                {localConfig.discord?.webhooks?.map((webhook, index) => (
-                  <div key={index} className="p-3 border border-border rounded-lg space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h5 className="font-medium text-foreground">Webhook {index + 1}</h5>
-                      <button
-                        onClick={() => removeDiscordWebhook(index)}
-                        className="text-destructive hover:text-destructive/80 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-foreground">Webhooks</h4>
+                <button
+                  onClick={addDiscordWebhook}
+                  className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Webhook</span>
+                </button>
+              </div>
+              {localConfig.discord?.webhooks?.map((webhook, index) => (
+                <div key={index} className="p-3 border border-border rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-foreground">Webhook {index + 1}</h5>
+                    <button
+                      onClick={() => removeDiscordWebhook(index)}
+                      className="text-destructive hover:text-destructive/80 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">
-                        Name
-                      </label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Name</label>
                       <input
                         type="text"
                         value={webhook.name}
@@ -296,11 +401,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                         placeholder="Webhook name (e.g., Production Alerts)"
                       />
                     </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">
-                        Webhook URL
-                      </label>
+                    <div className="md:col-span-1 col-span-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">Webhook URL</label>
                       <input
                         type="url"
                         value={webhook.url}
@@ -310,96 +412,98 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                       />
                     </div>
                   </div>
-                ))}
-                
-                {(!localConfig.discord?.webhooks || localConfig.discord.webhooks.length === 0) && (
-                  <p className="text-muted-foreground text-center py-4">
-                    No webhooks configured. Click "Add Webhook" to add your first Discord webhook.
-                  </p>
-                )}
+                </div>
+              ))}
+              {(!localConfig.discord?.webhooks || localConfig.discord.webhooks.length === 0) && (
+                <p className="text-muted-foreground text-center py-4">
+                  No webhooks configured. Click "Add Webhook" to add your first Discord webhook.
+                </p>
+              )}
+              <div>
+                <button
+                  onClick={handleTestDiscord}
+                  disabled={testing === 'discord' || !localConfig.discord?.webhooks?.some(w => w.url)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
+                >
+                  <TestTube className="w-4 h-4" />
+                  <span>{testing === 'discord' ? 'Testing...' : 'Test Discord'}</span>
+                </button>
               </div>
-              
-              <button
-                onClick={handleTestDiscord}
-                disabled={testing === 'discord' || !localConfig.discord?.webhooks?.some(w => w.url)}
-                className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
-              >
-                <TestTube className="w-4 h-4" />
-                <span>{testing === 'discord' ? 'Testing...' : 'Test Discord'}</span>
-              </button>
             </>
+          ) : (
+            <p className="text-sm text-muted-foreground">Enable Discord to configure webhooks</p>
           )}
         </div>
+        )}
       </div>
 
       {/* Pushover Settings */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
-          <Smartphone className="w-5 h-5" />
-          <span>Pushover Notifications</span>
-        </h3>
-        
-        <div className="space-y-3">
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              checked={localConfig.pushover?.enabled || false}
-              onChange={(e) => updateLocalConfig(prev => ({
-                ...prev,
-                pushover: {
-                  ...prev.pushover,
-                  enabled: e.target.checked,
-                  apiKey: prev.pushover?.apiKey || '',
-                  userKey: prev.pushover?.userKey || '',
-                  devices: prev.pushover?.devices || []
-                }
-              }))}
-              className="w-4 h-4 text-primary mt-0.5"
-            />
-            <div>
-              <label className="font-medium text-foreground">Enable Pushover</label>
-              <p className="text-sm text-muted-foreground">Send notifications to your mobile devices via Pushover</p>
+        <SectionHeader
+          icon={Smartphone}
+          title="Pushover Notifications"
+          sectionKey="pushover"
+          toggle={
+            <div className="inline-flex items-center gap-2 text-sm" onClick={(e) => e.stopPropagation()}>
+              <span className="text-muted-foreground">Enable</span>
+              <Toggle
+                checked={localConfig.pushover?.enabled || false}
+                onChange={(next) => {
+                  updateLocalConfig(prev => ({
+                    ...prev,
+                    pushover: {
+                      ...prev.pushover,
+                      enabled: next,
+                      apiKey: prev.pushover?.apiKey || '',
+                      userKey: prev.pushover?.userKey || '',
+                      devices: prev.pushover?.devices || []
+                    }
+                  }));
+                  setExpanded(prev => ({ ...prev, pushover: next }));
+                }}
+                ariaLabel="Enable Pushover"
+              />
             </div>
-          </div>
-          
-          {localConfig.pushover?.enabled && (
+          }
+        />
+        {!localConfig.pushover?.enabled && !expanded.pushover && (
+          <p className="mt-2 text-sm text-muted-foreground">Enable Pushover to configure API and User keys</p>
+        )}
+
+        {expanded.pushover && (
+        <div className="mt-3 space-y-3">
+          {localConfig.pushover?.enabled ? (
             <>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  API Key
-                </label>
-                <input
-                  type="text"
-                  value={localConfig.pushover?.apiKey || ''}
-                  onChange={(e) => updateLocalConfig(prev => ({
-                    ...prev,
-                    pushover: { ...prev.pushover!, apiKey: e.target.value }
-                  }))}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                  placeholder="Your Pushover application API key"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">API Key</label>
+                  <input
+                    type="text"
+                    value={localConfig.pushover?.apiKey || ''}
+                    onChange={(e) => updateLocalConfig(prev => ({
+                      ...prev,
+                      pushover: { ...prev.pushover!, apiKey: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                    placeholder="Your Pushover application API key"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">User Key</label>
+                  <input
+                    type="text"
+                    value={localConfig.pushover?.userKey || ''}
+                    onChange={(e) => updateLocalConfig(prev => ({
+                      ...prev,
+                      pushover: { ...prev.pushover!, userKey: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                    placeholder="Your Pushover user key"
+                  />
+                </div>
               </div>
-              
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  User Key
-                </label>
-                <input
-                  type="text"
-                  value={localConfig.pushover?.userKey || ''}
-                  onChange={(e) => updateLocalConfig(prev => ({
-                    ...prev,
-                    pushover: { ...prev.pushover!, userKey: e.target.value }
-                  }))}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                  placeholder="Your Pushover user key"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Devices (Optional)
-                </label>
+                <label className="block text-sm font-medium text-foreground mb-2">Devices (Optional)</label>
                 <input
                   type="text"
                   value={localConfig.pushover?.devices?.join(', ') || ''}
@@ -414,61 +518,68 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   placeholder="device1, device2 (leave empty for all devices)"
                 />
               </div>
-              
-              <button
-                onClick={handleTestPushover}
-                disabled={testing === 'pushover' || !localConfig.pushover?.apiKey || !localConfig.pushover?.userKey}
-                className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
-              >
-                <TestTube className="w-4 h-4" />
-                <span>{testing === 'pushover' ? 'Testing...' : 'Test Pushover'}</span>
-              </button>
+              <div>
+                <button
+                  onClick={handleTestPushover}
+                  disabled={testing === 'pushover' || !localConfig.pushover?.apiKey || !localConfig.pushover?.userKey}
+                  className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
+                >
+                  <TestTube className="w-4 h-4" />
+                  <span>{testing === 'pushover' ? 'Testing...' : 'Test Pushover'}</span>
+                </button>
+              </div>
             </>
+          ) : (
+            <p className="text-sm text-muted-foreground">Enable Pushover to configure API and User keys</p>
           )}
         </div>
+        )}
       </div>
 
       {/* Email Settings */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
-          <Mail className="w-5 h-5" />
-          <span>Email Notifications</span>
-        </h3>
-        
-        <div className="space-y-3">
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              checked={localConfig.email?.enabled || false}
-              onChange={(e) => updateLocalConfig(prev => ({
-                ...prev,
-                email: {
-                  ...prev.email,
-                  enabled: e.target.checked,
-                  host: prev.email?.host || '',
-                  port: prev.email?.port || 587,
-                  username: prev.email?.username || '',
-                  password: prev.email?.password || '',
-                  toEmails: prev.email?.toEmails || [],
-                  fromEmail: prev.email?.fromEmail || '',
-                  fromName: prev.email?.fromName || 'Registry Radar'
-                }
-              }))}
-              className="w-4 h-4 text-primary mt-0.5"
-            />
-            <div>
-              <label className="font-medium text-foreground">Enable Email</label>
-              <p className="text-sm text-muted-foreground">Send notifications via email using your SMTP server</p>
+        <SectionHeader
+          icon={Mail}
+          title="Email Notifications"
+          sectionKey="email"
+          toggle={
+            <div className="inline-flex items-center gap-2 text-sm" onClick={(e) => e.stopPropagation()}>
+              <span className="text-muted-foreground">Enable</span>
+              <Toggle
+                checked={localConfig.email?.enabled || false}
+                onChange={(next) => {
+                  updateLocalConfig(prev => ({
+                    ...prev,
+                    email: {
+                      ...prev.email,
+                      enabled: next,
+                      host: prev.email?.host || '',
+                      port: prev.email?.port || 587,
+                      username: prev.email?.username || '',
+                      password: prev.email?.password || '',
+                      toEmails: prev.email?.toEmails || [],
+                      fromEmail: prev.email?.fromEmail || '',
+                      fromName: prev.email?.fromName || 'Registry Radar'
+                    }
+                  }));
+                  setExpanded(prev => ({ ...prev, email: next }));
+                }}
+                ariaLabel="Enable Email"
+              />
             </div>
-          </div>
-          
-          {localConfig.email?.enabled && (
+          }
+        />
+        {!localConfig.email?.enabled && !expanded.email && (
+          <p className="mt-2 text-sm text-muted-foreground">Enable Email to configure SMTP settings</p>
+        )}
+
+        {expanded.email && (
+        <div className="mt-3 space-y-3">
+          {localConfig.email?.enabled ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    SMTP Host *
-                  </label>
+                  <label className="block text-sm font-medium text-foreground mb-2">SMTP Host *</label>
                   <input
                     type="text"
                     value={localConfig.email?.host || ''}
@@ -480,11 +591,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                     placeholder="smtp.gmail.com"
                   />
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    SMTP Port *
-                  </label>
+                  <label className="block text-sm font-medium text-foreground mb-2">SMTP Port *</label>
                   <select
                     value={localConfig.email?.port || 587}
                     onChange={(e) => updateLocalConfig(prev => ({
@@ -499,12 +607,9 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   </select>
                 </div>
               </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Email/Username *
-                  </label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Email/Username *</label>
                   <input
                     type="text"
                     value={localConfig.email?.username || ''}
@@ -516,11 +621,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                     placeholder="your-email@gmail.com"
                   />
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Password *
-                  </label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Password *</label>
                   <input
                     type="password"
                     value={localConfig.email?.password || ''}
@@ -533,12 +635,9 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   />
                 </div>
               </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    From Email (Optional)
-                  </label>
+                  <label className="block text-sm font-medium text-foreground mb-2">From Email (Optional)</label>
                   <input
                     type="email"
                     value={localConfig.email?.fromEmail || ''}
@@ -550,11 +649,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                     placeholder="Leave empty to use username"
                   />
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    From Name (Optional)
-                  </label>
+                  <label className="block text-sm font-medium text-foreground mb-2">From Name (Optional)</label>
                   <input
                     type="text"
                     value={localConfig.email?.fromName || ''}
@@ -567,11 +663,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   />
                 </div>
               </div>
-              
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  To Emails * (comma-separated)
-                </label>
+                <label className="block text-sm font-medium text-foreground mb-2">To Emails * (comma-separated)</label>
                 <input
                   type="text"
                   value={localConfig.email?.toEmails?.join(', ') || ''}
@@ -585,64 +678,52 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
                   placeholder="admin@example.com, notifications@example.com"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Multiple emails can be separated by commas
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Multiple emails can be separated by commas</p>
               </div>
-              
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p className="text-sm text-blue-900 dark:text-blue-100">
                   <strong>📌 Gmail Users:</strong> Use an App Password instead of your regular password. 
-                  <a href="https://support.google.com/accounts/answer/185833" target="_blank" rel="noopener noreferrer" className="underline ml-1">
-                    Learn how
-                  </a>
+                  <a href="https://support.google.com/accounts/answer/185833" target="_blank" rel="noopener noreferrer" className="underline ml-1">Learn how</a>
                 </p>
               </div>
-              
-              <button
-                onClick={handleTestEmail}
-                disabled={testing === 'email' || !localConfig.email?.host || !localConfig.email?.username || !localConfig.email?.password || !localConfig.email?.toEmails?.length}
-                className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
-              >
-                <TestTube className="w-4 h-4" />
-                <span>{testing === 'email' ? 'Testing...' : 'Test Email'}</span>
-              </button>
+              <div>
+                <button
+                  onClick={handleTestEmail}
+                  disabled={testing === 'email' || !localConfig.email?.host || !localConfig.email?.username || !localConfig.email?.password || !localConfig.email?.toEmails?.length}
+                  className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
+                >
+                  <TestTube className="w-4 h-4" />
+                  <span>{testing === 'email' ? 'Testing...' : 'Test Email'}</span>
+                </button>
+              </div>
             </>
+          ) : (
+            <p className="text-sm text-muted-foreground">Enable Email to configure SMTP settings</p>
           )}
         </div>
+        )}
       </div>
 
-      {/* Error/Success Messages */}
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-sm text-green-700">{success}</p>
-        </div>
-      )}
-
-      {/* Save Button */}
-      <button
-        onClick={handleSave}
-        disabled={isLoading}
-        className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-      >
-        {isLoading ? (
-          <>
-            <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-            <span>Saving...</span>
-          </>
-        ) : (
-          <>
-            <Save className="w-4 h-4" />
-            <span>Save Notification Settings</span>
-          </>
-        )}
-      </button>
+      {/* Sticky action bar for smaller screens */}
+      <div className="sm:hidden sticky bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border p-3 mt-2">
+        <button
+          onClick={handleSave}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+        >
+          {isLoading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              <span>Save</span>
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
