@@ -1137,6 +1137,12 @@ export class RegistryService {
         }
       }
 
+      // If a newer tag is available, require explicit user acknowledgment
+      if (!result.error && hasNewerTag) {
+        updateAcknowledged = false;
+        updateAcknowledgedAt = undefined;
+      }
+
       const newState: ContainerState = {
         image: result.image,
         tag: result.tag,
