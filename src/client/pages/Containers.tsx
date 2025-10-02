@@ -244,22 +244,6 @@ export function Containers({
         </div>
         <div className="flex items-center space-x-2">
           <button
-            onClick={handleCheckAll}
-            disabled={isCheckingAll || containers.length === 0}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
-            <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
-          </button>
-          <button
-            onClick={handleExport}
-            disabled={containers.length === 0}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download className="w-4 h-4" />
-            <span>Export</span>
-          </button>
-          <button
             onClick={() => setIsBulkImportModalOpen(true)}
             className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
@@ -267,11 +251,27 @@ export function Containers({
             <span>Import List</span>
           </button>
           <button
+            onClick={handleExport}
+            disabled={containers.length === 0}
+            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export List</span>
+          </button>
+          <button
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Container</span>
+            <span>+ Add Image</span>
+          </button>
+          <button
+            onClick={handleCheckAll}
+            disabled={isCheckingAll || containers.length === 0}
+            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
+            <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
           </button>
         </div>
       </div>
