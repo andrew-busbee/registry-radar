@@ -211,21 +211,29 @@ class ContainerParser {
       return null;
     }
 
+    // Normalize: remove surrounding quotes, inline comments, and optional leading "image:" key
+    let normalized = imageString
+      .trim()
+      .replace(/^["']|["']$/g, '') // strip surrounding quotes if present
+      .replace(/\s+#.*$/, '') // strip inline comments starting with # and preceding space
+      .replace(/^image\s*:\s*/i, '') // remove leading "image:" if present
+      .trim();
+
     // Handle digest format (ignore digest, use latest tag)
-    let imagePath = imageString;
+    let imagePath = normalized;
     let tag = 'latest';
 
-    if (imageString.includes('@')) {
+    if (normalized.includes('@')) {
       // Remove digest part
-      imagePath = imageString.split('@')[0];
-    } else if (imageString.includes(':')) {
+      imagePath = normalized.split('@')[0];
+    } else if (normalized.includes(':')) {
       // Extract tag
-      const lastColonIndex = imageString.lastIndexOf(':');
-      const potentialTag = imageString.substring(lastColonIndex + 1);
+      const lastColonIndex = normalized.lastIndexOf(':');
+      const potentialTag = normalized.substring(lastColonIndex + 1);
       
       // Check if this looks like a tag (not a port or path)
       if (potentialTag && !potentialTag.includes('/') && potentialTag.match(/^[a-zA-Z0-9._-]+$/)) {
-        imagePath = imageString.substring(0, lastColonIndex);
+        imagePath = normalized.substring(0, lastColonIndex);
         tag = potentialTag;
       }
     }
