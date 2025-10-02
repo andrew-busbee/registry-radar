@@ -159,15 +159,81 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   };
 
   const updateAppriseChannel = (index: number, field: 'name' | 'url' | 'enabled', value: string | boolean) => {
-    updateLocalConfig(prev => ({
+    // Only mark as having local changes for text fields (name, url), not for enabled toggle
+    const shouldMarkAsChanged = field !== 'enabled';
+    
+    if (shouldMarkAsChanged) {
+      updateLocalConfig(prev => ({
+        ...prev,
+        apprise: {
+          ...prev.apprise,
+          channels: prev.apprise?.channels?.map((channel, i) => 
+            i === index ? { ...channel, [field]: value } : channel
+          ) || []
+        }
+      }));
+    } else {
+      // For enabled field, just update local state without marking as changed
+      setLocalConfig(prev => ({
+        ...prev,
+        apprise: {
+          ...prev.apprise,
+          channels: prev.apprise?.channels?.map((channel, i) => 
+            i === index ? { ...channel, [field]: value } : channel
+          ) || []
+        }
+      }));
+    }
+  };
+
+  const handleChannelToggleChange = async (index: number, enabled: boolean) => {
+    // Update local config first (without marking as changed since we're auto-saving)
+    setLocalConfig(prev => ({
       ...prev,
       apprise: {
         ...prev.apprise,
         channels: prev.apprise?.channels?.map((channel, i) => 
-          i === index ? { ...channel, [field]: value } : channel
+          i === index ? { ...channel, enabled } : channel
         ) || []
       }
     }));
+
+    // Auto-save immediately for toggle changes
+    try {
+      const updatedConfig = {
+        ...localConfig,
+        apprise: {
+          ...localConfig.apprise,
+          channels: localConfig.apprise?.channels?.map((channel, i) => 
+            i === index ? { ...channel, enabled } : channel
+        ) || []
+        }
+      };
+      await onUpdateConfig(updatedConfig);
+      setSuccess('Channel setting saved automatically');
+      setTimeout(() => setSuccess(null), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save channel setting');
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
+  const handleChannelSave = async (index: number) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await onUpdateConfig(localConfig);
+      setHasLocalChanges(false);
+      setSuccess(`Channel ${index + 1} saved successfully`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save channel');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Toggle component
@@ -317,39 +383,48 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
 
       {/* Apprise Settings */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <SectionHeader
-          icon={Bell}
-          title="Apprise Notifications"
-          sectionKey="apprise"
-          toggle={
-            <div className="inline-flex items-center gap-2 text-sm" onClick={(e) => e.stopPropagation()}>
-              <span className="text-muted-foreground">Enable/Disable</span>
-              <Toggle
-                checked={localConfig.apprise?.enabled || false}
-                onChange={(next) => {
-                  updateLocalConfig(prev => ({
-                    ...prev,
-                    apprise: {
-                      ...prev.apprise,
-                      enabled: next,
-                      channels: next
-                        ? ((prev.apprise?.channels && prev.apprise.channels.length > 0)
-                            ? prev.apprise.channels
-                            : [{ name: '', url: '', enabled: true }])
-                        : (prev.apprise?.channels || [])
-                    }
-                  }));
-                  setExpanded(prev => ({ ...prev, apprise: next }));
-                }}
-                ariaLabel="Enable Apprise"
-              />
-              <div className="flex items-center gap-2 ml-2">
-                <div className={`w-2 h-2 rounded-full ${localConfig.apprise?.enabled ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="text-muted-foreground text-xs">{localConfig.apprise?.enabled ? 'Enabled' : 'Disabled'}</span>
-              </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Bell className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground">Apprise Notifications</h3>
+            <div className="flex items-center gap-2 text-sm">
+              <div className={`w-2 h-2 rounded-full ${localConfig.apprise?.enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className="text-muted-foreground">{localConfig.apprise?.enabled ? 'Enabled' : 'Disabled'}</span>
             </div>
-          }
-        />
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-muted-foreground text-sm">Enable/Disable</span>
+            <Toggle
+              checked={localConfig.apprise?.enabled || false}
+              onChange={(next) => {
+                updateLocalConfig(prev => ({
+                  ...prev,
+                  apprise: {
+                    ...prev.apprise,
+                    enabled: next,
+                    channels: next
+                      ? ((prev.apprise?.channels && prev.apprise.channels.length > 0)
+                          ? prev.apprise.channels
+                          : [{ name: '', url: '', enabled: true }])
+                      : (prev.apprise?.channels || [])
+                  }
+                }));
+                setExpanded(prev => ({ ...prev, apprise: next }));
+              }}
+              ariaLabel="Enable Apprise"
+            />
+            <button
+              onClick={() => setExpanded(prev => ({ ...prev, apprise: !prev.apprise }))}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {expanded.apprise ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
         {!localConfig.apprise?.enabled && !expanded.apprise && (
           <p className="mt-2 text-sm text-muted-foreground">
             Enable Apprise to allow messaging to 80+ services{' '}
@@ -372,27 +447,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
               
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-foreground">Channels</h4>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={addAppriseChannel}
-                    className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add</span>
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={!hasLocalChanges || isLoading}
-                    className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors text-sm ${
-                      hasLocalChanges 
-                        ? 'bg-green-600 text-white hover:bg-green-700' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>{isLoading ? 'Saving...' : 'Save'}</span>
-                  </button>
-                </div>
+                <button
+                  onClick={addAppriseChannel}
+                  className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add</span>
+                </button>
               </div>
 
               {localConfig.apprise?.channels?.map((channel, index) => (
@@ -401,7 +462,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                     <div className="flex items-center space-x-2">
                       <Toggle
                         checked={channel.enabled}
-                        onChange={(checked) => updateAppriseChannel(index, 'enabled', checked)}
+                        onChange={(checked) => handleChannelToggleChange(index, checked)}
                         ariaLabel={`Enable channel ${index + 1}`}
                       />
                       <h5 className="font-medium text-foreground text-sm">Channel {index + 1}</h5>
@@ -418,6 +479,18 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                       >
                         <TestTube className="w-3 h-3" />
                         <span>{testing === 'apprise' ? 'Sending...' : 'Test'}</span>
+                      </button>
+                      <button
+                        onClick={() => handleChannelSave(index)}
+                        disabled={!hasLocalChanges || isLoading}
+                        className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${
+                          hasLocalChanges 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        <Save className="w-3 h-3" />
+                        <span>{isLoading ? 'Saving...' : 'Save'}</span>
                       </button>
                       <button
                         onClick={() => removeAppriseChannel(index)}
