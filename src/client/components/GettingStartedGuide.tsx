@@ -30,7 +30,7 @@ export function GettingStartedGuide({
         <div className="space-y-4 text-left">
           <div className="flex items-center space-x-4">
             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <Container className="w-10 h-10 text-primary" />
+              <Container className="w-10 h-10 text-primary animate-pulse" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">
               Welcome to Registry Radar
@@ -45,9 +45,12 @@ export function GettingStartedGuide({
         <div className="space-y-4 text-left">
         </div>
 
+        {/* Horizontal break */}
+        <hr className="border-border" />
+
         {/* Why You Need This */}
         <div className="space-y-4 text-left">
-          <h2 className="text-xl font-semibold text-foreground">Why You Need This</h2>
+          <h2 className="text-xl font-semibold text-primary">Why You Need This</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -69,11 +72,11 @@ export function GettingStartedGuide({
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-blue-600 dark:text-blue-400 text-sm">📋</span>
+                <span className="text-blue-600 dark:text-blue-400 text-sm">🛡️</span>
               </div>
               <div>
-                <p className="font-medium text-foreground">Compliance</p>
-                <p className="text-sm text-muted-foreground">Meet security audit requirements</p>
+                <p className="font-medium text-foreground">Reliability</p>
+                <p className="text-sm text-muted-foreground">Maintain stable, reliable deployments</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -90,15 +93,17 @@ export function GettingStartedGuide({
 
         {/* Registry Support */}
         <div className="space-y-4 text-left">
-          <h2 className="text-xl font-semibold text-foreground">Currently Supports</h2>
           <p className="text-lg text-muted-foreground">
             Currently Supports: Docker Hub (with optional authentication), GitHub Container Registry, and LinuxServer.io. Additional registry support is being added.
           </p>
         </div>
 
+        {/* Horizontal break */}
+        <hr className="border-border" />
+
         {/* How It Works */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-foreground">How It Works</h2>
+          <h2 className="text-xl font-semibold text-primary">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex flex-col items-center space-y-3 p-4">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
@@ -106,7 +111,7 @@ export function GettingStartedGuide({
               </div>
               <h3 className="font-medium text-foreground">1. Add Images</h3>
               <p className="text-sm text-muted-foreground text-center">
-                Add Docker images you want to monitor from Docker Hub, GitHub Container Registry, and more.
+                Add Docker image paths you want to monitor from Docker Hub, GitHub Container Registry, and more.
               </p>
             </div>
             <div className="flex flex-col items-center space-y-3 p-4">
@@ -130,9 +135,12 @@ export function GettingStartedGuide({
           </div>
         </div>
 
+        {/* Horizontal break */}
+        <hr className="border-border" />
+
         {/* Status Indicators Guide */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-foreground">Understanding Status Indicators</h2>
+          <h2 className="text-xl font-semibold text-primary">Understanding Status Indicators</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
               <Clock className="w-5 h-5 text-gray-400" />
@@ -158,9 +166,50 @@ export function GettingStartedGuide({
           </div>
         </div>
 
+        {/* Horizontal break */}
+        <hr className="border-border" />
+
+        {/* Notifications */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-primary">Stay Notified</h2>
+          <div className="space-y-4">
+            <p className="text-lg text-muted-foreground">
+              Never miss an update! Registry Radar can send you notifications through multiple channels when new versions are available or when issues occur.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="font-medium text-foreground flex items-center space-x-2">
+                  <Bell className="w-5 h-5 text-blue-500" />
+                  <span>Apprise Integration</span>
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Send notifications to 80+ services including Discord, Slack, Email, SMS, and more. Configure multiple channels to ensure you never miss important updates.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-medium text-foreground flex items-center space-x-2">
+                  <Bell className="w-5 h-5 text-green-500" />
+                  <span>Smart Triggers</span>
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Choose when to receive notifications: on scheduled runs, when updates are found, or when errors occur. Customize your notification preferences.
+                </p>
+              </div>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>💡 Tip:</strong> Set up notifications in Settings → Notifications after adding your first container. You can test your notification setup before relying on it.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Horizontal break */}
+        <hr className="border-border" />
+
         {/* Quick Start Options */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-foreground">Get Started</h2>
+          <h2 className="text-xl font-semibold text-primary">Let's Go</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={onAddContainer}
