@@ -8,7 +8,8 @@ import {
   ArrowRight,
   Container,
   RefreshCw,
-  X
+  X,
+  XCircle
 } from 'lucide-react';
 
 interface GettingStartedGuideProps {
@@ -141,7 +142,7 @@ export function GettingStartedGuide({
         {/* Status Indicators Guide */}
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-primary">Understanding Status Indicators</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
               <Clock className="w-5 h-5 text-gray-400" />
               <div className="text-left">
@@ -163,6 +164,13 @@ export function GettingStartedGuide({
                 <p className="text-xs text-muted-foreground">New version found</p>
               </div>
             </div>
+            <div className="flex items-center space-x-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <XCircle className="w-5 h-5 text-red-500" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-foreground">Error / Warning</p>
+                <p className="text-xs text-muted-foreground">Issues detected</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -174,7 +182,7 @@ export function GettingStartedGuide({
           <h2 className="text-xl font-semibold text-primary">Stay Notified</h2>
           <div className="space-y-4">
             <p className="text-lg text-muted-foreground">
-              Never miss an update! Registry Radar can send you notifications through multiple channels when new versions are available or when issues occur.
+              Never miss an update! Registry Radar can send you notifications through multiple channels when new image versions are available or when issues occur.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
@@ -192,13 +200,13 @@ export function GettingStartedGuide({
                   <span>Smart Triggers</span>
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Choose when to receive notifications: on scheduled runs, when updates are found, or when errors occur. Customize your notification preferences.
+                  Customize your notification preferences and choose when you want to receive notifications: After scheduled checks, when updates are found, when errors occur, or all of them.
                 </p>
               </div>
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>💡 Tip:</strong> Set up notifications in Settings → Notifications after adding your first container. You can test your notification setup before relying on it.
+                <strong>💡 Tip:</strong> Set up notifications in Settings → Notifications. You can test your notification setup to confirm it is working.
               </p>
             </div>
           </div>
@@ -209,7 +217,7 @@ export function GettingStartedGuide({
 
         {/* Quick Start Options */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-primary">Let's Go</h2>
+          <h2 className="text-xl font-semibold text-primary">Let's Get Started</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={onAddContainer}
@@ -217,7 +225,7 @@ export function GettingStartedGuide({
             >
               <Plus className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
               <div className="text-left">
-                <h3 className="font-medium text-foreground">Add An Image</h3>
+                <h3 className="font-medium text-foreground">Add Your First Image</h3>
                 <p className="text-sm text-muted-foreground">Add one Docker image to monitor</p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -229,7 +237,7 @@ export function GettingStartedGuide({
             >
               <Upload className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
               <div className="text-left">
-                <h3 className="font-medium text-foreground">Bulk Import</h3>
+                <h3 className="font-medium text-foreground">Bulk Import Images</h3>
                 <p className="text-sm text-muted-foreground">Import multiple images at once</p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
