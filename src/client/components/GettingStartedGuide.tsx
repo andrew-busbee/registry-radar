@@ -24,28 +24,25 @@ export function GettingStartedGuide({
 }: GettingStartedGuideProps) {
 
   return (
-    <div className="bg-card border border-border rounded-lg p-8 max-w-4xl mx-auto">
+    <div className="bg-card border border-border rounded-lg p-8 max-w-4xl">
       <div className="space-y-8">
         {/* Hero Section */}
         <div className="space-y-4 text-left">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-            <Container className="w-10 h-10 text-primary" />
+          <div className="flex items-center space-x-4">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <Container className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Welcome to Registry Radar
+            </h1>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">
-            Welcome to Registry Radar
-          </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Monitor your Docker images for updates across multiple registries. 
-            Get notified when new versions are available so you can keep your deployments up to date.
+            Tired of manually checking if your Docker images have updates? Use Registry Radar to monitor your Docker images for updates across multiple registries. Get notified when new versions are available so you can keep your deployments up to date.
           </p>
         </div>
 
         {/* What Registry Radar Does */}
         <div className="space-y-4 text-left">
-          <p className="text-lg text-muted-foreground">
-            Tired of manually checking if your Docker images have updates? Registry Radar automatically monitors 
-            your images across multiple registries and alerts you when new versions are available.
-          </p>
         </div>
 
         {/* Why You Need This */}
@@ -94,26 +91,9 @@ export function GettingStartedGuide({
         {/* Registry Support */}
         <div className="space-y-4 text-left">
           <h2 className="text-xl font-semibold text-foreground">Currently Supports</h2>
-          <div className="bg-muted/50 rounded-lg p-4">
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center space-x-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                <span className="text-foreground">Docker Hub (with optional authentication)</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span className="text-foreground">GitHub Container Registry</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                <span className="text-foreground">LinuxServer.io</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-                <span className="text-muted-foreground">Additional registry support is planned</span>
-              </li>
-            </ul>
-          </div>
+          <p className="text-lg text-muted-foreground">
+            Currently Supports: Docker Hub (with optional authentication), GitHub Container Registry, and LinuxServer.io. Additional registry support is being added.
+          </p>
         </div>
 
         {/* How It Works */}
