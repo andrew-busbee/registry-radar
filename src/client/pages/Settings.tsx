@@ -101,67 +101,6 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     { label: 'Every weekday at 9 AM', value: '0 9 * * 1-5' },
   ];
 
-  const formatCronExpression = (cron: string) => {
-    try {
-      // Handle empty or invalid cron expressions
-      if (!cron || typeof cron !== 'string') {
-        return 'Invalid cron expression';
-      }
-
-      const fields = cron.trim().split(/\s+/);
-      
-      // Check if we have exactly 5 fields
-      if (fields.length !== 5) {
-        return `Invalid format: Expected 5 fields, got ${fields.length}`;
-      }
-
-      const [minute, hour, day, month, weekday] = fields;
-      
-      const formatField = (field: string, labels: string[]) => {
-        if (!field) return 'empty';
-        if (field === '*') return 'every';
-        if (field.includes('/')) {
-          const parts = field.split('/');
-          if (parts.length !== 2) return field;
-          const [, interval] = parts;
-          return `every ${interval}`;
-        }
-        if (field.includes(',')) {
-          return field.split(',').map(f => {
-            const num = parseInt(f);
-            return isNaN(num) ? f : (labels[num - 1] || f);
-          }).join(', ');
-        }
-        if (field.includes('-')) {
-          const parts = field.split('-');
-          if (parts.length !== 2) return field;
-          const [start, end] = parts;
-          const startNum = parseInt(start);
-          const endNum = parseInt(end);
-          return `${isNaN(startNum) ? start : (labels[startNum - 1] || start)} to ${isNaN(endNum) ? end : (labels[endNum - 1] || end)}`;
-        }
-        const num = parseInt(field);
-        return isNaN(num) ? field : (labels[num - 1] || field);
-      };
-
-      const minutes = formatField(minute, Array.from({ length: 60 }, (_, i) => i.toString()));
-      const hours = formatField(hour, Array.from({ length: 24 }, (_, i) => i.toString()));
-      const days = formatField(day, Array.from({ length: 31 }, (_, i) => (i + 1).toString()));
-      const months = formatField(month, [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ]);
-      const weekdays = formatField(weekday, [
-        'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-      ]);
-
-      return `At minute ${minute}, hour ${hour}, day ${day}, month ${month}, weekday ${weekday}`;
-    } catch (error) {
-      console.error('Error formatting cron expression:', error);
-      return 'Error formatting cron expression';
-    }
-  };
-
   const tabs = [
     {
       id: 'general' as const,
@@ -215,7 +154,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
         <div className="bg-card border border-border rounded-lg p-4">
           <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
             <Clock className="w-5 h-5" />
-            <span>Cron Schedule Configuration</span>
+            <span>Image Update Scheduler</span>
           </h2>
 
           <div className="space-y-4">
@@ -248,7 +187,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                   <>
                     <br />
                     <span className="text-red-600">
-                      Note: Be aware that running the checks too often can cause rate limiting for docker hub hosted images. You can increase the rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account) by adding your docker credentials to the docker environment variables DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD
+                      Note: Be aware that running the checks too often can cause rate limiting for Docker Hub hosted images. You can increase the rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account) by adding your Docker credentials to the Docker environment variables DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD
                     </span>
                   </>
                 )}
@@ -287,7 +226,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="block text-sm font-medium text-foreground mb-2">Search Timezone</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Search and Change Timezone</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -348,14 +287,6 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                 </div>
               </div>
 
-              {/* Schedule Preview */}
-              <div className="p-3 bg-muted rounded-md">
-                <h4 className="text-sm font-medium text-foreground mb-1">Schedule Preview</h4>
-                <p className="text-sm text-muted-foreground font-mono">{schedule}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {formatCronExpression(schedule)}
-                </p>
-              </div>
             </div>
             )}
 
