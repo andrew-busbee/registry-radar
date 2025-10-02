@@ -107,7 +107,7 @@ export function ContainerCard({
     
     // Note: Do not use an interim "new image" status after first check; show normal statuses instead
     
-    if (containerState.hasUpdate || containerState.hasNewerTag) {
+    if ((containerState.hasUpdate || containerState.hasNewerTag) && !containerState.updateAcknowledged) {
       return 'Update Available';
     }
     
@@ -142,7 +142,7 @@ export function ContainerCard({
       return 'text-red-600';
     }
     
-    if (containerState.hasUpdate || containerState.hasNewerTag) {
+    if ((containerState.hasUpdate || containerState.hasNewerTag) && !containerState.updateAcknowledged) {
       return 'text-orange-600';
     }
     

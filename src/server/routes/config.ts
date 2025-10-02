@@ -309,6 +309,11 @@ router.post('/containers/dismiss-update', async (req, res) => {
     currentStates[stateIndex].updateAcknowledged = true;
     currentStates[stateIndex].updateAcknowledgedAt = new Date().toISOString();
     currentStates[stateIndex].hasUpdate = false; // Clear the update flag
+    // Also clear newer-tag indicator so acknowledged items no longer count as updates
+    currentStates[stateIndex].hasNewerTag = false;
+    // Optionally clear latest available tag display since it's acknowledged
+    currentStates[stateIndex].latestAvailableTag = undefined;
+    currentStates[stateIndex].latestAvailableUpdated = undefined;
     
     await ConfigService.saveContainerState(currentStates);
     

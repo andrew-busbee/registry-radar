@@ -63,7 +63,7 @@ export function ContainerTable({
       return <X className="w-4 h-4 text-red-500" />;
     }
     
-    if (containerState.hasUpdate || containerState.hasNewerTag) {
+    if ((containerState.hasUpdate || containerState.hasNewerTag) && !containerState.updateAcknowledged) {
       return <AlertCircle className="w-4 h-4 text-orange-500" />;
     }
     
@@ -85,7 +85,7 @@ export function ContainerTable({
     
     // Note: Do not use an interim "new image" status after first check; show normal statuses instead
     
-    if (containerState.hasUpdate || containerState.hasNewerTag) {
+    if ((containerState.hasUpdate || containerState.hasNewerTag) && !containerState.updateAcknowledged) {
       return 'Update Available';
     }
     
@@ -105,7 +105,7 @@ export function ContainerTable({
       return 'text-red-600';
     }
     
-    if (containerState.hasUpdate || containerState.hasNewerTag) {
+    if ((containerState.hasUpdate || containerState.hasNewerTag) && !containerState.updateAcknowledged) {
       return 'text-orange-600';
     }
     

@@ -198,8 +198,8 @@ export function Dashboard({
   const errorsAndWarningsSet = new Set<string>([...errorsSet, ...warningsSet]);
 
   const errorsAndWarnings = errorsAndWarningsSet.size;
-  const upToDate = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && !state.hasUpdate && !state.hasNewerTag && !state.error && !state.statusMessage).length;
-  const updatesAvailable = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && (state.hasUpdate || state.hasNewerTag) && !state.error).length;
+  const upToDate = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && !(state.hasUpdate || state.hasNewerTag) && !state.error && !state.statusMessage).length;
+  const updatesAvailable = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && (state.hasUpdate || state.hasNewerTag) && !state.updateAcknowledged && !state.error).length;
   const total = containers.length;
   // Preserve original neverChecked calculation based only on actual error states
   const errorsOnlyCount = stateMatchesCurrent.filter(state => state.error || state.statusMessage).length;
@@ -320,11 +320,23 @@ export function Dashboard({
       });
       
       if (response.ok) {
-        await onRefreshContainerStates();
-        // Force page refresh to ensure UI is updated with latest data
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        // Optimistically update local state so UI reflects immediately
+        try {
+          // Fetch latest states from server to keep in sync
+          await onRefreshContainerStates();
+        } catch {}
+        // Also adjust the local view instantly
+        const idx = containerStates.findIndex(s => s.image === container.imagePath && (s.tag || 'latest') === (container.tag || 'latest'));
+        if (idx >= 0) {
+          containerStates[idx] = {
+            ...containerStates[idx],
+            updateAcknowledged: true,
+            hasUpdate: false,
+            hasNewerTag: false,
+            latestAvailableTag: undefined,
+            latestAvailableUpdated: undefined,
+          } as any;
+        }
       } else {
         console.error('Failed to dismiss update:', response.statusText);
       }
@@ -359,9 +371,9 @@ export function Dashboard({
         const state = getContainerState(container);
         
         if (statusFilter === 'upToDate') {
-          return state?.lastChecked && !state.hasUpdate && !state.hasNewerTag && !state.error && !state.statusMessage;
+          return state?.lastChecked && !(state.hasUpdate || state.hasNewerTag) && !state.error && !state.statusMessage;
         } else if (statusFilter === 'updates') {
-          return state?.lastChecked && (state.hasUpdate || state.hasNewerTag) && !state.error;
+          return state?.lastChecked && (state.hasUpdate || state.hasNewerTag) && !state.updateAcknowledged && !state.error;
         } else if (statusFilter === 'errors') {
           // Include actual errors/status plus v-prefixed version-tagged containers (tip case)
           const hasErrorOrStatus = !!(state?.error || state?.statusMessage);
