@@ -53,7 +53,7 @@ Total Images Checked: ${totalImages}
 Updates Found: ${updatesFound}
 Errors: ${errors}
 
-${updatesFound > 0 ? '⚠️ Image Updates Available' : '✅ All Good: No updates found for your monitored containers.'}
+${updatesFound > 0 ? '⚠️ Image Updates Available' : '✅ All Good: No updates found for your monitored images.'}
 
 ---
 Registry Radar - Simple Docker Image Monitoring`

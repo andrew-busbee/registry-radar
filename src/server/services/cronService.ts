@@ -79,11 +79,11 @@ export class CronService {
       const containers = await ConfigService.getContainers();
       
       if (containers.length === 0) {
-        console.log('No containers to check');
+        console.log('No images to check');
         return;
       }
 
-      console.log(`Checking ${containers.length} containers...`);
+      console.log(`Checking ${containers.length} images...`);
       
       const checkResults = await RegistryService.checkAllRegistries(containers);
       const currentStates = await ConfigService.getContainerState();
@@ -128,7 +128,7 @@ export class CronService {
             console.log(`Update detected for ${container.name}${isNewUpdate ? ' (new update)' : ' (existing update)'} - SHA: ${state.hasUpdate}, Newer: ${state.hasNewerTag}`);
           }
         } else if (state.isNew) {
-          console.log(`Skipping notification for new container: ${state.image}:${state.tag} (isNew=true, establishing baseline)`);
+          console.log(`Skipping notification for new image: ${state.image}:${state.tag} (isNew=true, establishing baseline)`);
         }
       }
       
