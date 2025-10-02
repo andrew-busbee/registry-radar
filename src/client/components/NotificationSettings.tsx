@@ -263,11 +263,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         {expanded.triggers && (
           <div className="mt-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Send summary on scheduled runs</label>
-                  <p className="text-xs text-muted-foreground">Send a summary notification when scheduled checks complete</p>
-                </div>
+              <div className="flex items-center space-x-3">
                 <Toggle
                   checked={getTriggerValue('sendSummaryOnScheduledRun', true)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
@@ -276,13 +272,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   }))}
                   ariaLabel="Send summary on scheduled runs"
                 />
+                <div>
+                  <label className="text-sm font-medium text-foreground">Send summary on scheduled runs</label>
+                  <p className="text-xs text-muted-foreground">Send a summary notification when scheduled checks complete</p>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Send individual reports on scheduled runs</label>
-                  <p className="text-xs text-muted-foreground">Send detailed reports for each container during scheduled runs</p>
-                </div>
+              <div className="flex items-center space-x-3">
                 <Toggle
                   checked={getTriggerValue('sendIndividualReportsOnScheduledRun', false)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
@@ -291,13 +287,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   }))}
                   ariaLabel="Send individual reports on scheduled runs"
                 />
+                <div>
+                  <label className="text-sm font-medium text-foreground">Send individual reports on scheduled runs</label>
+                  <p className="text-xs text-muted-foreground">Send detailed reports for each container during scheduled runs</p>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Send reports when updates found</label>
-                  <p className="text-xs text-muted-foreground">Send notifications immediately when container updates are detected</p>
-                </div>
+              <div className="flex items-center space-x-3">
                 <Toggle
                   checked={getTriggerValue('sendReportsWhenUpdatesFound', true)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
@@ -306,13 +302,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   }))}
                   ariaLabel="Send reports when updates found"
                 />
+                <div>
+                  <label className="text-sm font-medium text-foreground">Send reports when updates found</label>
+                  <p className="text-xs text-muted-foreground">Send notifications immediately when container updates are detected</p>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Send reports on errors</label>
-                  <p className="text-xs text-muted-foreground">Send notifications when errors occur during monitoring</p>
-                </div>
+              <div className="flex items-center space-x-3">
                 <Toggle
                   checked={getTriggerValue('sendReportsOnErrors', true)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
@@ -321,6 +317,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                   }))}
                   ariaLabel="Send reports on errors"
                 />
+                <div>
+                  <label className="text-sm font-medium text-foreground">Send reports on errors</label>
+                  <p className="text-xs text-muted-foreground">Send notifications when errors occur during monitoring</p>
+                </div>
               </div>
             </div>
           </div>
@@ -335,7 +335,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           sectionKey="apprise"
           toggle={
             <div className="inline-flex items-center gap-2 text-sm" onClick={(e) => e.stopPropagation()}>
-              <span className="text-muted-foreground">Enable</span>
+              <span className="text-muted-foreground">Enable/Disable</span>
               <Toggle
                 checked={localConfig.apprise?.enabled || false}
                 onChange={(next) => {
