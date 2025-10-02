@@ -25,7 +25,23 @@ dev-down.bat
 # Ignore actual data files, keep examples
 data/*.json
 data/*.yml
+data/*.db
 !data/*.example
+
+# ===========================================
+# Test files
+# ===========================================
+test-migration.js
+MIGRATION_SUMMARY.md
+test_version_detection.js
+
+# ===========================================
+# Documentation files (project-specific)
+# ===========================================
+AUTHENTICATION.md
+BULK_IMPORT_EXPORT.md
+DEMO.md
+DOCKER_HUB_AUTH.md
 
 # ===========================================
 # Dependencies
@@ -43,6 +59,11 @@ dist/
 build/
 out/
 *.tsbuildinfo
+.next/
+.nuxt/
+.output/
+.vuepress/dist/
+.serverless/
 
 # ===========================================
 # Environment variables
@@ -50,6 +71,10 @@ out/
 .env
 .env.*
 !.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # ===========================================
 # Logs
@@ -79,6 +104,9 @@ test-results/
 playwright-report/
 playwright/.cache/
 junit.xml
+test-results.xml
+coverage.lcov
+.nyc_output/
 
 # ===========================================
 # Cache directories
@@ -103,6 +131,8 @@ junit.xml
 *.swp
 *.swo
 *~
+.vscode-test/
+*.code-workspace
 
 # ===========================================
 # OS generated files
@@ -130,6 +160,11 @@ tmp/
 temp/
 .tmp/
 .temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
 
 # ===========================================
 # Package manager files
@@ -143,6 +178,9 @@ jspm_packages/
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.js
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # ===========================================
 # Framework-specific
@@ -167,10 +205,24 @@ out/
 # DynamoDB Local
 .dynamodb/
 
+# Vite
+.vite/
+
+# Rollup
+.rollup.cache/
+
+# Webpack
+.webpack/
+
+# Parcel
+.parcel-cache/
+
 # ===========================================
 # Docker
 # ===========================================
 .dockerignore.bak
+docker-compose.override.yml
+docker-compose.dev.yml
 
 # ===========================================
 # Optional files
@@ -205,3 +257,16 @@ out/
 
 # TernJS port file
 .tern-port
+
+# ===========================================
+# Security and sensitive files
+# ===========================================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets.json
+.secrets

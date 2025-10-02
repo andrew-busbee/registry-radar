@@ -36,10 +36,8 @@ COPY --from=builder /app/dist ./dist
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S registry-radar -u 1001
 
-# Create data directory for configuration files and copy config files
+# Create data directory for SQLite database
 RUN mkdir -p /app/data
-COPY data/*.yml /app/data/
-COPY data/*.json /app/data/
 
 # Set proper ownership and permissions
 RUN chown -R registry-radar:nodejs /app

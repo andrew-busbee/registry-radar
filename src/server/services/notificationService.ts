@@ -1,69 +1,50 @@
 import { Notification } from '../types';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 import { ConfigService } from './configService';
+import { DatabaseService } from './databaseService';
 import { PushoverService } from './pushoverService';
 import { DiscordService } from './discordService';
 import { EmailService } from './emailService';
 import { AppriseService } from './appriseService';
 
-const NOTIFICATIONS_FILE = path.join(process.cwd(), 'data', 'notifications.json');
-
 export class NotificationService {
-  private static async ensureDataDir(): Promise<void> {
-    const dataDir = path.dirname(NOTIFICATIONS_FILE);
-    try {
-      await fs.access(dataDir);
-    } catch {
-      await fs.mkdir(dataDir, { recursive: true });
-    }
-  }
-
   static async getNotifications(): Promise<Notification[]> {
-    await this.ensureDataDir();
-    try {
-      const content = await fs.readFile(NOTIFICATIONS_FILE, 'utf-8');
-      return JSON.parse(content);
-    } catch (error) {
-      return [];
-    }
-  }
-
-  static async saveNotifications(notifications: Notification[]): Promise<void> {
-    await this.ensureDataDir();
-    await fs.writeFile(NOTIFICATIONS_FILE, JSON.stringify(notifications, null, 2), 'utf-8');
+    const notifications = DatabaseService.getNotifications();
+    return notifications.map((notification: any) => ({
+      id: notification.id,
+      type: notification.type,
+      message: notification.message,
+      timestamp: notification.timestamp,
+      container: notification.container,
+      read: Boolean(notification.read)
+    }));
   }
 
   static async addNotification(notification: Omit<Notification, 'id'>): Promise<void> {
-    const notifications = await this.getNotifications();
     const newNotification: Notification = {
       ...notification,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
     };
     
-    notifications.unshift(newNotification); // Add to beginning
-    notifications.splice(100); // Keep only last 100 notifications
-    
-    await this.saveNotifications(notifications);
+    DatabaseService.addNotification({
+      id: newNotification.id,
+      type: newNotification.type,
+      message: newNotification.message,
+      timestamp: newNotification.timestamp,
+      container: newNotification.container,
+      read: newNotification.read
+    });
   }
 
   static async markAsRead(notificationId: string): Promise<void> {
-    const notifications = await this.getNotifications();
-    const notification = notifications.find(n => n.id === notificationId);
-    if (notification) {
-      notification.read = true;
-      await this.saveNotifications(notifications);
-    }
+    DatabaseService.markNotificationAsRead(notificationId);
   }
 
   static async markAllAsRead(): Promise<void> {
-    const notifications = await this.getNotifications();
-    notifications.forEach(n => n.read = true);
-    await this.saveNotifications(notifications);
+    DatabaseService.markAllNotificationsAsRead();
   }
 
   static async clearNotifications(): Promise<void> {
-    await this.saveNotifications([]);
+    DatabaseService.clearNotifications();
   }
 
   static async createUpdateNotification(containerName: string, image: string, tag: string, isNewUpdate: boolean = true, customMessage?: string): Promise<void> {

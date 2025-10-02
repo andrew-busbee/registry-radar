@@ -10,6 +10,7 @@ import { notificationsRouter } from './routes/notifications';
 import { notificationConfigRouter } from './routes/notificationConfig';
 import { adminRouter } from './routes/admin';
 import { InitService } from './services/initService';
+import { DatabaseService } from './services/databaseService';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -40,22 +41,47 @@ app.get('*', (req, res) => {
 });
 
 // Initialize and start server
-InitService.initialize().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Registry Radar server running on port ${PORT}`);
-    console.log(`📱 Open http://localhost:${PORT} to view the application`);
+async function startServer() {
+  try {
+    // Initialize database first
+    console.log('🗄️  Initializing SQLite database...');
+    DatabaseService.initialize();
+    console.log('✅ Database initialized successfully');
     
-    // Log Docker Hub authentication status
-    const dockerHubUsername = process.env.DOCKERHUB_USERNAME;
-    const dockerHubPassword = process.env.DOCKERHUB_PASSWORD;
+    // Initialize other services
+    await InitService.initialize();
     
-    if (dockerHubUsername && dockerHubPassword) {
-      console.log(`🔐 Docker Hub: Authenticated as "${dockerHubUsername}" (200 pulls/6hr or unlimited if Pro)`);
-    } else {
-      console.log(`⚠️  Docker Hub: Anonymous mode (100 pulls/6hr) - Add DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD to increase limit`);
-    }
-  });
-}).catch((error) => {
-  console.error('Failed to start Registry Radar:', error);
-  process.exit(1);
+    app.listen(PORT, () => {
+      console.log(`🚀 Registry Radar server running on port ${PORT}`);
+      console.log(`📱 Open http://localhost:${PORT} to view the application`);
+      
+      // Log Docker Hub authentication status
+      const dockerHubUsername = process.env.DOCKERHUB_USERNAME;
+      const dockerHubPassword = process.env.DOCKERHUB_PASSWORD;
+      
+      if (dockerHubUsername && dockerHubPassword) {
+        console.log(`🔐 Docker Hub: Authenticated as "${dockerHubUsername}" (200 pulls/6hr or unlimited if Pro)`);
+      } else {
+        console.log(`⚠️  Docker Hub: Anonymous mode (100 pulls/6hr) - Add DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD to increase limit`);
+      }
+    });
+  } catch (error) {
+    console.error('Failed to start Registry Radar:', error);
+    process.exit(1);
+  }
+}
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  DatabaseService.close();
+  process.exit(0);
 });
+
+process.on('SIGTERM', () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  DatabaseService.close();
+  process.exit(0);
+});
+
+startServer();
