@@ -213,6 +213,19 @@ function AppContent() {
           throw new Error(`Failed to update enabled state: ${enabledResp.statusText}`);
         }
         await enabledResp.json();
+
+        // If a timezone was provided along with schedule+enabled, persist it too
+        if (config.timezone !== undefined) {
+          const tzResp = await fetch('/api/cron/config/timezone', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timezone: config.timezone }),
+          });
+          if (!tzResp.ok) {
+            throw new Error(`Failed to update timezone: ${tzResp.statusText}`);
+          }
+          await tzResp.json();
+        }
       } else if (config.schedule !== undefined || config.timezone !== undefined) {
         // If either schedule or timezone is provided, update schedule first (if provided), then timezone
         if (config.schedule !== undefined) {
