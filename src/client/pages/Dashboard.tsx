@@ -171,11 +171,14 @@ export function Dashboard({
     containers.some(c => c.imagePath === state.image && (c.tag || 'latest') === (state.tag || 'latest'))
   );
 
-  // Helper: identify v-prefixed semantic version tags like v1.2.3
+  // Helper: identify v-prefixed semantic version tags like v1.2.3 or versions with additional characters after semantic version like 0.1.0-beta.4
   const isVPrefixedVersionedTag = (tag?: string): boolean => {
     const normalizedTag = tag || 'latest';
+    // Match v-prefixed versions like v1.2.3
     const vPrefixedPattern = /^v\d+\.\d+\.\d+/;
-    return vPrefixedPattern.test(normalizedTag);
+    // Match versions with additional characters after semantic version like 0.1.0-beta.4, 1.2.3-rc.1, etc.
+    const extendedVersionPattern = /^\d+\.\d+\.\d+[^0-9]/;
+    return vPrefixedPattern.test(normalizedTag) || extendedVersionPattern.test(normalizedTag);
   };
 
   // Compute stats

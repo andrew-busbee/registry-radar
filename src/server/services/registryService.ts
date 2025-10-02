@@ -595,6 +595,15 @@ export class RegistryService {
     return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]) };
   }
 
+  // Helper function to check if a tag should be treated like a v-prefixed version (skip version resolution)
+  private static isVersionSpecificTag(tag: string): boolean {
+    // Match v-prefixed versions like v1.2.3
+    const vPrefixedPattern = /^v\d+\.\d+\.\d+/;
+    // Match versions with additional characters after semantic version like 0.1.0-beta.4, 1.2.3-rc.1, etc.
+    const extendedVersionPattern = /^\d+\.\d+\.\d+[^0-9]/;
+    return vPrefixedPattern.test(tag) || extendedVersionPattern.test(tag);
+  }
+
   private static compareSemver(a: { major: number, minor: number, patch: number }, b: { major: number, minor: number, patch: number }): number {
     if (a.major !== b.major) return a.major - b.major;
     if (a.minor !== b.minor) return a.minor - b.minor;
@@ -913,13 +922,13 @@ export class RegistryService {
         platform = result.platform;
         console.log(`[Check] Docker Hub OK`, { image: fullImagePath, tag, sha: latestSha.substring(0, 12), platform });
         
-        // Only do expensive version resolution for semver tags WITHOUT v prefix (e.g., 1.2.1)
-        // Skip version checking for v-prefixed tags (e.g., v1.2.1) as they're typically static release tags
+        // Only do expensive version resolution for clean semver tags (e.g., 1.2.1)
+        // Skip version checking for version-specific tags (e.g., v1.2.1, 0.1.0-beta.4) as they're typically static release tags
         const monitoredSemver = this.parseSemver(tag);
-        const isVPrefixed = tag.startsWith('v');
+        const isVersionSpecific = this.isVersionSpecificTag(tag);
         
-        if (monitoredSemver && !isVPrefixed) {
-          console.log(`[Check] Tag "${tag}" is semver format (no v prefix), checking for newer versions...`);
+        if (monitoredSemver && !isVersionSpecific) {
+          console.log(`[Check] Tag "${tag}" is clean semver format, checking for newer versions...`);
           try {
             const latestInfo = await this.getLatestSemverVersion(fullImagePath, tag);
             latestAvailableTag = latestInfo.latestTag;
@@ -933,8 +942,8 @@ export class RegistryService {
             console.warn(`[Check] Failed to get latest semver version for ${fullImagePath}:${tag}`, versionError);
             // Don't fail the entire check, just skip version resolution
           }
-        } else if (monitoredSemver && isVPrefixed) {
-          console.log(`[Check] Tag "${tag}" is v-prefixed semver format, skipping version resolution (typically static release tag)`);
+        } else if (monitoredSemver && isVersionSpecific) {
+          console.log(`[Check] Tag "${tag}" is version-specific format, skipping version resolution (typically static release tag)`);
         } else {
           console.log(`[Check] Tag "${tag}" is not semver format, skipping version resolution`);
         }
@@ -950,13 +959,13 @@ export class RegistryService {
         platform = result.platform;
         console.log(`[Check] GHCR OK`, { image: `${parsed.namespace}/${parsed.image}`, tag, sha: latestSha.substring(0, 12), platform });
         
-        // Only do expensive version resolution for semver tags WITHOUT v prefix (e.g., 1.2.1)
-        // Skip version checking for v-prefixed tags (e.g., v1.2.1) as they're typically static release tags
+        // Only do expensive version resolution for clean semver tags (e.g., 1.2.1)
+        // Skip version checking for version-specific tags (e.g., v1.2.1, 0.1.0-beta.4) as they're typically static release tags
         const monitoredSemver = this.parseSemver(tag);
-        const isVPrefixed = tag.startsWith('v');
+        const isVersionSpecific = this.isVersionSpecificTag(tag);
         
-        if (monitoredSemver && !isVPrefixed) {
-          console.log(`[Check] Tag "${tag}" is semver format (no v prefix), checking for newer versions...`);
+        if (monitoredSemver && !isVersionSpecific) {
+          console.log(`[Check] Tag "${tag}" is clean semver format, checking for newer versions...`);
           try {
             const latestInfo = await this.getLatestSemverVersionForGHCR(parsed.namespace, parsed.image, tag);
             latestAvailableTag = latestInfo.latestTag;
@@ -970,8 +979,8 @@ export class RegistryService {
             console.warn(`[Check] Failed to get latest semver version for ${parsed.namespace}/${parsed.image}:${tag}`, versionError);
             // Don't fail the entire check, just skip version resolution
           }
-        } else if (monitoredSemver && isVPrefixed) {
-          console.log(`[Check] Tag "${tag}" is v-prefixed semver format, skipping version resolution (typically static release tag)`);
+        } else if (monitoredSemver && isVersionSpecific) {
+          console.log(`[Check] Tag "${tag}" is version-specific format, skipping version resolution (typically static release tag)`);
         } else {
           console.log(`[Check] Tag "${tag}" is not semver format, skipping version resolution`);
         }

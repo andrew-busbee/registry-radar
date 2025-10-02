@@ -20,10 +20,13 @@ export function ContainerCard({
   isChecking = false 
 }: ContainerCardProps) {
   
-  // Helper function to check if a tag is a v-prefixed versioned tag (like v1.2.3)
+  // Helper function to check if a tag is a v-prefixed versioned tag (like v1.2.3) or has additional characters after semantic version (like 0.1.0-beta.4)
   const isVPrefixedVersionedTag = (tag: string): boolean => {
+    // Match v-prefixed versions like v1.2.3
     const vPrefixedPattern = /^v\d+\.\d+\.\d+/;
-    return vPrefixedPattern.test(tag);
+    // Match versions with additional characters after semantic version like 0.1.0-beta.4, 1.2.3-rc.1, etc.
+    const extendedVersionPattern = /^\d+\.\d+\.\d+[^0-9]/;
+    return vPrefixedPattern.test(tag) || extendedVersionPattern.test(tag);
   };
 
   const [isEditing, setIsEditing] = useState(false);
@@ -297,7 +300,7 @@ export function ContainerCard({
                 <div className="flex items-start gap-2">
                   <div className="text-blue-600 dark:text-blue-400 text-sm">💡</div>
                   <div className="text-xs text-blue-700 dark:text-blue-300">
-                    <strong>Warning:</strong> Consider monitoring the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">latest</code> tag instead of v-prefixed versions like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> to ensure automatic update notifications when new versions are released. Non v-prefixed versions like 3.2.1 are unaffected.
+                    <strong>Warning:</strong> Consider monitoring the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">latest</code> tag instead of version-specific tags like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> to ensure automatic update notifications when new versions are released. Pure Semantic Versions like 3.2.1 will work just fine.
                   </div>
                 </div>
               </div>
