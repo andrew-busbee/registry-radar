@@ -6,10 +6,11 @@ interface NotificationsProps {
   notifications: Notification[];
   onMarkAsRead: (id: string) => Promise<void>;
   onClearAll: () => Promise<void>;
+  onMarkAllAsRead: () => Promise<void>;
   onNavigateToSettings?: () => void;
 }
 
-export function Notifications({ notifications, onMarkAsRead, onClearAll, onNavigateToSettings }: NotificationsProps) {
+export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkAllAsRead, onNavigateToSettings }: NotificationsProps) {
   const [isClearing, setIsClearing] = useState(false);
 
   const handleClearAll = async () => {

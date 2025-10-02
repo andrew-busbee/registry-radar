@@ -308,6 +308,21 @@ function AppContent() {
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+    try {
+      const response = await fetch('/api/notifications/read-all', {
+        method: 'PUT',
+      });
+
+      if (response.ok) {
+        // Update local state to mark all notifications as read
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
   const handleNavigateToSettings = (tab: 'general' | 'notifications' = 'general') => {
     setSettingsInitialTab(tab);
     setActivePage('settings');
@@ -343,6 +358,7 @@ function AppContent() {
             notifications={notifications}
             onMarkAsRead={handleMarkNotificationAsRead}
             onClearAll={handleClearNotifications}
+            onMarkAllAsRead={handleMarkAllAsRead}
             onNavigateToSettings={() => handleNavigateToSettings('notifications')}
           />
         );
