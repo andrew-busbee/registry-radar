@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Trash2, CheckCircle, AlertCircle, Clock, Check, Settings, Bell } from 'lucide-react';
 import { Notification } from '../types';
 
@@ -10,8 +10,11 @@ interface NotificationsProps {
   onNavigateToSettings?: () => void;
 }
 
+type FilterType = 'all' | 'update' | 'error' | 'unread';
+
 export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkAllAsRead, onNavigateToSettings }: NotificationsProps) {
   const [isClearing, setIsClearing] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const handleClearAll = async () => {
     if (confirm('Are you sure you want to clear all notifications?')) {
@@ -77,6 +80,21 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
     }
   };
 
+  // Filter notifications based on active filter
+  const filteredNotifications = useMemo(() => {
+    switch (activeFilter) {
+      case 'update':
+        return notifications.filter(n => n.type === 'update');
+      case 'error':
+        return notifications.filter(n => n.type === 'error');
+      case 'unread':
+        return notifications.filter(n => !n.read);
+      case 'all':
+      default:
+        return notifications;
+    }
+  }, [notifications, activeFilter]);
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
@@ -112,19 +130,71 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
         )}
       </div>
 
-      {notifications.length === 0 ? (
+      {/* Filter Options */}
+      {notifications.length > 0 && (
+        <div className="bg-card border border-border rounded-lg p-4">
+          <h3 className="font-medium text-foreground mb-3">Filter by Type</h3>
+          <div className="flex flex-wrap gap-2">
+            <button 
+              onClick={() => setActiveFilter('all')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                activeFilter === 'all' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              All ({notifications.length})
+            </button>
+            <button 
+              onClick={() => setActiveFilter('update')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                activeFilter === 'update' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              Updates ({notifications.filter(n => n.type === 'update').length})
+            </button>
+            <button 
+              onClick={() => setActiveFilter('error')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                activeFilter === 'error' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              Errors ({notifications.filter(n => n.type === 'error').length})
+            </button>
+            <button 
+              onClick={() => setActiveFilter('unread')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                activeFilter === 'unread' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              Unread ({unreadCount})
+            </button>
+          </div>
+        </div>
+      )}
+
+      {filteredNotifications.length === 0 ? (
         <div className="bg-card border border-border rounded-lg p-12 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              No notifications
+              {notifications.length === 0 ? 'No notifications' : `No ${activeFilter} notifications`}
             </h3>
             <p className="text-muted-foreground mb-6">
-              You'll see notifications here when images have updates or when errors occur.
+              {notifications.length === 0 
+                ? "You'll see notifications here when images have updates or when errors occur."
+                : `Try selecting a different filter to see more notifications.`
+              }
             </p>
-            {onNavigateToSettings && (
+            {onNavigateToSettings && notifications.length === 0 && (
               <button
                 onClick={onNavigateToSettings}
                 className="inline-flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -137,7 +207,7 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
         </div>
       ) : (
         <div className="space-y-3">
-          {notifications.map((notification) => (
+          {filteredNotifications.map((notification) => (
             <div
               key={notification.id}
               className={`p-4 rounded-lg border transition-colors cursor-pointer hover:shadow-sm ${
@@ -175,26 +245,6 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
         </div>
       )}
 
-      {/* Filter Options */}
-      {notifications.length > 0 && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="font-medium text-foreground mb-3">Filter by Type</h3>
-          <div className="flex flex-wrap gap-2">
-            <button className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">
-              All ({notifications.length})
-            </button>
-            <button className="px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded-md">
-              Updates ({notifications.filter(n => n.type === 'update').length})
-            </button>
-            <button className="px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded-md">
-              Errors ({notifications.filter(n => n.type === 'error').length})
-            </button>
-            <button className="px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded-md">
-              Unread ({unreadCount})
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
