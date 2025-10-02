@@ -44,9 +44,10 @@ export function ContainerTable({
       return false;
     }
     
-    // Show dismiss button for any container with an update available
-    // that hasn't been acknowledged yet
-    return !containerState.updateAcknowledged;
+    // Show button if:
+    // - There is a SHA update and it hasn't been acknowledged, OR
+    // - There is a newer semantic tag available (ack state doesn't apply to this case)
+    return (containerState.hasUpdate && !containerState.updateAcknowledged) || !!containerState.hasNewerTag;
   };
 
   const getStatusIcon = (containerState?: ContainerState) => {

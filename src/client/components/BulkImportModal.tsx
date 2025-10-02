@@ -440,7 +440,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Paste any of the following formats:&#10;&#10;📋 Simple list:&#10;nginx:alpine&#10;ghcr.io/user/repo:latest&#10;&#10;🐳 Docker Compose:&#10;services:&#10;  web:&#10;    image: nginx:alpine&#10;&#10;⚡ Docker commands:&#10;docker run -d redis:7&#10;&#10;📄 Dockerfile:&#10;FROM ubuntu:22.04"
-                  className="w-full h-32 px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
+                  className="w-full h-96 px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
                   disabled={isImporting}
                 />
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
