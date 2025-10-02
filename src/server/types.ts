@@ -106,6 +106,5 @@ export interface NotificationConfig {
     sendIndividualReportsOnScheduledRun: boolean;
     sendReportsWhenUpdatesFound: boolean;
     sendReportsOnErrors: boolean;
-    sendReportsOnManualCheck: boolean;
   };
 }

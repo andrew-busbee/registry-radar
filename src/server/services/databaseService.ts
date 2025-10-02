@@ -114,7 +114,6 @@ const migrations: Migration[] = [
                           sendIndividualReportsOnScheduledRun: false,
                           sendReportsWhenUpdatesFound: true,
                           sendReportsOnErrors: true,
-                          sendReportsOnManualCheck: false,
                         }
                       };
                       
@@ -138,6 +137,39 @@ const migrations: Migration[] = [
               });
             });
           });
+        });
+      });
+    }
+  },
+  {
+    version: 2,
+    name: 'remove_manual_check_toggle',
+    up: async (db) => {
+      return new Promise((resolve, reject) => {
+        // Update existing notification configs to remove sendReportsOnManualCheck
+        db.all('SELECT id, config_json FROM notification_config', (err, rows) => {
+          if (err) return reject(err);
+          
+          for (const row of rows as any[]) {
+            try {
+              const config = JSON.parse(row.config_json);
+              if (config.triggers && config.triggers.sendReportsOnManualCheck !== undefined) {
+                delete config.triggers.sendReportsOnManualCheck;
+                
+                db.run(
+                  'UPDATE notification_config SET config_json = ? WHERE id = ?',
+                  [JSON.stringify(config), row.id],
+                  (updateErr) => {
+                    if (updateErr) return reject(updateErr);
+                  }
+                );
+              }
+            } catch (parseErr) {
+              console.warn('Failed to parse notification config:', parseErr);
+            }
+          }
+          
+          resolve();
         });
       });
     }
@@ -431,7 +463,6 @@ export class DatabaseService {
           sendIndividualReportsOnScheduledRun: false,
           sendReportsWhenUpdatesFound: true,
           sendReportsOnErrors: true,
-          sendReportsOnManualCheck: false,
         }
       };
     }

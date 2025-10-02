@@ -29,7 +29,7 @@ router.put('/config', async (req, res) => {
     }
 
     // Validate trigger settings
-    const requiredTriggers = ['sendSummaryOnScheduledRun', 'sendIndividualReportsOnScheduledRun', 'sendReportsWhenUpdatesFound', 'sendReportsOnErrors', 'sendReportsOnManualCheck'];
+    const requiredTriggers = ['sendSummaryOnScheduledRun', 'sendIndividualReportsOnScheduledRun', 'sendReportsWhenUpdatesFound', 'sendReportsOnErrors'];
     for (const trigger of requiredTriggers) {
       if (typeof config.triggers[trigger] !== 'boolean') {
         return res.status(400).json({ error: `Invalid configuration: ${trigger} must be a boolean` });
