@@ -224,21 +224,9 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Bell className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Notification Settings</h2>
-        </div>
-        {hasLocalChanges && (
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
-          >
-            <Save className="w-4 h-4" />
-            <span>{isLoading ? 'Saving...' : 'Save'}</span>
-          </button>
-        )}
+      <div className="flex items-center space-x-2">
+        <Bell className="w-5 h-5 text-primary" />
+        <h2 className="text-lg font-semibold text-foreground">Notification Settings</h2>
       </div>
 
       {/* Success/Error Messages */}
@@ -375,13 +363,27 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
               
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-foreground">Channels</h4>
-                <button
-                  onClick={addAppriseChannel}
-                  className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add</span>
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={addAppriseChannel}
+                    className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add</span>
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={!hasLocalChanges || isLoading}
+                    className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors text-sm ${
+                      hasLocalChanges 
+                        ? 'bg-green-600 text-white hover:bg-green-700' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{isLoading ? 'Saving...' : 'Save'}</span>
+                  </button>
+                </div>
               </div>
 
               {localConfig.apprise?.channels?.map((channel, index) => (
