@@ -35,7 +35,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   const [success, setSuccess] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
-  const [isSendingTestReports, setIsSendingTestReports] = useState(false);
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({
     triggers: true,
     discord: !!config.discord?.enabled,
@@ -93,44 +92,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     }
   };
 
-  const handleSendTestReports = async () => {
-    setIsSendingTestReports(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      // Send test reports for each notification type
-      const testReports = [
-        { type: 'update', name: 'Sample Update Report' },
-        { type: 'error', name: 'Sample Error Report' },
-        { type: 'summary', name: 'Sample Summary Report' },
-        { type: 'individual', name: 'Sample Individual Report' }
-      ];
-
-      for (const report of testReports) {
-        try {
-          const response = await fetch('/api/notifications/test-reports', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reportType: report.type })
-          });
-
-          if (!response.ok) {
-            throw new Error(`Failed to send ${report.name}`);
-          }
-        } catch (err) {
-          console.error(`Error sending ${report.name}:`, err);
-        }
-      }
-
-      setSuccess('Test reports sent successfully! Check your configured notification channels.');
-      setTimeout(() => setSuccess(null), 5000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send test reports');
-    } finally {
-      setIsSendingTestReports(false);
-    }
-  };
 
   // Helper to update local config and mark as changed
   const updateLocalConfig = (updater: (prev: NotificationConfig) => NotificationConfig) => {
@@ -393,24 +354,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           </p>
         </div>
         <div className="hidden sm:flex space-x-2">
-          <button
-            onClick={handleSendTestReports}
-            disabled={isSendingTestReports}
-            className="flex items-center space-x-2 px-3 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors disabled:opacity-50"
-          >
-            {isSendingTestReports ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Sending...</span>
-              </>
-            ) : (
-              <>
-                <Bell className="w-4 h-4" />
-                <span>Send Test Reports</span>
-              </>
-            )}
-          </button>
-          
           <button
             onClick={handleSave}
             disabled={isLoading}
@@ -1042,24 +985,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
 
       {/* Sticky action bar for smaller screens */}
       <div className="sm:hidden sticky bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border p-3 mt-2 space-y-2">
-        <button
-          onClick={handleSendTestReports}
-          disabled={isSendingTestReports}
-          className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-        >
-          {isSendingTestReports ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Sending Test Reports...</span>
-            </>
-          ) : (
-            <>
-              <Bell className="w-4 h-4" />
-              <span>Send Test Reports</span>
-            </>
-          )}
-        </button>
-        
         <button
           onClick={handleSave}
           disabled={isLoading}
