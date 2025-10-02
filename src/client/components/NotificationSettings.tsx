@@ -225,30 +225,30 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Bell className="w-6 h-6 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Notification Settings</h2>
+        <div className="flex items-center space-x-2">
+          <Bell className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Notification Settings</h2>
         </div>
         {hasLocalChanges && (
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="flex items-center space-x-2 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
           >
             <Save className="w-4 h-4" />
-            <span>{isLoading ? 'Saving...' : 'Save Changes'}</span>
+            <span>{isLoading ? 'Saving...' : 'Save'}</span>
           </button>
         )}
       </div>
 
       {/* Success/Error Messages */}
       {success && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-md text-green-800">
+        <div className="p-2 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
           {success}
         </div>
       )}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-800">
+        <div className="p-2 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
           {error}
         </div>
       )}
@@ -366,92 +366,80 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         <div className="mt-3 space-y-3">
           {localConfig.apprise?.enabled ? (
             <>
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-800 text-sm">
-                <strong>Apprise Integration:</strong> Apprise is a lightweight notification service that supports 80+ notification services including Discord, Slack, Email, SMS, and more.
+              <div className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 text-xs">
+                <span><strong>Apprise:</strong> Supports 80+ services (Discord, Slack, Email, SMS, etc.)</span>
+                <a href="https://github.com/caronc/apprise#supported-notifications" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  Supported services →
+                </a>
               </div>
-              <div>
-                <h4 className="font-medium text-foreground mb-3">Notification Channels</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Configure Apprise notification channels. Each channel can send to different services like Discord, Slack, Email, etc.
-                </p>
+              
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-foreground">Channels</h4>
                 <button
                   onClick={addAppriseChannel}
-                  className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add Channel</span>
+                  <span>Add</span>
                 </button>
               </div>
+
               {localConfig.apprise?.channels?.map((channel, index) => (
-                <div key={index} className="p-3 border border-border rounded-lg space-y-3">
+                <div key={index} className="p-3 border border-border rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
-                    <h5 className="font-medium text-foreground">Channel {index + 1}</h5>
-                    <button
-                      onClick={() => removeAppriseChannel(index)}
-                      className="text-destructive hover:text-destructive/80 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">Channel Name</label>
-                      <input
-                        type="text"
-                        value={channel.name}
-                        onChange={(e) => updateAppriseChannel(index, 'name', e.target.value)}
-                        className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                        placeholder="e.g., Discord Alerts"
-                      />
-                    </div>
                     <div className="flex items-center space-x-2">
-                      <label className="block text-sm font-medium text-foreground mb-1">Enabled</label>
                       <Toggle
                         checked={channel.enabled}
                         onChange={(checked) => updateAppriseChannel(index, 'enabled', checked)}
                         ariaLabel={`Enable channel ${index + 1}`}
                       />
+                      <h5 className="font-medium text-foreground text-sm">Channel {index + 1}</h5>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={handleTestApprise}
+                        disabled={testing === 'apprise' || !localConfig.apprise?.channels?.some(c => c.enabled && c.url)}
+                        className="flex items-center space-x-1 px-2 py-1 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      >
+                        <TestTube className="w-3 h-3" />
+                        <span>{testing === 'apprise' ? 'Sending...' : 'Test'}</span>
+                      </button>
+                      <button
+                        onClick={() => removeAppriseChannel(index)}
+                        className="text-destructive hover:text-destructive/80 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">Apprise URL</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    <input
+                      type="text"
+                      value={channel.name}
+                      onChange={(e) => updateAppriseChannel(index, 'name', e.target.value)}
+                      className="w-full px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
+                      placeholder="Channel name"
+                    />
                     <input
                       type="text"
                       value={channel.url}
                       onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
-                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                      placeholder="e.g., discord://webhook_id/webhook_token"
+                      className="w-full px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
+                      placeholder="discord://webhook_id/webhook_token"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Supported formats: discord://, slack://, mailto://, pushover://, etc. 
-                      <a href="https://github.com/caronc/apprise#supported-notifications" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
-                        See all supported services
-                      </a>
-                    </p>
                   </div>
                 </div>
               ))}
+              
               {(!localConfig.apprise?.channels || localConfig.apprise.channels.length === 0) && (
-                <p className="text-muted-foreground text-center py-4">
-                  No channels configured. Click "Add Channel" to add your first notification channel.
+                <p className="text-muted-foreground text-center py-3 text-sm">
+                  No channels configured. Click "Add" to get started.
                 </p>
               )}
-              <div>
-                <button
-                  onClick={handleTestApprise}
-                  disabled={testing === 'apprise' || !localConfig.apprise?.channels?.some(c => c.enabled && c.url)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-                >
-                  <TestTube className="w-4 h-4" />
-                  <span>{testing === 'apprise' ? 'Sending Test...' : 'Send Test Notification'}</span>
-                </button>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Test notifications will be sent to all enabled channels
-                </p>
-              </div>
+              
             </>
           ) : (
-            <p className="text-muted-foreground">Enable Apprise to configure notification channels</p>
+            <p className="text-muted-foreground text-sm">Enable Apprise to configure notification channels</p>
           )}
         </div>
         )}

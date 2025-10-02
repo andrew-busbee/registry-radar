@@ -15,22 +15,22 @@ export interface AppriseConfig {
 export class AppriseTemplates {
   private static readonly BRAND_HEADER = '## 📡 Registry Radar';
   private static readonly BRAND_FOOTER = '---\n*Registry Radar - Simple Docker Image Monitoring*';
+  private static readonly TITLE_PREFIX = '📡 Registry Radar';
   
   static updateAvailable(containerName: string, image: string, tag: string, updatedDate?: string): { title: string; body: string } {
     return {
-      title: '📡 Registry Radar: Monitored Image Update Available',
+      title: `${this.TITLE_PREFIX}: Monitored Image Update Available`,
       body: `Name: ${containerName}
 Image: ${image}:${tag}
 ${updatedDate ? `Image Updated: ${updatedDate}` : ''}
 
----
-Registry Radar - Simple Docker Image Monitoring`
+${this.BRAND_FOOTER}`
     };
   }
 
   static errorOccurred(errorMessage: string, container?: string): { title: string; body: string } {
     return {
-      title: '📡 Registry Radar Image Check Error',
+      title: `${this.TITLE_PREFIX} Image Check Error`,
       body: `An error occurred during the registry check:
 
 Name: ${container || 'N/A'}
@@ -39,14 +39,13 @@ ${errorMessage}
 
 Please check your configuration and try again.
 
----
-Registry Radar - Simple Docker Image Monitoring`
+${this.BRAND_FOOTER}`
     };
   }
 
   static checkComplete(totalImages: number, updatesFound: number, errors: number): { title: string; body: string } {
     return {
-      title: '📡 Registry Radar Check Complete',
+      title: `${this.TITLE_PREFIX} Check Complete`,
       body: `Scheduled registry check has completed with the following results:
 
 Total Images Checked: ${totalImages}
@@ -55,8 +54,7 @@ Errors: ${errors}
 
 ${updatesFound > 0 ? '⚠️ Image Updates Available' : '✅ All Good: No updates found for your monitored images.'}
 
----
-Registry Radar - Simple Docker Image Monitoring`
+${this.BRAND_FOOTER}`
     };
   }
 
@@ -66,19 +64,18 @@ Registry Radar - Simple Docker Image Monitoring`
     ).join('\n\n');
 
     return {
-      title: '📡 Registry Radar Image Status Report',
+      title: `${this.TITLE_PREFIX} Image Status Report`,
       body: `Status report for all monitored images:
 
 ${containerList}
 
----
-Registry Radar - Simple Docker Image Monitoring`
+${this.BRAND_FOOTER}`
     };
   }
 
   static testNotification(): { title: string; body: string } {
     return {
-      title: '📡 Registry Radar Test Notification',
+      title: `${this.TITLE_PREFIX} Test Notification`,
       body: `This is a test notification from Registry Radar.
 
 ✅ Success: If you received this message, your Apprise configuration is working correctly!
@@ -88,8 +85,7 @@ Configuration Details:
 - Format: Plain Text
 - Timestamp: ${new Date().toLocaleString()}
 
----
-Registry Radar - Simple Docker Image Monitoring`
+${this.BRAND_FOOTER}`
     };
   }
 }
