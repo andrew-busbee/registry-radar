@@ -34,6 +34,7 @@ export interface CronConfig {
   schedule: string;
   enabled: boolean;
   timezone?: string;
+  isRunning?: boolean;
 }
 
 export interface Notification {

@@ -8,7 +8,7 @@ import { AppriseService } from './appriseService';
 
 export class NotificationService {
   static async getNotifications(): Promise<Notification[]> {
-    const notifications = DatabaseService.getNotifications();
+    const notifications = await DatabaseService.getNotifications();
     return notifications.map((notification: any) => ({
       id: notification.id,
       type: notification.type,
@@ -25,7 +25,7 @@ export class NotificationService {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
     };
     
-    DatabaseService.addNotification({
+    await DatabaseService.addNotification({
       id: newNotification.id,
       type: newNotification.type,
       message: newNotification.message,
@@ -36,15 +36,15 @@ export class NotificationService {
   }
 
   static async markAsRead(notificationId: string): Promise<void> {
-    DatabaseService.markNotificationAsRead(notificationId);
+    await DatabaseService.markNotificationAsRead(notificationId);
   }
 
   static async markAllAsRead(): Promise<void> {
-    DatabaseService.markAllNotificationsAsRead();
+    await DatabaseService.markAllNotificationsAsRead();
   }
 
   static async clearNotifications(): Promise<void> {
-    DatabaseService.clearNotifications();
+    await DatabaseService.clearNotifications();
   }
 
   static async createUpdateNotification(containerName: string, image: string, tag: string, isNewUpdate: boolean = true, customMessage?: string): Promise<void> {

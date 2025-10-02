@@ -45,7 +45,7 @@ async function startServer() {
   try {
     // Initialize database first
     console.log('🗄️  Initializing SQLite database...');
-    DatabaseService.initialize();
+    await DatabaseService.initialize();
     console.log('✅ Database initialized successfully');
     
     // Initialize other services

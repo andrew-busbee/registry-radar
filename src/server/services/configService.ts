@@ -3,7 +3,7 @@ import { DatabaseService } from './databaseService';
 
 export class ConfigService {
   static async getContainers(): Promise<ContainerRegistry[]> {
-    const containers = DatabaseService.getContainers();
+    const containers = await DatabaseService.getContainers();
     return containers.map((container: any) => ({
       name: container.name,
       imagePath: container.image_path,
@@ -13,23 +13,23 @@ export class ConfigService {
 
   static async saveContainers(containers: ContainerRegistry[]): Promise<void> {
     // Clear existing containers
-    const existingContainers = DatabaseService.getContainers();
+    const existingContainers = await DatabaseService.getContainers();
     for (const container of existingContainers) {
-      DatabaseService.deleteContainer(container.id);
+      await DatabaseService.deleteContainer(container.id);
     }
 
     // Add new containers
     for (const container of containers) {
-      DatabaseService.addContainer({
+      await DatabaseService.addContainer({
         name: container.name,
         image_path: container.imagePath,
-        tag: container.tag
+        tag: container.tag || 'latest'
       });
     }
   }
 
   static async getContainerState(): Promise<ContainerState[]> {
-    const states = DatabaseService.getContainerStates();
+    const states = await DatabaseService.getContainerStates();
     return states.map((state: any) => ({
       image: state.image,
       tag: state.tag,
@@ -52,11 +52,11 @@ export class ConfigService {
 
   static async saveContainerState(state: ContainerState[]): Promise<void> {
     // Clear existing states
-    DatabaseService.clearContainerStates();
+    await DatabaseService.clearContainerStates();
 
     // Add new states
     for (const containerState of state) {
-      DatabaseService.upsertContainerState({
+      await DatabaseService.upsertContainerState({
         image: containerState.image,
         tag: containerState.tag,
         current_sha: containerState.currentSha,
@@ -78,12 +78,12 @@ export class ConfigService {
   }
 
   static async getCronConfig(): Promise<CronConfig> {
-    return DatabaseService.getCronConfig();
+    return await DatabaseService.getCronConfig();
   }
 
   static async saveCronConfig(config: CronConfig): Promise<void> {
     console.log('SAVE CALLED FROM:', new Error().stack?.split('\n')[2]?.trim());
-    DatabaseService.updateCronConfig({
+    await DatabaseService.updateCronConfig({
       schedule: config.schedule,
       enabled: config.enabled,
       timezone: config.timezone,
@@ -93,10 +93,10 @@ export class ConfigService {
   }
 
   static async getNotificationConfig(): Promise<NotificationConfig> {
-    return DatabaseService.getNotificationConfig();
+    return await DatabaseService.getNotificationConfig();
   }
 
   static async saveNotificationConfig(config: NotificationConfig): Promise<void> {
-    DatabaseService.updateNotificationConfig(config);
+    await DatabaseService.updateNotificationConfig(config);
   }
 }

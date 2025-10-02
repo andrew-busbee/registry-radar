@@ -3,6 +3,13 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
+# Install build dependencies for sqlite3
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    sqlite-dev
+
 # Copy package files
 COPY package*.json ./
 COPY tsconfig*.json ./
@@ -25,9 +32,24 @@ FROM node:24-alpine AS production
 
 WORKDIR /app
 
-# Install only production dependencies
+# Install build dependencies for sqlite3 compilation
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    sqlite-dev
+
+# Copy package files
 COPY package*.json ./
+
+# Install production dependencies
 RUN npm install --omit=dev && npm cache clean --force
+
+# Remove build dependencies to reduce image size
+RUN apk del python3 make g++ sqlite-dev
+
+# Install runtime SQLite library
+RUN apk add --no-cache sqlite
 
 # Copy built application
 COPY --from=builder /app/dist ./dist
