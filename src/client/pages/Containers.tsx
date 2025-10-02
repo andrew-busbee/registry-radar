@@ -235,7 +235,7 @@ export function Containers({
         <div>
           <h1 className="text-3xl font-bold text-foreground">Image Details</h1>
           <p className="text-muted-foreground mt-1">
-            Monitor and configure your docker images
+            Monitor and configure your Docker images
           </p>
         </div>
         <div className="flex items-center space-x-2">

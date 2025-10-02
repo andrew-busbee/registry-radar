@@ -35,7 +35,7 @@ export function GettingStartedGuide({
             Welcome to Registry Radar
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Monitor your container images for updates across multiple registries. 
+            Monitor your Docker images for updates across multiple registries. 
             Get notified when new versions are available so you can keep your deployments up to date.
           </p>
         </div>
@@ -48,9 +48,9 @@ export function GettingStartedGuide({
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
                 <Plus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="font-medium text-foreground">1. Add Containers</h3>
+              <h3 className="font-medium text-foreground">1. Add Images</h3>
               <p className="text-sm text-muted-foreground text-center">
-                Add container images you want to monitor from Docker Hub, GitHub Container Registry, and more.
+                Add Docker images you want to monitor from Docker Hub, GitHub Container Registry, and more.
               </p>
             </div>
             <div className="flex flex-col items-center space-y-3 p-4">
@@ -59,7 +59,7 @@ export function GettingStartedGuide({
               </div>
               <h3 className="font-medium text-foreground">2. Monitor Updates</h3>
               <p className="text-sm text-muted-foreground text-center">
-                Registry Radar checks your containers regularly and compares versions with the registry.
+                Registry Radar checks your images regularly and compares versions with the registry.
               </p>
             </div>
             <div className="flex flex-col items-center space-y-3 p-4">
@@ -112,8 +112,8 @@ export function GettingStartedGuide({
             >
               <Plus className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
               <div className="text-left">
-                <h3 className="font-medium text-foreground">Add Single Container</h3>
-                <p className="text-sm text-muted-foreground">Add one container image to monitor</p>
+                <h3 className="font-medium text-foreground">Add An Image</h3>
+                <p className="text-sm text-muted-foreground">Add one Docker image to monitor</p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>
@@ -125,7 +125,7 @@ export function GettingStartedGuide({
               <Upload className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
               <div className="text-left">
                 <h3 className="font-medium text-foreground">Bulk Import</h3>
-                <p className="text-sm text-muted-foreground">Import multiple containers at once</p>
+                <p className="text-sm text-muted-foreground">Import multiple images at once</p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>

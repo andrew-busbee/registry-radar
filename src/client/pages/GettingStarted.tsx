@@ -12,7 +12,7 @@ export function GettingStarted({ onAddContainer, onBulkImport }: GettingStartedP
         <div>
           <h1 className="text-3xl font-bold text-foreground">Getting Started</h1>
           <p className="text-muted-foreground mt-1">
-            Learn how to use Registry Radar to monitor your container images
+            Learn how to use Registry Radar to monitor your Docker images
           </p>
         </div>
       </div>
