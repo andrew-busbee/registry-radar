@@ -25,7 +25,6 @@ function AppContent() {
       sendIndividualReportsOnScheduledRun: false,
       sendReportsWhenUpdatesFound: true,
       sendReportsOnErrors: true,
-      sendReportsOnManualCheck: false,
     }
   });
   const [isLoading, setIsLoading] = useState(true);

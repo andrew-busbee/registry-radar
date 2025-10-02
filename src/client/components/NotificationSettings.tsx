@@ -18,7 +18,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     sendIndividualReportsOnScheduledRun: false,
     sendReportsWhenUpdatesFound: true,
     sendReportsOnErrors: true,
-    sendReportsOnManualCheck: false,
   };
 
   const [localConfig, setLocalConfig] = useState<NotificationConfig>(() => {
@@ -51,7 +50,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         sendIndividualReportsOnScheduledRun: false,
         sendReportsWhenUpdatesFound: true,
         sendReportsOnErrors: true,
-        sendReportsOnManualCheck: false,
       };
       
       setLocalConfig({
@@ -460,22 +458,6 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             </div>
           </div>
           
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0 mt-1">
-              <Toggle
-                checked={getTriggerValue('sendReportsOnManualCheck', false)}
-                onChange={(next) => updateTriggerConfig(prev => ({
-                  ...prev,
-                  triggers: { ...prev.triggers, sendReportsOnManualCheck: next }
-                }))}
-                ariaLabel="Send the above reports on manual checks as well"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <label className="font-medium text-foreground">Send the above reports on manual checks as well</label>
-              <p className="text-sm text-muted-foreground mt-1">When enabled, manual checks will send the same notifications as scheduled runs based on the settings above</p>
-            </div>
-          </div>
         </div>
         )}
       </div>
