@@ -142,7 +142,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         enabled: prev.apprise?.enabled || false,
         channels: [
           ...(prev.apprise?.channels || []),
-          { name: '', url: '', enabled: true }
+          { url: '', enabled: true }
         ]
       }
     }));
@@ -158,8 +158,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     }));
   };
 
-  const updateAppriseChannel = (index: number, field: 'name' | 'url' | 'enabled', value: string | boolean) => {
-    // Only mark as having local changes for text fields (name, url), not for enabled toggle
+  const updateAppriseChannel = (index: number, field: 'url' | 'enabled', value: string | boolean) => {
+    // Only mark as having local changes for text fields (url), not for enabled toggle
     const shouldMarkAsChanged = field !== 'enabled';
     
     if (shouldMarkAsChanged) {
@@ -246,7 +246,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         channels: enabled
           ? ((prev.apprise?.channels && prev.apprise.channels.length > 0)
               ? prev.apprise.channels
-              : [{ name: '', url: '', enabled: true }])
+              : [{ url: '', enabled: true }])
           : (prev.apprise?.channels || [])
       }
     }));
@@ -261,7 +261,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           channels: enabled
             ? ((localConfig.apprise?.channels && localConfig.apprise.channels.length > 0)
                 ? localConfig.apprise.channels
-                : [{ name: '', url: '', enabled: true }])
+                : [{ url: '', enabled: true }])
             : (localConfig.apprise?.channels || [])
         }
       };
@@ -526,20 +526,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 gap-2">
-                        <input
-                          type="text"
-                          value={channel.name}
-                          onChange={(e) => updateAppriseChannel(index, 'name', e.target.value)}
+                  <div>
+                    <input
+                      type="text"
+                      value={channel.url}
+                      onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
                       className="w-full px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
-                      placeholder="Channel name"
-                    />
-                      <input
-                        type="text"
-                        value={channel.url}
-                        onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
-                      className="w-full px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
-                      placeholder="discord://webhook_id/webhook_token"
+                      placeholder="https://hooks.slack.com/services/... or discord://... or mailto://..."
                     />
                   </div>
                 </div>

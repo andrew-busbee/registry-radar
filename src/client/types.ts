@@ -71,7 +71,6 @@ export interface RegistryCheckResult {
 }
 
 export interface AppriseChannel {
-  name: string;
   url: string;
   enabled: boolean;
 }

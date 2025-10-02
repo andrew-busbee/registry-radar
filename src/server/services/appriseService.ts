@@ -1,7 +1,6 @@
 import { NotificationConfig } from '../types';
 
 export interface AppriseChannel {
-  name: string;
   url: string;
   enabled: boolean;
 }
