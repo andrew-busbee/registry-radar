@@ -1,8 +1,5 @@
 import express from 'express';
 import { ConfigService } from '../services/configService';
-import { PushoverService } from '../services/pushoverService';
-import { DiscordService } from '../services/discordService';
-import { EmailService } from '../services/emailService';
 import { AppriseService } from '../services/appriseService';
 
 const router = express.Router();
@@ -36,28 +33,6 @@ router.put('/config', async (req, res) => {
       }
     }
 
-    // Validate Pushover configuration if provided
-    if (config.pushover) {
-      if (typeof config.pushover.enabled !== 'boolean') {
-        return res.status(400).json({ error: 'Invalid Pushover configuration: enabled must be a boolean' });
-      }
-      if (config.pushover.enabled && (!config.pushover.apiKey || !config.pushover.userKey)) {
-        return res.status(400).json({ error: 'Invalid Pushover configuration: apiKey and userKey are required when enabled' });
-      }
-    }
-
-    // Validate Discord configuration if provided
-    if (config.discord) {
-      if (typeof config.discord.enabled !== 'boolean') {
-        return res.status(400).json({ error: 'Invalid Discord configuration: enabled must be a boolean' });
-      }
-      if (config.discord.enabled && (!config.discord.webhooks || !Array.isArray(config.discord.webhooks))) {
-        return res.status(400).json({ error: 'Invalid Discord configuration: webhooks array is required when enabled' });
-      }
-      if (config.discord.enabled && config.discord.webhooks.length === 0) {
-        return res.status(400).json({ error: 'Invalid Discord configuration: at least one webhook is required when enabled' });
-      }
-    }
 
     await ConfigService.saveNotificationConfig(config);
     res.json({ message: 'Notification configuration updated successfully' });
@@ -67,71 +42,6 @@ router.put('/config', async (req, res) => {
   }
 });
 
-// Test Pushover notification
-router.post('/test/pushover', async (req, res) => {
-  try {
-    const config = await ConfigService.getNotificationConfig();
-    
-    if (!config.pushover?.enabled) {
-      return res.status(400).json({ error: 'Pushover notifications are not enabled' });
-    }
-
-    const success = await PushoverService.testNotification(config.pushover);
-    
-    if (success) {
-      res.json({ message: 'Pushover test notification sent successfully' });
-    } else {
-      res.status(500).json({ error: 'Failed to send Pushover test notification' });
-    }
-  } catch (error) {
-    console.error('Error testing Pushover notification:', error);
-    res.status(500).json({ error: 'Failed to test Pushover notification' });
-  }
-});
-
-// Test Discord notification
-router.post('/test/discord', async (req, res) => {
-  try {
-    const config = await ConfigService.getNotificationConfig();
-    
-    if (!config.discord?.enabled) {
-      return res.status(400).json({ error: 'Discord notifications are not enabled' });
-    }
-
-    const success = await DiscordService.testNotification(config.discord);
-    
-    if (success) {
-      res.json({ message: 'Discord test notification sent successfully' });
-    } else {
-      res.status(500).json({ error: 'Failed to send Discord test notification' });
-    }
-  } catch (error) {
-    console.error('Error testing Discord notification:', error);
-    res.status(500).json({ error: 'Failed to test Discord notification' });
-  }
-});
-
-// Test Email notification
-router.post('/test/email', async (req, res) => {
-  try {
-    const config = await ConfigService.getNotificationConfig();
-    
-    if (!config.email?.enabled) {
-      return res.status(400).json({ error: 'Email notifications are not enabled' });
-    }
-
-    const success = await EmailService.sendTestNotification(config.email);
-    
-    if (success) {
-      res.json({ message: 'Test email sent successfully' });
-    } else {
-      res.status(500).json({ error: 'Failed to send test email' });
-    }
-  } catch (error) {
-    console.error('Error testing email notification:', error);
-    res.status(500).json({ error: 'Failed to test email notification' });
-  }
-});
 
 router.post('/test/apprise', async (req, res) => {
   try {

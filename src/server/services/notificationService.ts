@@ -1,9 +1,6 @@
 import { Notification } from '../types';
 import { ConfigService } from './configService';
 import { DatabaseService } from './databaseService';
-import { PushoverService } from './pushoverService';
-import { DiscordService } from './discordService';
-import { EmailService } from './emailService';
 import { AppriseService } from './appriseService';
 
 export class NotificationService {
@@ -124,15 +121,6 @@ export class NotificationService {
       if (type === 'update' && config.triggers.sendReportsWhenUpdatesFound) {
         if (containerName && image && tag) {
           // Send update notifications
-          if (config.pushover?.enabled) {
-            await PushoverService.sendUpdateNotification(config.pushover, containerName, image, tag);
-          }
-          if (config.discord?.enabled) {
-            await DiscordService.sendUpdateNotification(config.discord, containerName, image, tag);
-          }
-          if (config.email?.enabled) {
-            await EmailService.sendUpdateNotification(config.email, containerName, image, tag);
-          }
           if (config.apprise?.enabled) {
             await AppriseService.sendUpdateNotification(config.apprise, containerName, image, tag);
           }
@@ -140,15 +128,6 @@ export class NotificationService {
       } else if (type === 'error' && config.triggers.sendReportsOnErrors) {
         if (errorMessage) {
           // Send error notifications
-          if (config.pushover?.enabled) {
-            await PushoverService.sendErrorNotification(config.pushover, errorMessage, errorContainer);
-          }
-          if (config.discord?.enabled) {
-            await DiscordService.sendErrorNotification(config.discord, errorMessage, errorContainer);
-          }
-          if (config.email?.enabled) {
-            await EmailService.sendErrorNotification(config.email, errorMessage, errorContainer);
-          }
           if (config.apprise?.enabled) {
             await AppriseService.sendErrorNotification(config.apprise, errorMessage, errorContainer);
           }
@@ -168,15 +147,6 @@ export class NotificationService {
       const config = await ConfigService.getNotificationConfig();
 
       // Send run completion notifications
-      if (config.pushover?.enabled) {
-        await PushoverService.sendRunNotification(config.pushover, totalContainers, updatesFound, errors);
-      }
-      if (config.discord?.enabled) {
-        await DiscordService.sendRunNotification(config.discord, totalContainers, updatesFound, errors);
-      }
-      if (config.email?.enabled) {
-        await EmailService.sendRunNotification(config.email, totalContainers, updatesFound, errors);
-      }
       if (config.apprise?.enabled) {
         await AppriseService.sendRunNotification(config.apprise, totalContainers, updatesFound, errors);
       }
@@ -192,15 +162,6 @@ export class NotificationService {
       const config = await ConfigService.getNotificationConfig();
 
       // Send individual container status reports
-      if (config.pushover?.enabled) {
-        await PushoverService.sendIndividualReports(config.pushover, containers);
-      }
-      if (config.discord?.enabled) {
-        await DiscordService.sendIndividualReports(config.discord, containers);
-      }
-      if (config.email?.enabled) {
-        await EmailService.sendIndividualReports(config.email, containers);
-      }
       if (config.apprise?.enabled) {
         await AppriseService.sendIndividualReports(config.apprise, containers);
       }

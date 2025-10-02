@@ -68,7 +68,7 @@ export function GettingStartedGuide({
               </div>
               <h3 className="font-medium text-foreground">3. Get Notified</h3>
               <p className="text-sm text-muted-foreground text-center">
-                Receive notifications when updates are available via Discord, Pushover, or in-app alerts.
+                Receive notifications when updates are available via Apprise (Discord, Slack, Email, etc.) or in-app alerts.
               </p>
             </div>
           </div>

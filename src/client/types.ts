@@ -82,29 +82,6 @@ export interface AppriseConfig {
 }
 
 export interface NotificationConfig {
-  pushover?: {
-    enabled: boolean;
-    apiKey: string;
-    userKey: string;
-    devices?: string[];
-  };
-  discord?: {
-    enabled: boolean;
-    webhooks: {
-      url: string;
-      name: string;
-    }[];
-  };
-  email?: {
-    enabled: boolean;
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    fromEmail?: string;
-    fromName?: string;
-    toEmails: string[];
-  };
   apprise?: AppriseConfig;
   triggers: {
     sendSummaryOnScheduledRun: boolean;

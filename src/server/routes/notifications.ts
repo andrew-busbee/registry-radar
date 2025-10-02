@@ -1,10 +1,5 @@
 import express from 'express';
 import { NotificationService } from '../services/notificationService';
-import { ConfigService } from '../services/configService';
-import { PushoverService } from '../services/pushoverService';
-import { DiscordService } from '../services/discordService';
-import { EmailService } from '../services/emailService';
-import { AppriseService } from '../services/appriseService';
 
 const router = express.Router();
 

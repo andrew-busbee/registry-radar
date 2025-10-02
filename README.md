@@ -15,7 +15,7 @@ Perfect for developers and system administrators who want to stay on top of secu
 - 📊 **Dashboard View**: Get an overview of all your containers and their update status
 - ⚙️ **No Database Needed**: Everything is stored in simple files - no complex setup required
 - 🐳 **Docker Ready**: Runs in Docker with just one command
-- 🎉 **Application Notifications**: Notifications from the app are available via Email, Pushover, and Discord 
+- 🎉 **Application Notifications**: Notifications from the app are available via Apprise (Discord, Slack, Email, SMS, and 80+ other services) 
 
 ## Getting Started
 
@@ -145,45 +145,40 @@ schedule: "0 8 * * 1"
 Registry Radar can send you notifications when container updates are found or errors occur. You can configure multiple notification types to stay informed about your containers.
 
 ### Available Notification Types
-#### 💬 **Discord Notifications**
-#### 📧 **Email Notifications**
-#### 📱 **Pushover Notifications**
-
----
-
-#### 📧 **Email Notifications**
-Get beautifully formatted HTML emails when updates are detected. Perfect for staying informed without being overwhelmed.
+#### 🔔 **Apprise Notifications**
+Send notifications to 80+ services including Discord, Slack, Email, SMS, Pushover, and many more. Apprise provides a unified interface for all your notification needs.
 
 **Setup:**
 1. Go to Settings → Notifications in the web interface
-2. Enable email notifications
-3. Configure your SMTP settings (Gmail, Outlook, or your own email server)
-4. Add recipient email addresses
+2. Enable Apprise notifications
+3. Add notification channels using Apprise URLs
+4. Test your configuration
 
+**Supported Services Include:**
+- **Discord**: `discord://webhook_id/webhook_token`
+- **Slack**: `slack://token_a/token_b/token_c`
+- **Email**: `mailto://user:pass@domain.com`
+- **Pushover**: `pover://user@token`
+- **SMS**: `twilio://account_sid/token/from_phone/to_phone`
+- **Telegram**: `tgram://bot_token/chat_id`
+- And 75+ more services!
 
-#### 💬 **Discord Notifications**
-Send rich embed messages to Discord channels via webhooks. Great for team collaboration.
+**Examples:**
+```
+# Discord webhook
+discord://webhook_id/webhook_token
 
-**Setup:**
-1. Create a Discord webhook in your server
-2. Add the webhook URL in Settings → Notifications
-3. Customize the webhook name for easy identification
+# Gmail SMTP
+mailto://gmail_user:app_password@gmail.com
 
-#### 📱 **Pushover Notifications**
-Send push notifications to your mobile devices. Ideal for critical updates that need immediate attention.
-
-**Setup:**
-1. Install the Pushover app on your devices
-2. Get your user key from the Pushover website
-3. Create an application and get your API key
-4. Configure both keys in Settings → Notifications
+# Slack webhook
+slack://T1H9RESGL/B1H9RESGL/aHJ4f26tDls6yJh7D1p2F4f3
+```
 
 ### Testing Your Notifications
 
 After setting up notifications, you can test them:
-- **Email**: Click "Test Email" in the notification settings
-- **Discord**: Send a test message to verify webhook connectivity
-- **Pushover**: Send a test notification to your devices
+- **Apprise**: Click "Send Test Notification" in the notification settings
 
 ### Environment Variables
 

@@ -173,7 +173,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
       id: 'notifications' as const,
       label: 'Notification Settings',
       icon: Bell,
-      description: 'Discord, Pushover, and notification triggers'
+      description: 'Apprise and notification triggers'
     }
   ];
 
