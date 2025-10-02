@@ -163,9 +163,9 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     const shouldMarkAsChanged = field !== 'enabled';
     
     if (shouldMarkAsChanged) {
-      updateLocalConfig(prev => ({
-        ...prev,
-        apprise: {
+    updateLocalConfig(prev => ({
+      ...prev,
+      apprise: {
           ...prev.apprise,
           channels: prev.apprise?.channels?.map((channel, i) => 
             i === index ? { ...channel, [field]: value } : channel
@@ -179,10 +179,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         apprise: {
           ...prev.apprise,
           channels: prev.apprise?.channels?.map((channel, i) => 
-            i === index ? { ...channel, [field]: value } : channel
+          i === index ? { ...channel, [field]: value } : channel
           ) || []
-        }
-      }));
+      }
+    }));
     }
   };
 
@@ -236,6 +236,46 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
     }
   };
 
+  const handleAppriseToggleChange = async (enabled: boolean) => {
+    // Update local config first (without marking as changed since we're auto-saving)
+    setLocalConfig(prev => ({
+      ...prev,
+      apprise: {
+        ...prev.apprise,
+        enabled,
+        channels: enabled
+          ? ((prev.apprise?.channels && prev.apprise.channels.length > 0)
+              ? prev.apprise.channels
+              : [{ name: '', url: '', enabled: true }])
+          : (prev.apprise?.channels || [])
+      }
+    }));
+
+    // Auto-save immediately for main Apprise toggle
+    try {
+      const updatedConfig = {
+        ...localConfig,
+        apprise: {
+          ...localConfig.apprise,
+          enabled,
+          channels: enabled
+            ? ((localConfig.apprise?.channels && localConfig.apprise.channels.length > 0)
+                ? localConfig.apprise.channels
+                : [{ name: '', url: '', enabled: true }])
+            : (localConfig.apprise?.channels || [])
+        }
+      };
+      await onUpdateConfig(updatedConfig);
+      setSuccess('Apprise setting saved automatically');
+      setTimeout(() => setSuccess(null), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save Apprise setting');
+      setTimeout(() => setError(null), 5000);
+    }
+
+    setExpanded(prev => ({ ...prev, apprise: enabled }));
+  };
+
   // Toggle component
   const Toggle = ({ checked, onChange, ariaLabel }: { checked: boolean; onChange: (checked: boolean) => void; ariaLabel?: string }) => (
     <button
@@ -257,10 +297,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   );
 
   // Section header component
-  const SectionHeader = ({ 
-    icon: Icon, 
-    title, 
-    sectionKey, 
+  const SectionHeader = ({
+    icon: Icon,
+    title,
+    sectionKey,
     toggle 
   }: { 
     icon: any; 
@@ -318,10 +358,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           <div className="mt-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center space-x-3">
-                <Toggle
-                  checked={getTriggerValue('sendSummaryOnScheduledRun', true)}
+              <Toggle
+                checked={getTriggerValue('sendSummaryOnScheduledRun', true)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
-                    ...prev,
+                  ...prev,
                     triggers: { ...prev.triggers, sendSummaryOnScheduledRun: checked }
                   }))}
                   ariaLabel="Send summary on scheduled runs"
@@ -329,14 +369,14 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                 <div>
                   <label className="text-sm font-medium text-foreground">Send summary on scheduled runs</label>
                   <p className="text-xs text-muted-foreground">Send a summary notification when scheduled checks complete</p>
-                </div>
-              </div>
-
+            </div>
+          </div>
+          
               <div className="flex items-center space-x-3">
-                <Toggle
-                  checked={getTriggerValue('sendIndividualReportsOnScheduledRun', false)}
+              <Toggle
+                checked={getTriggerValue('sendIndividualReportsOnScheduledRun', false)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
-                    ...prev,
+                  ...prev,
                     triggers: { ...prev.triggers, sendIndividualReportsOnScheduledRun: checked }
                   }))}
                   ariaLabel="Send individual reports on scheduled runs"
@@ -344,40 +384,40 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                 <div>
                   <label className="text-sm font-medium text-foreground">Send individual reports on scheduled runs</label>
                   <p className="text-xs text-muted-foreground">Send detailed reports for each container during scheduled runs</p>
-                </div>
-              </div>
-
+            </div>
+          </div>
+          
               <div className="flex items-center space-x-3">
-                <Toggle
-                  checked={getTriggerValue('sendReportsWhenUpdatesFound', true)}
+              <Toggle
+                checked={getTriggerValue('sendReportsWhenUpdatesFound', true)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
-                    ...prev,
+                  ...prev,
                     triggers: { ...prev.triggers, sendReportsWhenUpdatesFound: checked }
-                  }))}
-                  ariaLabel="Send reports when updates found"
-                />
+                }))}
+                ariaLabel="Send reports when updates found"
+              />
                 <div>
                   <label className="text-sm font-medium text-foreground">Send reports when updates found</label>
                   <p className="text-xs text-muted-foreground">Send notifications immediately when container updates are detected</p>
-                </div>
-              </div>
-
+            </div>
+          </div>
+          
               <div className="flex items-center space-x-3">
-                <Toggle
-                  checked={getTriggerValue('sendReportsOnErrors', true)}
+              <Toggle
+                checked={getTriggerValue('sendReportsOnErrors', true)}
                   onChange={(checked) => updateTriggerConfig(prev => ({
-                    ...prev,
+                  ...prev,
                     triggers: { ...prev.triggers, sendReportsOnErrors: checked }
-                  }))}
-                  ariaLabel="Send reports on errors"
-                />
+                }))}
+                ariaLabel="Send reports on errors"
+              />
                 <div>
                   <label className="text-sm font-medium text-foreground">Send reports on errors</label>
                   <p className="text-xs text-muted-foreground">Send notifications when errors occur during monitoring</p>
                 </div>
-              </div>
             </div>
-          </div>
+            </div>
+        </div>
         )}
       </div>
 
@@ -396,21 +436,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
             <span className="text-muted-foreground text-sm">Enable/Disable</span>
             <Toggle
               checked={localConfig.apprise?.enabled || false}
-              onChange={(next) => {
-                updateLocalConfig(prev => ({
-                  ...prev,
-                  apprise: {
-                    ...prev.apprise,
-                    enabled: next,
-                    channels: next
-                      ? ((prev.apprise?.channels && prev.apprise.channels.length > 0)
-                          ? prev.apprise.channels
-                          : [{ name: '', url: '', enabled: true }])
-                      : (prev.apprise?.channels || [])
-                  }
-                }));
-                setExpanded(prev => ({ ...prev, apprise: next }));
-              }}
+              onChange={(next) => handleAppriseToggleChange(next)}
               ariaLabel="Enable Apprise"
             />
             <button
@@ -424,7 +450,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
               )}
             </button>
           </div>
-        </div>
+            </div>
         {!localConfig.apprise?.enabled && !expanded.apprise && (
           <p className="mt-2 text-sm text-muted-foreground">
             Enable Apprise to allow messaging to 80+ services{' '}
@@ -436,8 +462,8 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
 
         {expanded.apprise && (
         <div className="mt-3 space-y-3">
-          {localConfig.apprise?.enabled ? (
-            <>
+            {localConfig.apprise?.enabled ? (
+              <>
               <div className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 text-xs">
                 <span><strong>Apprise:</strong> Supports 80+ services (Discord, Slack, Email, SMS, etc.)</span>
                 <a href="https://github.com/caronc/apprise#supported-notifications" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
@@ -447,18 +473,18 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
               
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-foreground">Channels</h4>
-                <button
-                  onClick={addAppriseChannel}
+                  <button
+                    onClick={addAppriseChannel}
                   className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
-                >
-                  <Plus className="w-4 h-4" />
+                  >
+                    <Plus className="w-4 h-4" />
                   <span>Add</span>
-                </button>
-              </div>
+                  </button>
+                </div>
 
-              {localConfig.apprise?.channels?.map((channel, index) => (
+                {localConfig.apprise?.channels?.map((channel, index) => (
                 <div key={index} className="p-3 border border-border rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Toggle
                         checked={channel.enabled}
@@ -501,17 +527,17 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <input
-                      type="text"
-                      value={channel.name}
-                      onChange={(e) => updateAppriseChannel(index, 'name', e.target.value)}
+                        <input
+                          type="text"
+                          value={channel.name}
+                          onChange={(e) => updateAppriseChannel(index, 'name', e.target.value)}
                       className="w-full px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
                       placeholder="Channel name"
                     />
-                    <input
-                      type="text"
-                      value={channel.url}
-                      onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
+                      <input
+                        type="text"
+                        value={channel.url}
+                        onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
                       className="w-full px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
                       placeholder="discord://webhook_id/webhook_token"
                     />
