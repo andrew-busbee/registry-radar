@@ -343,11 +343,20 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                 }}
                 ariaLabel="Enable Apprise"
               />
+              <div className="flex items-center gap-2 ml-2">
+                <div className={`w-2 h-2 rounded-full ${localConfig.apprise?.enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                <span className="text-muted-foreground text-xs">{localConfig.apprise?.enabled ? 'Enabled' : 'Disabled'}</span>
+              </div>
             </div>
           }
         />
         {!localConfig.apprise?.enabled && !expanded.apprise && (
-          <p className="mt-2 text-sm text-muted-foreground">Enable Apprise to configure notification channels</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Enable Apprise to allow messaging to 80+ services{' '}
+            <a href="https://github.com/caronc/apprise#supported-notifications" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              Supported services →
+            </a>
+          </p>
         )}
 
         {expanded.apprise && (
@@ -396,6 +405,10 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                         ariaLabel={`Enable channel ${index + 1}`}
                       />
                       <h5 className="font-medium text-foreground text-sm">Channel {index + 1}</h5>
+                      <div className="flex items-center gap-2 ml-1">
+                        <div className={`w-2 h-2 rounded-full ${channel.enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span className="text-muted-foreground text-xs">{channel.enabled ? 'Enabled' : 'Disabled'}</span>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-1">
                       <button

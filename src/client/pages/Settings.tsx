@@ -182,7 +182,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Automatically check for container updates based on the schedule below (Once a day is recommended)
+                Automatically check for container updates based on a set schedule (Once a day is recommended)
                 {enabled && (
                   <>
                     <br />
