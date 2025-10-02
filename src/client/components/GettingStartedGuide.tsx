@@ -40,6 +40,82 @@ export function GettingStartedGuide({
           </p>
         </div>
 
+        {/* What Registry Radar Does */}
+        <div className="space-y-4 text-left">
+          <p className="text-lg text-muted-foreground">
+            Tired of manually checking if your Docker images have updates? Registry Radar automatically monitors 
+            your images across multiple registries and alerts you when new versions are available.
+          </p>
+        </div>
+
+        {/* Why You Need This */}
+        <div className="space-y-4 text-left">
+          <h2 className="text-xl font-semibold text-foreground">Why You Need This</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-red-600 dark:text-red-400 text-sm">🔒</span>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">Security</p>
+                <p className="text-sm text-muted-foreground">Stay protected with latest patches</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-green-600 dark:text-green-400 text-sm">⚡</span>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">Performance</p>
+                <p className="text-sm text-muted-foreground">Get bug fixes and improvements</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-blue-600 dark:text-blue-400 text-sm">📋</span>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">Compliance</p>
+                <p className="text-sm text-muted-foreground">Meet security audit requirements</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-purple-600 dark:text-purple-400 text-sm">⏰</span>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">Efficiency</p>
+                <p className="text-sm text-muted-foreground">Stop wasting time on manual checks</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Registry Support */}
+        <div className="space-y-4 text-left">
+          <h2 className="text-xl font-semibold text-foreground">Currently Supports</h2>
+          <div className="bg-muted/50 rounded-lg p-4">
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center space-x-2">
+                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                <span className="text-foreground">Docker Hub (with optional authentication)</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span className="text-foreground">GitHub Container Registry</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                <span className="text-foreground">LinuxServer.io</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                <span className="text-muted-foreground">Additional registry support is planned</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {/* How It Works */}
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground">How It Works</h2>
