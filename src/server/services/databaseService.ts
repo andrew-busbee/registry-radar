@@ -185,9 +185,19 @@ export class DatabaseService {
       throw new Error('Database not initialized');
     }
 
-    // Get current schema version
-    const versionResult = await this.runQuery('SELECT version FROM schema_version ORDER BY version DESC LIMIT 1') as { version: number }[] | undefined;
-    const currentVersion = versionResult?.[0]?.version || 0;
+    // Get current schema version (handle case where table doesn't exist yet)
+    let currentVersion = 0;
+    try {
+      const versionResult = await this.runQuery('SELECT version FROM schema_version ORDER BY version DESC LIMIT 1') as { version: number }[] | undefined;
+      currentVersion = versionResult?.[0]?.version || 0;
+    } catch (error: any) {
+      // If schema_version table doesn't exist, start from version 0
+      if (error.code === 'SQLITE_ERROR' && error.message.includes('no such table')) {
+        currentVersion = 0;
+      } else {
+        throw error;
+      }
+    }
 
     // Run pending migrations
     const pendingMigrations = migrations.filter(m => m.version > currentVersion);
