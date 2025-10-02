@@ -9,6 +9,7 @@ interface ContainerTableProps {
   onDelete: (index: number) => void;
   onBulkDelete?: (indices: number[]) => void;
   onCheck: (index: number) => void;
+  onDismissUpdate?: (container: ContainerRegistry) => Promise<void>;
   checkingIndex: number | null;
 }
 
@@ -22,6 +23,7 @@ export function ContainerTable({
   onDelete,
   onBulkDelete, 
   onCheck,
+  onDismissUpdate,
   checkingIndex 
 }: ContainerTableProps) {
   const [sortField, setSortField] = useState<SortField>('name');
@@ -34,6 +36,17 @@ export function ContainerTable({
     return containerStates.find(state => 
       state.image === container.imagePath && state.tag === (container.tag || 'latest')
     );
+  };
+
+  // Helper function to check if dismiss button should be shown
+  const shouldShowDismissButton = (containerState?: ContainerState) => {
+    if (!containerState || !containerState.hasUpdate) {
+      return false;
+    }
+    
+    // Show dismiss button for any container with an update available
+    // that hasn't been acknowledged yet
+    return !containerState.updateAcknowledged;
   };
 
   const getStatusIcon = (containerState?: ContainerState) => {
@@ -434,6 +447,15 @@ export function ContainerTable({
                           >
                             <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${checkingIndex === index ? 'animate-spin' : ''}`} />
                           </button>
+                          {shouldShowDismissButton(containerState) && (
+                            <button
+                              onClick={() => onDismissUpdate?.(container)}
+                              className="px-2 py-1 text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:hover:bg-orange-900/30 rounded transition-colors font-medium"
+                              title="Reset update notification"
+                            >
+                              Reset
+                            </button>
+                          )}
                           <button
                             onClick={() => handleEdit(index, container)}
                             className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"

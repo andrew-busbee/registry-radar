@@ -147,6 +147,33 @@ export function Containers({
     }
   };
 
+  const handleDismissUpdate = async (container: ContainerRegistry) => {
+    try {
+      const response = await fetch('/api/config/containers/dismiss-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imagePath: container.imagePath,
+          tag: container.tag || 'latest'
+        }),
+      });
+      
+      if (response.ok) {
+        await onRefreshContainerStates();
+        // Force page refresh to ensure UI is updated with latest data
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } else {
+        console.error('Failed to dismiss update:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error dismissing update:', error);
+    }
+  };
+
   const handleBulkImport = async (containers: ContainerRegistry[]): Promise<{ success: boolean; errors: string[] }> => {
     try {
       const response = await fetch('/api/config/containers/bulk', {
@@ -356,6 +383,7 @@ export function Containers({
             );
             handleCheckSingle(originalIndex);
           }}
+          onDismissUpdate={handleDismissUpdate}
           checkingIndex={checkingIndex !== null ? (
             // Map checking index from original to filtered
             filteredContainers.findIndex(c => 

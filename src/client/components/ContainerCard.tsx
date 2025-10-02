@@ -8,6 +8,7 @@ interface ContainerCardProps {
   onUpdate: (container: ContainerRegistry) => Promise<void>;
   onDelete: () => void;
   onCheck: () => void;
+  onDismissUpdate?: () => Promise<void>;
   isChecking?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function ContainerCard({
   onUpdate, 
   onDelete, 
   onCheck,
+  onDismissUpdate,
   isChecking = false 
 }: ContainerCardProps) {
   
@@ -112,6 +114,17 @@ export function ContainerCard({
     return 'Up to date';
   };
 
+  // Helper function to check if dismiss button should be shown
+  const shouldShowDismissButton = () => {
+    if (!containerState || !containerState.hasUpdate) {
+      return false;
+    }
+    
+    // Show dismiss button for any container with an update available
+    // that hasn't been acknowledged yet
+    return !containerState.updateAcknowledged;
+  };
+
 
   const getStatusColor = () => {
     if (!containerState) {
@@ -171,6 +184,16 @@ export function ContainerCard({
         </div>
         
         <div className="flex items-center space-x-1">
+          {shouldShowDismissButton() && (
+            <button
+              onClick={onDismissUpdate}
+              className="px-3 py-1 text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:hover:bg-orange-900/30 rounded-md transition-all duration-200 font-medium"
+              title="Reset update notification"
+            >
+              Reset Update Notification
+            </button>
+          )}
+          
           <button
             onClick={onCheck}
             disabled={isChecking}

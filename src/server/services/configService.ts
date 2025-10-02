@@ -56,7 +56,7 @@ export class ConfigService {
     try {
       const content = await fs.readFile(CRON_FILE, 'utf-8');
       const parsed = JSON.parse(content);
-      return parsed.cron || { schedule: '0 9 * * *', enabled: true };
+      return parsed.cron || { schedule: '0 9 * * *', enabled: true, timezone: 'America/Chicago' };
     } catch (error) {
       // Just return default, don't recreate the file
       console.log('Using default cron config');

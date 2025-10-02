@@ -25,11 +25,15 @@ export interface ContainerState {
   // Latest available tag information
   latestAvailableTag?: string;
   latestAvailableUpdated?: string;
+  // User acknowledgment system for non-semver updates
+  updateAcknowledged?: boolean; // Whether user has dismissed/acknowledged the current update
+  updateAcknowledgedAt?: string; // When the update was acknowledged
 }
 
 export interface CronConfig {
   schedule: string;
   enabled: boolean;
+  timezone?: string;
 }
 
 export interface Notification {

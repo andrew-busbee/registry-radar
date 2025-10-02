@@ -15,15 +15,30 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
   const [activeTab, setActiveTab] = useState<'general' | 'notifications'>(initialTab);
   const [schedule, setSchedule] = useState(cronConfig.schedule);
   const [enabled, setEnabled] = useState(cronConfig.enabled);
+  const [timezone, setTimezone] = useState(cronConfig.timezone || 'UTC');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Common timezones - keep it simple
+  const timezones = [
+    { value: 'UTC', label: 'UTC' },
+    { value: 'America/New_York', label: 'Eastern Time' },
+    { value: 'America/Chicago', label: 'Central Time' },
+    { value: 'America/Denver', label: 'Mountain Time' },
+    { value: 'America/Los_Angeles', label: 'Pacific Time' },
+    { value: 'Europe/London', label: 'London' },
+    { value: 'Europe/Paris', label: 'Paris' },
+    { value: 'Asia/Tokyo', label: 'Tokyo' },
+    { value: 'Australia/Sydney', label: 'Sydney' },
+  ];
 
   // Sync local state with prop changes
   useEffect(() => {
     setSchedule(cronConfig.schedule);
     setEnabled(cronConfig.enabled);
-  }, [cronConfig.schedule, cronConfig.enabled]);
+    setTimezone(cronConfig.timezone || 'UTC');
+  }, [cronConfig.schedule, cronConfig.enabled, cronConfig.timezone]);
 
   // Update active tab when initialTab prop changes
   useEffect(() => {
@@ -36,7 +51,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     setSuccess(null);
 
     try {
-      await onUpdateCronConfig({ schedule, enabled });
+      await onUpdateCronConfig({ schedule, enabled, timezone });
       setSuccess('Settings saved successfully');
       
       // Clear success message after 3 seconds
@@ -58,7 +73,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     try {
       if (newEnabled) {
         // When enabling, save both enabled state and current schedule
-        await onUpdateCronConfig({ schedule, enabled: newEnabled });
+        await onUpdateCronConfig({ schedule, enabled: newEnabled, timezone });
       } else {
         // When disabling, only save the enabled state
         await onUpdateCronConfig({ enabled: newEnabled });
@@ -249,12 +264,20 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                     className="flex-1 px-3 py-2 border border-input rounded-md bg-background text-foreground font-mono"
                     placeholder="0 9 * * *"
                   />
-                  <div className="px-3 py-2 bg-muted text-muted-foreground rounded-md text-sm">
-                    5 fields
-                  </div>
+                  <select
+                    value={timezone}
+                    onChange={(e) => setTimezone(e.target.value)}
+                    className="px-3 py-2 border border-input rounded-md bg-background text-foreground min-w-[140px]"
+                  >
+                    {timezones.map((tz) => (
+                      <option key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Format: minute hour day month weekday (e.g., "0 9 * * *" for daily at 9 AM)
+                  Format: minute hour day month weekday (e.g., "0 9 * * *" for daily at 9 AM in {timezones.find(tz => tz.value === timezone)?.label || timezone})
                 </p>
               </div>
 

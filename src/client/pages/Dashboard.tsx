@@ -306,6 +306,33 @@ export function Dashboard({
     }
   };
 
+  const handleDismissUpdate = async (container: ContainerRegistry) => {
+    try {
+      const response = await fetch('/api/config/containers/dismiss-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imagePath: container.imagePath,
+          tag: container.tag || 'latest'
+        }),
+      });
+      
+      if (response.ok) {
+        await onRefreshContainerStates();
+        // Force page refresh to ensure UI is updated with latest data
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } else {
+        console.error('Failed to dismiss update:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error dismissing update:', error);
+    }
+  };
+
   const getContainerState = (container: ContainerRegistry): ContainerState | undefined => {
     return containerStates.find(state => 
       state.image === container.imagePath && state.tag === container.tag
@@ -694,6 +721,7 @@ export function Dashboard({
                         onUpdate={(updatedContainer) => handleUpdateContainer(originalIndex, updatedContainer)}
                         onDelete={() => handleDeleteContainer(originalIndex)}
                         onCheck={() => handleCheckSingle(originalIndex)}
+                        onDismissUpdate={() => handleDismissUpdate(container)}
                         isChecking={checkingIndex === originalIndex}
                       />
                     );

@@ -1061,6 +1061,8 @@ export class RegistryService {
       );
       
       let hasUpdate: boolean = false;
+      let updateAcknowledged: boolean = false;
+      let updateAcknowledgedAt: string | undefined = undefined;
       
       if (!result.error) {
         if (existingStateIndex >= 0) {
@@ -1068,13 +1070,41 @@ export class RegistryService {
           const isFirstCheck = !existingState.currentSha || existingState.currentSha === '';
           if (isFirstCheck) {
             hasUpdate = false;
+            updateAcknowledged = true; // First check is always acknowledged
           } else {
             // Use normalized SHA comparison to handle different formats
-            hasUpdate = !this.compareShas(existingState.currentSha, result.latestSha);
+            const shaChanged = !this.compareShas(existingState.currentSha, result.latestSha);
+            
+            if (shaChanged) {
+              // SHA changed - this is a new update
+              hasUpdate = true;
+              updateAcknowledged = false; // User needs to acknowledge this new update
+              updateAcknowledgedAt = undefined;
+            } else {
+              // SHA hasn't changed - check if there's a pending unacknowledged update
+              if (existingState.hasUpdate && !existingState.updateAcknowledged) {
+                // There's a pending update that user hasn't acknowledged yet
+                hasUpdate = true;
+                updateAcknowledged = false;
+                updateAcknowledgedAt = existingState.updateAcknowledgedAt;
+              } else {
+                // No update or update was acknowledged
+                hasUpdate = false;
+                updateAcknowledged = true;
+                updateAcknowledgedAt = existingState.updateAcknowledgedAt;
+              }
+            }
           }
         } else {
           hasUpdate = false;
+          updateAcknowledged = true; // New container is always acknowledged
         }
+      } else {
+        // On error, preserve existing state
+        const existingState = existingStateIndex >= 0 ? updatedStates[existingStateIndex] : undefined;
+        hasUpdate = existingState?.hasUpdate || false;
+        updateAcknowledged = existingState?.updateAcknowledged || true;
+        updateAcknowledgedAt = existingState?.updateAcknowledgedAt;
       }
       
       const isFirstTime = existingStateIndex < 0;
@@ -1122,6 +1152,8 @@ export class RegistryService {
         platform: result.error ? existingState?.platform : result.platform,
         latestAvailableTag: result.error ? existingState?.latestAvailableTag : result.latestAvailableTag,
         latestAvailableUpdated: result.error ? existingState?.latestAvailableUpdated : result.latestAvailableUpdated,
+        updateAcknowledged: result.error ? (existingState?.updateAcknowledged || true) : updateAcknowledged,
+        updateAcknowledgedAt: result.error ? existingState?.updateAcknowledgedAt : updateAcknowledgedAt,
       };
       
       if (existingStateIndex >= 0) {

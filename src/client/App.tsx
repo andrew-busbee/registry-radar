@@ -18,7 +18,7 @@ function AppContent() {
   const [containers, setContainers] = useState<ContainerRegistry[]>([]);
   const [containerStates, setContainerStates] = useState<ContainerState[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [cronConfig, setCronConfig] = useState<CronConfig>({ schedule: '0 9 * * *', enabled: true });
+  const [cronConfig, setCronConfig] = useState<CronConfig>({ schedule: '0 9 * * *', enabled: true, timezone: 'America/Chicago' });
   const [notificationConfig, setNotificationConfig] = useState<NotificationConfig>({
     triggers: {
       sendSummaryOnScheduledRun: true,

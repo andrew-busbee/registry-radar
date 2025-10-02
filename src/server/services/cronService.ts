@@ -24,7 +24,7 @@ export class CronService {
       await this.runScheduledCheck();
     }, {
       scheduled: true,
-      timezone: 'UTC',
+      timezone: config.timezone || 'UTC',
     });
 
     console.log(`Cron job started successfully. Next run scheduled.`);

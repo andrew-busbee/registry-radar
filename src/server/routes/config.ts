@@ -287,4 +287,36 @@ router.get('/containers/export', async (req, res) => {
   }
 });
 
+// Dismiss update for a specific container
+router.post('/containers/dismiss-update', async (req, res) => {
+  try {
+    const { imagePath, tag } = req.body;
+    
+    if (!imagePath || !tag) {
+      return res.status(400).json({ error: 'imagePath and tag are required' });
+    }
+    
+    const currentStates = await ConfigService.getContainerState();
+    const stateIndex = currentStates.findIndex(
+      state => state.image === imagePath && state.tag === tag
+    );
+    
+    if (stateIndex === -1) {
+      return res.status(404).json({ error: 'Container state not found' });
+    }
+    
+    // Mark the update as acknowledged
+    currentStates[stateIndex].updateAcknowledged = true;
+    currentStates[stateIndex].updateAcknowledgedAt = new Date().toISOString();
+    currentStates[stateIndex].hasUpdate = false; // Clear the update flag
+    
+    await ConfigService.saveContainerState(currentStates);
+    
+    res.json({ success: true, message: 'Update dismissed successfully' });
+  } catch (error) {
+    console.error('Error dismissing update:', error);
+    res.status(500).json({ error: 'Failed to dismiss update' });
+  }
+});
+
 export { router as configRouter };
