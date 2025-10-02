@@ -213,16 +213,30 @@ function AppContent() {
           throw new Error(`Failed to update enabled state: ${enabledResp.statusText}`);
         }
         await enabledResp.json();
-      } else if (config.schedule !== undefined) {
-        const scheduleResp = await fetch('/api/cron/config/schedule', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ schedule: config.schedule }),
-        });
-        if (!scheduleResp.ok) {
-          throw new Error(`Failed to update schedule: ${scheduleResp.statusText}`);
+      } else if (config.schedule !== undefined || config.timezone !== undefined) {
+        // If either schedule or timezone is provided, update schedule first (if provided), then timezone
+        if (config.schedule !== undefined) {
+          const scheduleResp = await fetch('/api/cron/config/schedule', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ schedule: config.schedule }),
+          });
+          if (!scheduleResp.ok) {
+            throw new Error(`Failed to update schedule: ${scheduleResp.statusText}`);
+          }
+          await scheduleResp.json();
         }
-        await scheduleResp.json();
+        if (config.timezone !== undefined) {
+          const tzResp = await fetch('/api/cron/config/timezone', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timezone: config.timezone }),
+          });
+          if (!tzResp.ok) {
+            throw new Error(`Failed to update timezone: ${tzResp.statusText}`);
+          }
+          await tzResp.json();
+        }
       } else if (config.enabled !== undefined) {
         const enabledResp = await fetch('/api/cron/config/enabled', {
           method: 'PUT',

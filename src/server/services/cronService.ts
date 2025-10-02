@@ -17,7 +17,7 @@ export class CronService {
       return;
     }
 
-    console.log(`Starting cron job with schedule: ${config.schedule}`);
+    console.log(`Starting cron job with schedule: ${config.schedule} (tz: ${config.timezone || 'UTC'})`);
     
     this.currentTask = cron.schedule(config.schedule, async () => {
       console.log('Running scheduled registry check...');
@@ -27,7 +27,7 @@ export class CronService {
       timezone: config.timezone || 'UTC',
     });
 
-    console.log(`Cron job started successfully. Next run scheduled.`);
+    console.log(`Cron job started successfully with tz=${config.timezone || 'UTC'}. Next run scheduled.`);
   }
 
   static async stopCron(): Promise<void> {
@@ -45,6 +45,17 @@ export class CronService {
     config.schedule = newSchedule;
     await ConfigService.saveCronConfig(config);
     
+    await this.stopCron();
+    if (config.enabled) {
+      await this.startCron();
+    }
+  }
+
+  static async updateTimezone(newTimezone: string): Promise<void> {
+    console.log(`Updating cron timezone to: ${newTimezone}`);
+    const config = await ConfigService.getCronConfig();
+    config.timezone = newTimezone;
+    await ConfigService.saveCronConfig(config);
     await this.stopCron();
     if (config.enabled) {
       await this.startCron();

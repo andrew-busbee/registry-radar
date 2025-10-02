@@ -62,6 +62,21 @@ router.put('/config/enabled', async (req, res) => {
   }
 });
 
+// Update timezone
+router.put('/config/timezone', async (req, res) => {
+  try {
+    const { timezone } = req.body;
+    if (!timezone || typeof timezone !== 'string') {
+      return res.status(400).json({ error: 'Invalid timezone' });
+    }
+    await CronService.updateTimezone(timezone);
+    res.json({ message: 'Timezone updated successfully' });
+  } catch (error) {
+    console.error('Error updating cron timezone:', error);
+    res.status(500).json({ error: 'Failed to update timezone' });
+  }
+});
+
 // Get cron status
 router.get('/status', async (req, res) => {
   try {

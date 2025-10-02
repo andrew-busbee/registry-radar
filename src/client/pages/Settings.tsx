@@ -20,18 +20,24 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Common timezones - keep it simple
-  const timezones = [
-    { value: 'UTC', label: 'UTC' },
-    { value: 'America/New_York', label: 'Eastern Time' },
-    { value: 'America/Chicago', label: 'Central Time' },
-    { value: 'America/Denver', label: 'Mountain Time' },
-    { value: 'America/Los_Angeles', label: 'Pacific Time' },
-    { value: 'Europe/London', label: 'London' },
-    { value: 'Europe/Paris', label: 'Paris' },
-    { value: 'Asia/Tokyo', label: 'Tokyo' },
-    { value: 'Australia/Sydney', label: 'Sydney' },
+  // Build a comprehensive timezone list using IANA zones when available,
+  // with a reasonable fallback set if not supported by the browser.
+  const fallbackZones = [
+    'UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles',
+    'America/Phoenix','America/Anchorage','Pacific/Honolulu','Europe/London','Europe/Paris',
+    'Europe/Berlin','Europe/Madrid','Europe/Moscow','Africa/Johannesburg','Asia/Kolkata',
+    'Asia/Shanghai','Asia/Tokyo','Asia/Seoul','Asia/Dubai','Australia/Sydney','Australia/Melbourne',
+    'Pacific/Auckland','America/Sao_Paulo','America/Mexico_City'
   ];
+  const allTimezones: string[] = (() => {
+    try {
+      const z: string[] = (Intl as any).supportedValuesOf ? (Intl as any).supportedValuesOf('timeZone') : [];
+      if (Array.isArray(z) && z.length > 0) return z;
+    } catch {}
+    return fallbackZones;
+  })();
+  const [tzQuery, setTzQuery] = useState('');
+  const filteredTimezones = allTimezones.filter(z => z.toLowerCase().includes(tzQuery.toLowerCase())).slice(0, 200);
 
   // Sync local state with prop changes
   useEffect(() => {
@@ -253,14 +259,15 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
             {enabled && (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Cron Expression
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={schedule}
-                    onChange={(e) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Cron Expression
+                    </label>
+                    <input
+                      type="text"
+                      value={schedule}
+                      onChange={(e) => {
                       // Allow only safe cron characters and compress whitespace
                       const raw = e.target.value;
                       const sanitized = raw
@@ -269,30 +276,53 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                         .trim()
                         .slice(0, 32); // hard cap length
                       setSchedule(sanitized);
-                    }}
-                    inputMode="numeric"
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={32}
-                    className="px-3 py-2 border border-input rounded-md bg-background text-foreground font-mono w-[220px]"
-                    placeholder="0 9 * * *"
-                    aria-label="Cron Expression"
-                  />
-                  <select
-                    value={timezone}
-                    onChange={(e) => setTimezone(e.target.value)}
-                    className="px-3 py-2 border border-input rounded-md bg-background text-foreground w-[220px]"
-                    aria-label="Timezone"
-                  >
-                    {timezones.map((tz) => (
-                      <option key={tz.value} value={tz.value}>
-                        {tz.label}
-                      </option>
-                    ))}
-                  </select>
+                      }}
+                      inputMode="numeric"
+                      autoComplete="off"
+                      spellCheck={false}
+                      maxLength={32}
+                      className="px-3 py-2 border border-input rounded-md bg-background text-foreground font-mono w-full"
+                      placeholder="0 9 * * *"
+                      aria-label="Cron Expression"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="block text-sm font-medium text-foreground mb-2">Search Timezone</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={timezone}
+                        onChange={(e) => { setTimezone(e.target.value); setTzQuery(e.target.value); }}
+                        onFocus={() => setTzQuery(timezone)}
+                        className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                        placeholder="Search timezone (e.g., America/Chicago)"
+                        aria-label="Timezone"
+                        autoComplete="off"
+                        spellCheck={false}
+                      />
+                      {tzQuery !== '' && (
+                        <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto border border-input rounded-md bg-background shadow">
+                          {filteredTimezones.length === 0 ? (
+                            <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
+                          ) : (
+                            filteredTimezones.map((tz) => (
+                              <button
+                                key={tz}
+                                type="button"
+                                onClick={() => { setTimezone(tz); setTzQuery(''); }}
+                                className={`w-full text-left px-3 py-2 text-sm hover:bg-accent ${tz === timezone ? 'bg-accent' : ''}`}
+                              >
+                                {tz}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Format: minute hour day month weekday (e.g., "0 9 * * *" for daily at 9 AM in {timezones.find(tz => tz.value === timezone)?.label || timezone})
+                  Format: minute hour day month weekday (e.g., "0 9 * * *" for daily at 9 AM in {timezone})
                 </p>
               </div>
 
