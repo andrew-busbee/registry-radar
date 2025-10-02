@@ -256,18 +256,33 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
                 <label className="block text-sm font-medium text-foreground mb-2">
                   Cron Expression
                 </label>
-                <div className="flex space-x-2">
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={schedule}
-                    onChange={(e) => setSchedule(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-input rounded-md bg-background text-foreground font-mono"
+                    onChange={(e) => {
+                      // Allow only safe cron characters and compress whitespace
+                      const raw = e.target.value;
+                      const sanitized = raw
+                        .replace(/[^*\/\-,0-9\s]/g, '') // keep digits, space, comma, dash, slash, asterisk
+                        .replace(/\s+/g, ' ') // normalize spaces
+                        .trim()
+                        .slice(0, 32); // hard cap length
+                      setSchedule(sanitized);
+                    }}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={32}
+                    className="px-3 py-2 border border-input rounded-md bg-background text-foreground font-mono w-[220px]"
                     placeholder="0 9 * * *"
+                    aria-label="Cron Expression"
                   />
                   <select
                     value={timezone}
                     onChange={(e) => setTimezone(e.target.value)}
-                    className="px-3 py-2 border border-input rounded-md bg-background text-foreground min-w-[140px]"
+                    className="px-3 py-2 border border-input rounded-md bg-background text-foreground w-[220px]"
+                    aria-label="Timezone"
                   >
                     {timezones.map((tz) => (
                       <option key={tz.value} value={tz.value}>
