@@ -137,7 +137,7 @@ export class CronService {
       // Send run completion notification (summary)
       await NotificationService.sendRunNotification(
         containers.length,
-        updatedStates.filter(state => state.hasUpdate).length,
+        updatedStates.filter(state => (state.hasUpdate || state.hasNewerTag)).length,
         0, // errors would be caught in the catch block
         isManual
       );
@@ -146,10 +146,8 @@ export class CronService {
       const containerStatuses = updatedStates.map(state => {
         const container = containers.find(c => c.imagePath === state.image && c.tag === state.tag);
         let status = 'Up to date';
-        if (state.hasUpdate) {
-          status = 'Update available';
-        } else if (state.hasNewerTag) {
-          status = `Newer version available: ${state.latestAvailableTag}`;
+        if (state.hasUpdate || state.hasNewerTag) {
+          status = state.hasNewerTag && state.latestAvailableTag ? `Newer version available: ${state.latestAvailableTag}` : 'Update available';
         }
         
         return {
