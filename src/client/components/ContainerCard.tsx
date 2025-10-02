@@ -116,7 +116,7 @@ export function ContainerCard({
 
   // Helper function to check if dismiss button should be shown
   const shouldShowDismissButton = () => {
-    if (!containerState || !containerState.hasUpdate) {
+    if (!containerState || (!containerState.hasUpdate && !containerState.hasNewerTag)) {
       return false;
     }
     

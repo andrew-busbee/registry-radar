@@ -40,7 +40,7 @@ export function ContainerTable({
 
   // Helper function to check if dismiss button should be shown
   const shouldShowDismissButton = (containerState?: ContainerState) => {
-    if (!containerState || !containerState.hasUpdate) {
+    if (!containerState || (!containerState.hasUpdate && !containerState.hasNewerTag)) {
       return false;
     }
     
