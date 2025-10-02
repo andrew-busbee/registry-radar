@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ContainerRegistry, ContainerState, Notification, CronConfig, NotificationConfig } from './types';
 import { Header } from './components/Header';
@@ -28,7 +28,7 @@ function AppContent() {
     }
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState('getting-started');
   const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'notifications'>('general');
 
 
@@ -57,6 +57,13 @@ function AppContent() {
         setNotifications(notificationsData);
         setCronConfig(cronData);
         setNotificationConfig(notificationConfigData);
+
+        // Set default page based on whether containers exist
+        if (containersData.length === 0) {
+          setActivePage('getting-started');
+        } else {
+          setActivePage('dashboard');
+        }
       } catch (error) {
         console.error('Error fetching initial data:', error);
       } finally {
@@ -86,7 +93,14 @@ function AppContent() {
 
       if (response.ok) {
         const newContainer = await response.json();
-        setContainers(prev => [...prev, newContainer]);
+        setContainers((prev: ContainerRegistry[]) => {
+          const updated = [...prev, newContainer];
+          // If this was the first container, switch to dashboard
+          if (prev.length === 0 && updated.length === 1) {
+            setActivePage('dashboard');
+          }
+          return updated;
+        });
         return true;
       } else {
         const error = await response.json();
@@ -108,7 +122,7 @@ function AppContent() {
 
       if (response.ok) {
         const updatedContainer = await response.json();
-        setContainers(prev => prev.map((c, i) => i === index ? updatedContainer : c));
+        setContainers((prev: ContainerRegistry[]) => prev.map((c: ContainerRegistry, i: number) => i === index ? updatedContainer : c));
         return true;
       } else {
         const error = await response.json();
@@ -127,7 +141,14 @@ function AppContent() {
       });
 
       if (response.ok) {
-        setContainers(prev => prev.filter((_, i) => i !== index));
+        setContainers((prev: ContainerRegistry[]) => {
+          const updated = prev.filter((_: ContainerRegistry, i: number) => i !== index);
+          // If this was the last container, switch to getting started
+          if (prev.length === 1 && updated.length === 0) {
+            setActivePage('getting-started');
+          }
+          return updated;
+        });
         return true;
       } else {
         const error = await response.json();
@@ -271,7 +292,7 @@ function AppContent() {
       } catch (error) {
         console.error('Error refreshing cron config:', error);
         // Fallback to local update if server refresh fails
-        setCronConfig(prev => ({ ...prev, ...config }));
+        setCronConfig((prev: CronConfig) => ({ ...prev, ...config }));
       }
       
       return true;
@@ -295,7 +316,7 @@ function AppContent() {
       }
 
       // Update the local state after successful API call
-      setNotificationConfig(prev => ({ ...prev, ...config }));
+      setNotificationConfig((prev: NotificationConfig) => ({ ...prev, ...config }));
       
       return true;
     } catch (error) {
@@ -311,8 +332,8 @@ function AppContent() {
       });
 
       if (response.ok) {
-        setNotifications(prev => 
-          prev.map(n => n.id === id ? { ...n, read: true } : n)
+        setNotifications((prev: Notification[]) => 
+          prev.map((n: Notification) => n.id === id ? { ...n, read: true } : n)
         );
       }
     } catch (error) {
@@ -342,7 +363,7 @@ function AppContent() {
 
       if (response.ok) {
         // Update local state to mark all notifications as read
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setNotifications((prev: Notification[]) => prev.map((n: Notification) => ({ ...n, read: true })));
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -361,20 +382,20 @@ function AppContent() {
           <Containers
             containers={containers}
             containerStates={containerStates}
-            onAddContainer={handleAddContainer}
-            onUpdateContainer={handleUpdateContainer}
-            onDeleteContainer={handleDeleteContainer}
-            onCheckRegistry={handleCheckRegistry}
-            onRefreshContainerStates={refreshContainerStates}
+            onAddContainer={async (container: ContainerRegistry) => { await handleAddContainer(container); }}
+            onUpdateContainer={async (index: number, container: ContainerRegistry) => { await handleUpdateContainer(index, container); }}
+            onDeleteContainer={async (index: number) => { await handleDeleteContainer(index); }}
+            onCheckRegistry={async () => { await handleCheckRegistry(); }}
+            onRefreshContainerStates={async () => { await refreshContainerStates(); }}
           />
         );
       case 'settings':
         return (
           <Settings
             cronConfig={cronConfig}
-            onUpdateCronConfig={handleUpdateCronConfig}
+            onUpdateCronConfig={async (config: Partial<CronConfig>) => { await handleUpdateCronConfig(config); }}
             notificationConfig={notificationConfig}
-            onUpdateNotificationConfig={handleUpdateNotificationConfig}
+            onUpdateNotificationConfig={async (config: Partial<NotificationConfig>) => { await handleUpdateNotificationConfig(config); }}
             initialTab={settingsInitialTab}
           />
         );
@@ -391,17 +412,8 @@ function AppContent() {
       case 'getting-started':
         return (
           <GettingStarted
-            onAddContainer={handleAddContainer}
-            onBulkImport={async (containers: ContainerRegistry[]) => {
-              const response = await fetch('/api/config/containers/bulk', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ containers }),
-              });
-              if (response.ok) {
-                window.location.reload();
-              }
-            }}
+            onAddContainer={() => setActivePage('containers')}
+            onBulkImport={() => setActivePage('containers')}
           />
         );
       default:
@@ -410,11 +422,11 @@ function AppContent() {
             containers={containers}
             containerStates={containerStates}
             notifications={notifications}
-            onCheckRegistry={handleCheckRegistry}
-            onRefreshContainerStates={refreshContainerStates}
-            onAddContainer={handleAddContainer}
-            onUpdateContainer={handleUpdateContainer}
-            onDeleteContainer={handleDeleteContainer}
+            onCheckRegistry={async () => { await handleCheckRegistry(); }}
+            onRefreshContainerStates={async () => { await refreshContainerStates(); }}
+            onAddContainer={async (container: ContainerRegistry) => { await handleAddContainer(container); }}
+            onUpdateContainer={async (index: number, container: ContainerRegistry) => { await handleUpdateContainer(index, container); }}
+            onDeleteContainer={async (index: number) => { await handleDeleteContainer(index); }}
           />
         );
     }
@@ -428,7 +440,7 @@ function AppContent() {
     );
   }
 
-  const unreadNotifications = notifications.filter(n => !n.read);
+  const unreadNotifications = notifications.filter((n: Notification) => !n.read);
 
   return (
     <ThemeProvider>
