@@ -27,7 +27,7 @@ The easiest way to run Registry Radar is with Docker Compose. You'll be up and r
 ```yml
 services:
   registry-radar:
-    image: ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.4 # Tag will become latest when released
+    image: ghcr.io/andrew-busbee/registry-radar:0.1.0-beta.4 # Tag will become latest when released
     container_name: registry-radar
     ports:
       - "3001:3001"
@@ -106,7 +106,7 @@ docker run -d \
   -e NODE_ENV=production \
   -e PORT=3001 \
   -e APPRISE_URL=http://apprise:8000 \
-  ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.4
+  ghcr.io/andrew-busbee/registry-radar:0.1.0-beta.4
 
 ```
 
