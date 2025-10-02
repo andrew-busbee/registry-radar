@@ -161,6 +161,17 @@ export class DatabaseService {
 
     // Initialize database
     this.db = new sqlite3.Database(this.DB_PATH);
+
+    // Apply PRAGMA settings immediately after connection
+    await this.runQuery('PRAGMA journal_mode=WAL');
+    await this.runQuery('PRAGMA synchronous=NORMAL');     // Balanced performance and safety
+    await this.runQuery('PRAGMA cache_size=10000');     // 10MB cache
+    await this.runQuery('PRAGMA temp_store=MEMORY');    // Store temp tables in memory
+    await this.runQuery('PRAGMA mmap_size=268435456');  // 256MB memory-mapped I/O
+    await this.runQuery('PRAGMA foreign_keys=ON');      // Enable foreign key constraints
+    await this.runQuery('PRAGMA optimize');             // Optimize database
+    
+    console.log('✅ SQLite WAL mode enabled with NORMAL safety and optimizations');
     
     // Run migrations
     await this.runMigrations();

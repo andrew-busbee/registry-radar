@@ -26,6 +26,8 @@ dev-down.bat
 data/*.json
 data/*.yml
 data/*.db
+data/*.db-wal
+data/*.db-shm
 !data/*.example
 
 # ===========================================
