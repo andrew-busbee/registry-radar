@@ -300,7 +300,7 @@ export function ContainerCard({
                 <div className="flex items-start gap-2">
                   <div className="text-blue-600 dark:text-blue-400 text-sm">💡</div>
                   <div className="text-xs text-blue-700 dark:text-blue-300">
-                    <strong>Warning:</strong> Consider monitoring the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">latest</code> tag instead of version-specific tags like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> to ensure automatic update notifications when new versions are released. Pure Semantic Versions like 3.2.1 will work just fine.
+                    <strong>Warning:</strong> Consider monitoring the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">latest</code> tag instead of version-specific tags like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> to ensure automatic update notifications when new versions are released. Tags like 3.2.1 will work just fine, and version specific tags like <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{container.tag || 'latest'}</code> will be addressed in future releases.
                   </div>
                 </div>
               </div>
