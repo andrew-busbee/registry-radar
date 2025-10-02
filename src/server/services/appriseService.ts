@@ -1,4 +1,5 @@
 import { NotificationConfig } from '../types';
+import packageJson from '../../../package.json';
 
 export interface AppriseChannel {
   url: string;
@@ -13,7 +14,11 @@ export interface AppriseConfig {
 // Common message templates for Apprise notifications
 export class AppriseTemplates {
   private static readonly BRAND_HEADER = '## 📡 Registry Radar';
-  private static readonly BRAND_FOOTER = '---\n*Registry Radar - Simple Docker Image Monitoring*';
+  private static readonly BRAND_FOOTER = (() => {
+    const currentYear = new Date().getFullYear();
+    const copyrightYear = currentYear === 2025 ? '2025' : `2025-${currentYear}`;
+    return `---\nRegistry Radar © ${copyrightYear} Andrew Busbee v${packageJson.version}`;
+  })();
   private static readonly TITLE_PREFIX = '📡 Registry Radar';
   
   static updateAvailable(containerName: string, image: string, tag: string, updatedDate?: string): { title: string; body: string } {
