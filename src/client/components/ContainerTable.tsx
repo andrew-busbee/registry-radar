@@ -440,14 +440,6 @@ export function ContainerTable({
                         </>
                       ) : (
                         <>
-                          <button
-                            onClick={() => onCheck(index)}
-                            disabled={checkingIndex === index}
-                            className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors disabled:opacity-50"
-                            title="Check for updates"
-                          >
-                            <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${checkingIndex === index ? 'animate-spin' : ''}`} />
-                          </button>
                           {shouldShowDismissButton(containerState) && (
                             <button
                               onClick={() => onDismissUpdate?.(container)}
@@ -458,6 +450,14 @@ export function ContainerTable({
                             </button>
                           )}
                           <button
+                            onClick={() => onCheck(index)}
+                            disabled={checkingIndex === index}
+                            className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors disabled:opacity-50"
+                            title="Check for updates"
+                          >
+                            <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${checkingIndex === index ? 'animate-spin' : ''}`} />
+                          </button>
+                          <button
                             onClick={() => handleEdit(index, container)}
                             className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                             title="Edit container"
@@ -466,7 +466,7 @@ export function ContainerTable({
                           </button>
                           <button
                             onClick={() => onDelete(index)}
-                            className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+                            className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                             title="Delete container"
                           >
                             <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
