@@ -24,17 +24,17 @@ export function GettingStartedGuide({
 }: GettingStartedGuideProps) {
 
   return (
-    <div className="bg-card border border-border rounded-lg p-8 text-center max-w-4xl mx-auto">
+    <div className="bg-card border border-border rounded-lg p-8 max-w-4xl mx-auto">
       <div className="space-y-8">
         {/* Hero Section */}
-        <div className="space-y-4">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+        <div className="space-y-4 text-left">
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
             <Container className="w-10 h-10 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground">
             Welcome to Registry Radar
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl">
             Monitor your Docker images for updates across multiple registries. 
             Get notified when new versions are available so you can keep your deployments up to date.
           </p>
