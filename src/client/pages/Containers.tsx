@@ -162,10 +162,6 @@ export function Containers({
       
       if (response.ok) {
         await onRefreshContainerStates();
-        // Force page refresh to ensure UI is updated with latest data
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
       } else {
         console.error('Failed to dismiss update:', response.statusText);
       }
