@@ -383,7 +383,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                 />
                 <div>
                   <label className="text-sm font-medium text-foreground">Send individual reports on scheduled runs</label>
-                  <p className="text-xs text-muted-foreground">Send detailed reports for each container during scheduled runs</p>
+                  <p className="text-xs text-muted-foreground">Send detailed reports for each image during scheduled runs</p>
             </div>
           </div>
           
@@ -434,11 +434,11 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-muted-foreground text-sm">Enable/Disable</span>
-            <Toggle
-              checked={localConfig.apprise?.enabled || false}
+              <Toggle
+                checked={localConfig.apprise?.enabled || false}
               onChange={(next) => handleAppriseToggleChange(next)}
-              ariaLabel="Enable Apprise"
-            />
+                ariaLabel="Enable Apprise"
+              />
             <button
               onClick={() => setExpanded(prev => ({ ...prev, apprise: !prev.apprise }))}
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -524,13 +524,13 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      value={channel.url}
-                      onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
+                    <div>
+                      <input
+                        type="text"
+                        value={channel.url}
+                        onChange={(e) => updateAppriseChannel(index, 'url', e.target.value)}
                       className="w-full px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
                       placeholder="https://hooks.slack.com/services/... or discord://... or mailto://..."
                     />
