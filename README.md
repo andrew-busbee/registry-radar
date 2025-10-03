@@ -27,7 +27,7 @@ The easiest way to run Registry Radar is with Docker Compose. You'll be up and r
 ```yml
 services:
   registry-radar:
-    image: ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.5 # Tag will become latest when released
+    image: ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.6 # Tag will become latest when released
     container_name: registry-radar
     ports:
       - "3001:3001"
@@ -106,7 +106,7 @@ docker run -d \
   -e NODE_ENV=production \
   -e PORT=3001 \
   -e APPRISE_URL=http://apprise:8000 \
-  ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.5
+  ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.6
 
 ```
 
@@ -219,6 +219,12 @@ If you run into issues:
 
 MIT License - see LICENSE file for details.
 
-## Support
+## 🤖 AI-Assisted Development
 
-For issues and questions, please create an issue in the repository.
+This project was built with the support of modern **AI coding tools** to accelerate prototyping and implementation.  
+- AI was used to generate scaffolding, boilerplate, and draft functions.  
+- All code has been **curated, reviewed, and tested** by a human before release.  
+- The use of AI allowed for faster iteration and a focus on architecture, usability, and overall project quality.  
+
+Community contributions and reviews are encouraged to further strengthen and expand the project.  
+
