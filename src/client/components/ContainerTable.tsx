@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { RefreshCw, Trash2, Edit, CheckCircle, AlertCircle, Clock, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { ContainerRegistry, ContainerState } from '../types';
+import { ResponsiveTable } from './layout/ResponsiveTable';
 
 interface ContainerTableProps {
   containers: ContainerRegistry[];
@@ -252,7 +253,7 @@ export function ContainerTable({
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden">
+    <ResponsiveTable>
       {selectedContainers.size > 0 && (
         <div className="bg-muted/30 border-b border-border px-4 py-2 flex items-center justify-between">
           <span className="text-sm text-foreground">
@@ -267,8 +268,7 @@ export function ContainerTable({
           </button>
         </div>
       )}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px]">
+      <table className="w-full min-w-[800px]">
           <thead className="bg-muted/50">
             <tr>
               <th className="px-2 sm:px-4 py-3 text-center w-12">
@@ -503,7 +503,6 @@ export function ContainerTable({
             })}
           </tbody>
         </table>
-      </div>
-    </div>
+    </ResponsiveTable>
   );
 }

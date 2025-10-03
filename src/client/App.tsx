@@ -1,8 +1,7 @@
 import { BrowserRouter as Router } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ContainerRegistry, ContainerState, Notification, CronConfig, NotificationConfig } from './types';
-import { Sidebar } from './components/Sidebar';
-import { ContentHeader } from './components/ContentHeader';
+import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Containers } from './pages/Containers';
 import { GettingStarted } from './pages/GettingStarted';
@@ -10,8 +9,6 @@ import { Settings } from './pages/Settings';
 import { Notifications as NotificationsPage } from './pages/Notifications';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CheckProvider } from './contexts/CheckContext';
-import { CheckProgressBar } from './components/CheckProgressBar';
-import { Footer } from './components/Footer';
 
 // Main app content component
 function AppContent() {
@@ -446,19 +443,13 @@ function AppContent() {
     <ThemeProvider>
       <CheckProvider>
         <Router>
-          <div className="min-h-screen bg-background">
-            <Sidebar 
-              activePage={activePage}
-              onPageChange={setActivePage}
-              unreadCount={unreadNotifications.length}
-            />
-            <main className="ml-64 p-6 pb-20">
-              <ContentHeader />
-              {renderPage()}
-            </main>
-            <CheckProgressBar />
-            <Footer />
-          </div>
+          <AppLayout
+            activePage={activePage}
+            onPageChange={setActivePage}
+            unreadCount={unreadNotifications.length}
+          >
+            {renderPage()}
+          </AppLayout>
         </Router>
       </CheckProvider>
     </ThemeProvider>

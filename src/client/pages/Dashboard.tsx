@@ -6,6 +6,11 @@ import { BulkImportModal } from '../components/BulkImportModal';
 import { ContainerCard } from '../components/ContainerCard';
 import { CheckConfirmationModal } from '../components/CheckConfirmationModal';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageContent } from '../components/layout/PageContent';
+import { ResponsiveStatsGrid } from '../components/layout/ResponsiveStatsGrid';
+import { ResponsiveContainerGrid } from '../components/layout/ResponsiveContainerGrid';
+import { ResponsiveSearchControls } from '../components/layout/ResponsiveSearchControls';
 import { useCheck } from '../contexts/CheckContext';
 
 interface DashboardProps {
@@ -479,51 +484,46 @@ export function Dashboard({
 
   const totalFiltered = filteredAndSortedContainers.reduce((sum, g) => sum + g.containers.length, 0);
 
+  const headerActions = (
+    <>
+      <button
+        onClick={() => setIsBulkImportModalOpen(true)}
+        className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+      >
+        <Upload className="w-4 h-4" />
+        <span>Import List</span>
+      </button>
+      <button
+        onClick={() => setIsAddModalOpen(true)}
+        className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        <span>Add Image</span>
+      </button>
+      <button
+        onClick={handleCheckRegistry}
+        disabled={isChecking || containers.length === 0}
+        className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
+        <span>{isChecking ? 'Checking...' : 'Check All'}</span>
+      </button>
+      <ThemeToggle />
+    </>
+  );
+
   return (
     <div>
-      {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Monitor your Docker container registries for updated images and get notified when new versions are available
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsBulkImportModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-              <span>Import List</span>
-            </button>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Image</span>
-            </button>
-            <button
-              onClick={handleCheckRegistry}
-              disabled={isChecking || containers.length === 0}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
-              <span>{isChecking ? 'Checking...' : 'Check All'}</span>
-            </button>
-            <ThemeToggle />
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="Monitor your Docker container registries for updated images and get notified when new versions are available"
+        actions={headerActions}
+      />
 
-      {/* Content - Below horizontal line */}
-      <div className="space-y-6 p-6 pt-32">
-
-      {/* Stats Cards - Only show when there are containers */}
+      <PageContent>
+        {/* Stats Cards - Only show when there are containers */}
       {containers.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <ResponsiveStatsGrid>
           <div 
             onClick={() => setStatusFilter(statusFilter === 'all' ? 'all' : 'all')}
             className={`bg-card border-2 rounded-lg p-4 cursor-pointer transition-all ${
@@ -598,7 +598,7 @@ export function Dashboard({
             </div>
             <p className="text-2xl font-bold text-foreground mt-2">{stats.neverChecked}</p>
           </div>
-        </div>
+        </ResponsiveStatsGrid>
       )}
 
       {/* Recent Updates - Disabled */}
@@ -655,60 +655,38 @@ export function Dashboard({
 
       {/* Search, Sort, and Group Controls */}
       {containers.length > 0 && (
-        <div className="bg-muted/30 border border-border rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Search</h2>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, image, or tag..."
-                className="w-full pl-10 pr-10 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+        <ResponsiveSearchControls
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        >
+          {/* Sort and Group Controls */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'name' | 'age' | 'status')}
+            className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="name">Sort: Name</option>
+            <option value="age">Sort: Age (Newest)</option>
+            <option value="status">Sort: Status</option>
+          </select>
 
-            {/* Sort and Group Controls */}
-            <div className="flex items-center gap-2">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'name' | 'age' | 'status')}
-                className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="name">Sort: Name</option>
-                <option value="age">Sort: Age (Newest)</option>
-                <option value="status">Sort: Status</option>
-              </select>
+          <select
+            value={groupBy}
+            onChange={(e) => setGroupBy(e.target.value as 'none' | 'age' | 'registry' | 'status')}
+            className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="none">Group: None</option>
+            <option value="age">Group: Age</option>
+            <option value="registry">Group: Registry</option>
+            <option value="status">Group: Status</option>
+          </select>
+        </ResponsiveSearchControls>
+      )}
 
-              <select
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value as 'none' | 'age' | 'registry' | 'status')}
-                className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="none">Group: None</option>
-                <option value="age">Group: Age</option>
-                <option value="registry">Group: Registry</option>
-                <option value="status">Group: Status</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Results Count */}
-          {searchQuery && (
-            <div className="mt-3 text-sm text-muted-foreground">
-              Showing {totalFiltered} of {containers.length} containers
-            </div>
-          )}
+      {/* Results Count */}
+      {searchQuery && containers.length > 0 && (
+        <div className="text-sm text-muted-foreground">
+          Showing {totalFiltered} of {containers.length} containers
         </div>
       )}
 
@@ -725,7 +703,7 @@ export function Dashboard({
                     {group.group} ({group.containers.length})
                   </h3>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <ResponsiveContainerGrid>
                   {group.containers.map((container, index) => {
                 const containerState = containerStates.find(
                   state => state.image === container.imagePath && state.tag === (container.tag || 'latest')
@@ -746,7 +724,7 @@ export function Dashboard({
                       />
                     );
                   })}
-                </div>
+                </ResponsiveContainerGrid>
               </div>
             ))}
             
@@ -790,7 +768,7 @@ export function Dashboard({
           </div>
         )}
       </div>
-      </div>
+      </PageContent>
 
       <AddContainerModal
         isOpen={isAddModalOpen}

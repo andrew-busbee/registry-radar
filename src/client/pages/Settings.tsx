@@ -3,6 +3,8 @@ import { Save, Clock, ToggleLeft, ToggleRight, Settings as SettingsIcon, Bell } 
 import { CronConfig, NotificationConfig } from '../types';
 import { NotificationSettings } from '../components/NotificationSettings';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageContent } from '../components/layout/PageContent';
 
 interface SettingsProps {
   cronConfig: CronConfig;
@@ -119,23 +121,13 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
 
   return (
     <div>
-      {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-            <p className="text-muted-foreground mt-1">
-              Configure your registry monitoring schedule and notification preferences
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <ThemeToggle />
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Configure your registry monitoring schedule and notification preferences"
+        actions={<ThemeToggle />}
+      />
 
-      {/* Content - Below horizontal line */}
-      <div className="max-w-5xl space-y-4 p-6 pt-32">
+      <PageContent className="max-w-5xl">
         {/* Tab Navigation */}
         <div className="border-b border-border">
           <nav className="flex space-x-6">
@@ -372,7 +364,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
           onUpdateConfig={onUpdateNotificationConfig}
         />
       )}
-      </div>
+      </PageContent>
     </div>
   );
 }

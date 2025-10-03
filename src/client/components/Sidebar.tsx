@@ -1,4 +1,5 @@
 import { Bell, Settings, Container, Home, BookOpen } from 'lucide-react';
+import { LAYOUT } from '../constants/layout';
 
 interface SidebarProps {
   activePage: string;
@@ -16,7 +17,7 @@ export function Sidebar({ activePage, onPageChange, unreadCount }: SidebarProps)
   ];
 
   return (
-    <aside className="hidden md:block w-64 bg-card border-r border-border fixed left-0 top-0 h-full overflow-y-auto p-4">
+    <aside className={`hidden md:block ${LAYOUT.SIDEBAR_WIDTH} bg-card border-r border-border fixed left-0 top-0 h-full overflow-y-auto p-4 z-${LAYOUT.Z_INDEX.SIDEBAR}`}>
       {/* Brand Section */}
       <div className="flex items-center space-x-2 mb-6 pb-4 border-b border-border">
         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">

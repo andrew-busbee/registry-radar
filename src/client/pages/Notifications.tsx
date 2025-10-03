@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { Trash2, CheckCircle, AlertCircle, Clock, Check, Settings, Bell } from 'lucide-react';
 import { Notification } from '../types';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageContent } from '../components/layout/PageContent';
 
 interface NotificationsProps {
   notifications: Notification[];
@@ -98,45 +100,40 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const headerActions = (
+    <>
+      {unreadCount > 0 && (
+        <button
+          onClick={handleMarkAllAsRead}
+          className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          <Check className="w-4 h-4" />
+          <span>Mark All Read</span>
+        </button>
+      )}
+      {notifications.length > 0 && (
+        <button
+          onClick={handleClearAll}
+          disabled={isClearing}
+          className="flex items-center space-x-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span>{isClearing ? 'Clearing...' : 'Clear All'}</span>
+        </button>
+      )}
+      <ThemeToggle />
+    </>
+  );
+
   return (
     <div>
-      {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
-            <p className="text-muted-foreground mt-1">
-              {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All notifications read'}
-            </p>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllAsRead}
-                className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                <Check className="w-4 h-4" />
-                <span>Mark All Read</span>
-              </button>
-            )}
-            {notifications.length > 0 && (
-              <button
-                onClick={handleClearAll}
-                disabled={isClearing}
-                className="flex items-center space-x-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>{isClearing ? 'Clearing...' : 'Clear All'}</span>
-              </button>
-            )}
-            <ThemeToggle />
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Notifications"
+        description={unreadCount > 0 ? `${unreadCount} unread notifications` : 'All notifications read'}
+        actions={headerActions}
+      />
 
-      {/* Content - Below horizontal line */}
-      <div className="space-y-6 p-6 pt-32">
+      <PageContent>
         {/* Filter Options */}
         {notifications.length > 0 && (
           <div className="bg-card border border-border rounded-lg p-4">
@@ -251,7 +248,7 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
             ))}
           </div>
         )}
-      </div>
+      </PageContent>
     </div>
   );
 }

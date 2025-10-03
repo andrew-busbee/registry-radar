@@ -24,6 +24,11 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+    
+    /* Layout custom properties */
+    --sidebar-width: 256px;
+    --header-height: 64px;
+    --content-padding: 1.5rem;
   }
 
   .dark {

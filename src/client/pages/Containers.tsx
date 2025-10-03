@@ -6,6 +6,9 @@ import { AddContainerModal } from '../components/AddContainerModal';
 import { BulkImportModal } from '../components/BulkImportModal';
 import { CheckConfirmationModal } from '../components/CheckConfirmationModal';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageContent } from '../components/layout/PageContent';
+import { ResponsiveSearchControls } from '../components/layout/ResponsiveSearchControls';
 import { useCheck } from '../contexts/CheckContext';
 
 interface ContainersProps {
@@ -237,82 +240,63 @@ export function Containers({
     });
   }, [containers, searchQuery]);
 
+  const headerActions = (
+    <>
+      <button
+        onClick={() => setIsBulkImportModalOpen(true)}
+        className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+      >
+        <Upload className="w-4 h-4" />
+        <span>Import List</span>
+      </button>
+      <button
+        onClick={handleExport}
+        disabled={containers.length === 0}
+        className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Download className="w-4 h-4" />
+        <span>Export List</span>
+      </button>
+      <button
+        onClick={() => setIsAddModalOpen(true)}
+        className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        <span>+ Add Image</span>
+      </button>
+      <button
+        onClick={handleCheckAll}
+        disabled={isCheckingAll || containers.length === 0}
+        className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
+        <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
+      </button>
+      <ThemeToggle />
+    </>
+  );
+
   return (
     <div>
-      {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Image Details</h1>
-            <p className="text-muted-foreground mt-1">
-              Monitor and configure your Docker images
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setIsBulkImportModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-              <span>Import List</span>
-            </button>
-            <button
-              onClick={handleExport}
-              disabled={containers.length === 0}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export List</span>
-            </button>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>+ Add Image</span>
-            </button>
-            <button
-              onClick={handleCheckAll}
-              disabled={isCheckingAll || containers.length === 0}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
-              <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
-            </button>
-            <ThemeToggle />
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Image Details"
+        description="Monitor and configure your Docker images"
+        actions={headerActions}
+      />
 
-      {/* Content - Below horizontal line */}
-      <div className="space-y-6 p-6 pt-32">
+      <PageContent>
         {/* Search Bar */}
         {containers.length > 0 && (
-          <div className="bg-muted/30 border border-border rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Search</h2>
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, image, or tag..."
-                className="w-full pl-10 pr-10 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-            {searchQuery && (
-              <div className="mt-3 text-sm text-muted-foreground">
-                Showing {filteredContainers.length} of {containers.length} containers
-              </div>
-            )}
+          <ResponsiveSearchControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
+        )}
+
+        {/* Results Count */}
+        {searchQuery && containers.length > 0 && (
+          <div className="text-sm text-muted-foreground">
+            Showing {filteredContainers.length} of {containers.length} containers
           </div>
         )}
 
@@ -416,7 +400,7 @@ export function Containers({
             ) : null}
           />
         )}
-      </div>
+      </PageContent>
 
       <AddContainerModal
         isOpen={isAddModalOpen}
