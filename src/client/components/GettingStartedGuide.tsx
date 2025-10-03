@@ -11,6 +11,7 @@ import {
   X,
   XCircle
 } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface GettingStartedGuideProps {
   onAddContainer: () => void;
@@ -29,13 +30,16 @@ export function GettingStartedGuide({
       <div className="space-y-8">
         {/* Hero Section */}
         <div className="space-y-4 text-left">
-          <div className="flex items-center space-x-4">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <Container className="w-10 h-10 text-primary animate-pulse" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Container className="w-10 h-10 text-primary animate-pulse" />
+              </div>
+              <h1 className="text-3xl font-bold text-foreground">
+                Welcome to Registry Radar
+              </h1>
             </div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Welcome to Registry Radar
-            </h1>
+            <ThemeToggle />
           </div>
           <p className="text-lg text-muted-foreground">
             Tired of manually checking if your Docker images have updates? Use Registry Radar to monitor your Docker images for updates across multiple registries. Get notified when new versions are available so you can keep your deployments up to date.

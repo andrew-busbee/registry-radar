@@ -5,6 +5,7 @@ import { ContainerTable } from '../components/ContainerTable';
 import { AddContainerModal } from '../components/AddContainerModal';
 import { BulkImportModal } from '../components/BulkImportModal';
 import { CheckConfirmationModal } from '../components/CheckConfirmationModal';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { useCheck } from '../contexts/CheckContext';
 
 interface ContainersProps {
@@ -271,6 +272,7 @@ export function Containers({
               <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
               <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
             </button>
+            <ThemeToggle />
           </div>
         </div>
       </div>

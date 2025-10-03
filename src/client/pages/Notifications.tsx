@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Trash2, CheckCircle, AlertCircle, Clock, Check, Settings, Bell } from 'lucide-react';
 import { Notification } from '../types';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 interface NotificationsProps {
   notifications: Notification[];
@@ -109,27 +110,30 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
             </p>
           </div>
           
-          {notifications.length > 0 && (
-            <div className="flex items-center space-x-2">
-              {unreadCount > 0 && (
+          <div className="flex items-center space-x-2">
+            {notifications.length > 0 && (
+              <>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={handleMarkAllAsRead}
+                    className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Mark All Read</span>
+                  </button>
+                )}
                 <button
-                  onClick={handleMarkAllAsRead}
-                  className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  onClick={handleClearAll}
+                  disabled={isClearing}
+                  className="flex items-center space-x-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
                 >
-                  <Check className="w-4 h-4" />
-                  <span>Mark All Read</span>
+                  <Trash2 className="w-4 h-4" />
+                  <span>{isClearing ? 'Clearing...' : 'Clear All'}</span>
                 </button>
-              )}
-              <button
-                onClick={handleClearAll}
-                disabled={isClearing}
-                className="flex items-center space-x-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>{isClearing ? 'Clearing...' : 'Clear All'}</span>
-              </button>
-            </div>
-          )}
+              </>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 

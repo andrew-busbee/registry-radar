@@ -11,6 +11,15 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Apply dark mode immediately to prevent flash of light mode
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (!savedTheme) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>
 </html>

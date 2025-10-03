@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Clock, ToggleLeft, ToggleRight, Settings as SettingsIcon, Bell } from 'lucide-react';
 import { CronConfig, NotificationConfig } from '../types';
 import { NotificationSettings } from '../components/NotificationSettings';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 interface SettingsProps {
   cronConfig: CronConfig;
@@ -118,11 +119,14 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
 
   return (
     <div className="max-w-5xl space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground text-sm">
-          Configure your registry monitoring schedule and notification preferences
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground text-sm">
+            Configure your registry monitoring schedule and notification preferences
+          </p>
+        </div>
+        <ThemeToggle />
       </div>
 
       {/* Tab Navigation */}

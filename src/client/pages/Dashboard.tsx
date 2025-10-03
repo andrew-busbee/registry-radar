@@ -5,6 +5,7 @@ import { AddContainerModal } from '../components/AddContainerModal';
 import { BulkImportModal } from '../components/BulkImportModal';
 import { ContainerCard } from '../components/ContainerCard';
 import { CheckConfirmationModal } from '../components/CheckConfirmationModal';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { useCheck } from '../contexts/CheckContext';
 
 interface DashboardProps {
@@ -512,6 +513,7 @@ export function Dashboard({
               <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
               <span>{isChecking ? 'Checking...' : 'Check All'}</span>
             </button>
+            <ThemeToggle />
           </div>
         </div>
       </div>
