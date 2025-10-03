@@ -13,8 +13,9 @@ export function PageHeader({ title, description, actions, className = '' }: Page
     if (!actions) return null;
     
     if (isValidElement(actions)) {
-      // Single element
-      if (actions.type && (actions.type as any).name === 'ThemeToggle') {
+      // Single element - check if it's ThemeToggle by looking at the component name or displayName
+      const componentName = actions.type?.name || actions.type?.displayName;
+      if (componentName === 'ThemeToggle') {
         return null; // Hide ThemeToggle on mobile
       }
       return actions;
@@ -23,8 +24,11 @@ export function PageHeader({ title, description, actions, className = '' }: Page
     if (Array.isArray(actions)) {
       // Array of elements - filter out ThemeToggle
       return actions.filter((action) => {
-        if (isValidElement(action) && action.type && (action.type as any).name === 'ThemeToggle') {
-          return false; // Hide ThemeToggle on mobile
+        if (isValidElement(action)) {
+          const componentName = action.type?.name || action.type?.displayName;
+          if (componentName === 'ThemeToggle') {
+            return false; // Hide ThemeToggle on mobile
+          }
         }
         return true;
       });
