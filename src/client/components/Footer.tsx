@@ -9,7 +9,7 @@ export function Footer() {
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Registry Radar</span>
             <a
-              href={`https://github.com/andrew-busbee/registry-radar/releases/tag/v${__APP_VERSION__}`}
+              href={`https://github.com/andrewbusbee/registry-radar/releases/tag/v${__APP_VERSION__}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
@@ -36,7 +36,7 @@ export function Footer() {
           {/* Right side - GitHub link */}
           <div className="flex items-center space-x-2">
             <a
-              href="https://github.com/andrew-busbee/registry-radar"
+              href="https://github.com/andrewbusbee/registry-radar"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-2 text-sm text-primary hover:text-primary/80 transition-colors"
