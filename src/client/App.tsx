@@ -27,6 +27,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState('getting-started');
   const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'notifications'>('general');
+  const [dashboardInitialModal, setDashboardInitialModal] = useState<'add' | 'bulk-import' | undefined>(undefined);
 
 
   // Fetch initial data
@@ -409,8 +410,14 @@ function AppContent() {
       case 'getting-started':
         return (
           <GettingStarted
-            onAddContainer={() => setActivePage('containers')}
-            onBulkImport={() => setActivePage('containers')}
+            onAddContainer={() => {
+              setDashboardInitialModal('add');
+              setActivePage('dashboard');
+            }}
+            onBulkImport={() => {
+              setDashboardInitialModal('bulk-import');
+              setActivePage('dashboard');
+            }}
           />
         );
       default:
@@ -424,6 +431,8 @@ function AppContent() {
             onAddContainer={async (container: ContainerRegistry) => { await handleAddContainer(container); }}
             onUpdateContainer={async (index: number, container: ContainerRegistry) => { await handleUpdateContainer(index, container); }}
             onDeleteContainer={async (index: number) => { await handleDeleteContainer(index); }}
+            initialOpenModal={dashboardInitialModal}
+            onModalOpened={() => setDashboardInitialModal(undefined)}
           />
         );
     }

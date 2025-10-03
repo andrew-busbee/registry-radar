@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { RefreshCw, Container, AlertCircle, CheckCircle, Clock, Plus, X, Upload, Search, SlidersHorizontal, XCircle } from 'lucide-react';
 import { ContainerRegistry, ContainerState, Notification } from '../types';
 import { AddContainerModal } from '../components/AddContainerModal';
@@ -22,6 +22,8 @@ interface DashboardProps {
   onAddContainer: (container: ContainerRegistry) => Promise<void>;
   onUpdateContainer: (index: number, container: ContainerRegistry) => Promise<void>;
   onDeleteContainer: (index: number) => Promise<void>;
+  initialOpenModal?: 'add' | 'bulk-import';
+  onModalOpened?: () => void;
 }
 
 export function Dashboard({ 
@@ -32,7 +34,9 @@ export function Dashboard({
   onRefreshContainerStates,
   onAddContainer,
   onUpdateContainer,
-  onDeleteContainer
+  onDeleteContainer,
+  initialOpenModal,
+  onModalOpened
 }: DashboardProps) {
   const { progress, startCheck, updateProgress, completeCheck, cancelCheck } = useCheck();
   
@@ -107,6 +111,17 @@ export function Dashboard({
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [checkingIndex, setCheckingIndex] = useState<number | null>(null);
   const [isCheckConfirmationOpen, setIsCheckConfirmationOpen] = useState(false);
+
+  // Handle initial modal opening
+  useEffect(() => {
+    if (initialOpenModal === 'add') {
+      setIsAddModalOpen(true);
+      onModalOpened?.();
+    } else if (initialOpenModal === 'bulk-import') {
+      setIsBulkImportModalOpen(true);
+      onModalOpened?.();
+    }
+  }, [initialOpenModal, onModalOpened]);
   
   // Search, Sort, and Group state
   const [searchQuery, setSearchQuery] = useState('');
@@ -516,7 +531,7 @@ export function Dashboard({
     <div>
       <PageHeader
         title="Dashboard"
-        description="Monitor your Docker container registries for updated images and get notified when new versions are available"
+        description="View the status of your monitored images and get notified when new versions are available"
         actions={headerActions}
       />
 

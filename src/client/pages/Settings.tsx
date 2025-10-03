@@ -123,11 +123,10 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     <div>
       <PageHeader
         title="Settings"
-        description="Configure your registry monitoring schedule and notification preferences"
         actions={<ThemeToggle />}
       />
 
-      <PageContent className="max-w-5xl">
+      <PageContent className="max-w-4xl">
         {/* Tab Navigation */}
         <div className="border-b border-border">
           <nav className="flex space-x-6">
@@ -154,7 +153,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
         {/* Tab Content */}
         {activeTab === 'general' && (
           <div className="space-y-4">
-            <div className="bg-card border border-border rounded-lg p-4">
+            <div className="p-4">
           <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center space-x-2">
             <Clock className="w-5 h-5" />
             <span>Image Update Scheduler</span>
@@ -332,7 +331,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
 
           {/* Information Section - Only show when enabled */}
           {enabled && (
-          <div className="bg-card border border-border rounded-lg p-4">
+          <div className="p-4">
             <h2 className="text-lg font-semibold text-foreground mb-3">About Cron Expressions</h2>
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>

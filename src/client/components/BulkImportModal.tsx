@@ -429,74 +429,47 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
           </div>
 
           <div className="space-y-6">
-            {/* Input Section */}
-            <div>
-              <label htmlFor="container-list" className="block text-sm font-medium text-foreground mb-2">
-                Image List
-              </label>
-              <div className="space-y-2">
-                <textarea
-                  id="container-list"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Paste any of the following formats:&#10;&#10;📋 Simple list:&#10;nginx:alpine&#10;ghcr.io/user/repo:latest&#10;&#10;🐳 Docker Compose:&#10;services:&#10;  web:&#10;    image: nginx:alpine&#10;&#10;⚡ Docker commands:&#10;docker run -d redis:7&#10;&#10;📄 Dockerfile:&#10;FROM ubuntu:22.04"
-                  className="w-full h-96 px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
-                  disabled={isImporting}
-                />
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center space-x-4">
-                    <span>✨ Smart parsing: Docker Compose, commands, Dockerfiles, and text lists</span>
-                    <span>🔍 Supports: ghcr.io, lscr.io, quay.io, docker.io, and custom registries</span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={copyToClipboard}
-                      className="flex items-center space-x-1 hover:text-foreground"
-                    >
-                      <Copy className="h-3 w-3" />
-                      <span>Copy</span>
-                    </button>
-                    <button
-                      onClick={handleExport}
-                      className="flex items-center space-x-1 hover:text-foreground"
-                    >
-                      <Download className="h-3 w-3" />
-                      <span>Export Current</span>
-                    </button>
+            {/* Input Section - Only show when not in preview mode */}
+            {!showPreview && (
+              <>
+                <div>
+                  <label htmlFor="container-list" className="block text-sm font-medium text-foreground mb-2">
+                    Image List
+                  </label>
+                  <div className="space-y-2">
+                    <textarea
+                      id="container-list"
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      placeholder="Paste any of the following formats:&#10;&#10;📋 Simple list:&#10;nginx:alpine&#10;ghcr.io/user/repo:latest&#10;&#10;🐳 Docker Compose:&#10;services:&#10;  web:&#10;    image: nginx:alpine&#10;&#10;⚡ Docker commands:&#10;docker run -d redis:7&#10;&#10;📄 Dockerfile:&#10;FROM ubuntu:22.04"
+                      className="w-full h-96 px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
+                      disabled={isImporting}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      <span>✨ Smart parsing: Feel free to paste in Docker Compose format, Dockerfiles, or text lists</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Parse Button */}
-            {!showPreview && (
-              <div className="flex justify-center">
-                <button
-                  onClick={handleParse}
-                  disabled={!inputText.trim() || isImporting}
-                  className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Parse & Preview
-                </button>
-              </div>
+                {/* Parse Button */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleParse}
+                    disabled={!inputText.trim() || isImporting}
+                    className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Parse & Preview
+                  </button>
+                </div>
+              </>
             )}
 
             {/* Preview Section */}
             {showPreview && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                  <div>
                     <h3 className="text-lg font-medium text-foreground">Parsed Containers</h3>
-                    {(() => {
-                      const contentType = detectContentType(inputText);
-                      const IconComponent = contentType.icon;
-                      return (
-                        <div className="flex items-center space-x-2 px-2 py-1 bg-muted rounded-md text-sm text-muted-foreground">
-                          {IconComponent && <IconComponent className="h-4 w-4" />}
-                          <span>{contentType.label}</span>
-                        </div>
-                      );
-                    })()}
                   </div>
                   <div className="flex items-center space-x-4 text-sm">
                     <span className="text-green-600">
@@ -545,11 +518,6 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                                 </span>
                               )}
                             </div>
-                            {container.originalLine && container.originalLine !== `${container.imagePath}:${container.tag}` && (
-                              <div className="text-xs text-muted-foreground mt-1 font-mono bg-muted px-2 py-1 rounded">
-                                {container.originalLine}
-                              </div>
-                            )}
                           </div>
                         </div>
                         {!container.isValid && container.error && (

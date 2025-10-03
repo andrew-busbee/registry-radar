@@ -129,7 +129,6 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
     <div>
       <PageHeader
         title="Notifications"
-        description={unreadCount > 0 ? `${unreadCount} unread notifications` : 'All notifications read'}
         actions={headerActions}
       />
 

@@ -3,8 +3,24 @@ import { Github } from 'lucide-react';
 export function Footer() {
   return (
     <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-muted z-40">
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <div className="px-6 py-2">
+        {/* Mobile Footer - Just app name and version */}
+        <div className="md:hidden flex items-center justify-center">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">Registry Radar</span>
+            <a
+              href={`https://github.com/andrewbusbee/registry-radar/releases/tag/v${__APP_VERSION__}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              v{__APP_VERSION__}
+            </a>
+          </div>
+        </div>
+
+        {/* Desktop Footer - Full content */}
+        <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto">
           {/* Left side - App name and version */}
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Registry Radar</span>

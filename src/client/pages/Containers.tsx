@@ -280,7 +280,6 @@ export function Containers({
     <div>
       <PageHeader
         title="Image Details"
-        description="Monitor and configure your Docker images"
         actions={headerActions}
       />
 

@@ -31,12 +31,16 @@ export function GettingStartedGuide({
     <div>
       <PageHeader
         title="Welcome to Registry Radar"
-        description="Tired of manually checking if your Docker images have updates? Use Registry Radar to monitor your Docker images for updates across multiple registries. Get notified when new versions are available so you can keep your deployments up to date."
         actions={<ThemeToggle />}
       />
 
-      <PageContent>
+      <PageContent className="max-w-4xl">
         <div className="space-y-6">
+
+        {/* Introduction */}
+        <p className="text-muted-foreground">
+          Tired of manually checking if your Docker images have updates? Use Registry Radar to monitor your Docker images for updates across multiple registries. Get notified when new versions are available so you can keep your deployments up to date.
+        </p>
 
         {/* Why You Need This */}
         <div className="space-y-3">
