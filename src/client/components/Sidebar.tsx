@@ -38,7 +38,7 @@ export function Sidebar({ activePage, onPageChange, unreadCount }: SidebarProps)
                 </span>
               )}
             </button>
-            {id === 'notifications' && <div className="h-2"></div>}
+            {id === 'notifications' && <div className="h-4"></div>}
           </div>
         ))}
       </nav>
