@@ -231,17 +231,17 @@ export function Containers({
   }, [containers, searchQuery]);
 
   return (
-    <div className="space-y-6">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-background border-b border-border pb-4 -mx-6 px-6">
-        <div className="flex items-center justify-between">
+    <div className="flex h-screen">
+      {/* Sticky Header - Right Side */}
+      <div className="sticky top-0 z-20 w-80 bg-background border-l border-border p-6 flex-shrink-0">
+        <div className="space-y-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Image Details</h1>
             <p className="text-muted-foreground mt-1">
               Monitor and configure your Docker images
             </p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col space-y-2">
             <button
               onClick={() => setIsBulkImportModalOpen(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -272,10 +272,16 @@ export function Containers({
               <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
               <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
             </button>
-            <ThemeToggle />
+            <div className="pt-2">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 space-y-6">
 
       {/* Search Bar */}
       {containers.length > 0 && (
@@ -399,6 +405,22 @@ export function Containers({
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddContainer}
+      />
+
+      <BulkImportModal
+        isOpen={isBulkImportModalOpen}
+        onClose={() => setIsBulkImportModalOpen(false)}
+        onImport={handleBulkImport}
+        onExport={handleExport}
+      />
+
+        </div>
+      </div>
+
+      <AddContainerModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={onAddContainer}
       />
 
       <BulkImportModal

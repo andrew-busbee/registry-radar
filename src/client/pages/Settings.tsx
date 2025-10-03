@@ -118,16 +118,25 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
   ];
 
   return (
-    <div className="max-w-5xl space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground text-sm">
-            Configure your registry monitoring schedule and notification preferences
-          </p>
+    <div className="flex h-screen">
+      {/* Sticky Header - Right Side */}
+      <div className="sticky top-0 z-20 w-80 bg-background border-l border-border p-6 flex-shrink-0">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+            <p className="text-muted-foreground mt-1">
+              Configure your registry monitoring schedule and notification preferences
+            </p>
+          </div>
+          <div className="pt-2">
+            <ThemeToggle />
+          </div>
         </div>
-        <ThemeToggle />
       </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 space-y-4">
 
       {/* Tab Navigation */}
       <div className="border-b border-border">
@@ -365,6 +374,9 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
           onUpdateConfig={onUpdateNotificationConfig}
         />
       )}
+
+        </div>
+      </div>
     </div>
   );
 }

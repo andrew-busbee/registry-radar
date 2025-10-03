@@ -99,18 +99,17 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="space-y-6">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-background border-b border-border pb-4 -mx-6 px-6">
-        <div className="flex items-center justify-between">
+    <div className="flex h-screen">
+      {/* Sticky Header - Right Side */}
+      <div className="sticky top-0 z-20 w-80 bg-background border-l border-border p-6 flex-shrink-0">
+        <div className="space-y-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
             <p className="text-muted-foreground mt-1">
               {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All notifications read'}
             </p>
           </div>
-          
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col space-y-2">
             {notifications.length > 0 && (
               <>
                 {unreadCount > 0 && (
@@ -132,10 +131,16 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
                 </button>
               </>
             )}
-            <ThemeToggle />
+            <div className="pt-2">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 space-y-6">
 
       {/* Filter Options */}
       {notifications.length > 0 && (
@@ -252,6 +257,8 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
         </div>
       )}
 
+        </div>
+      </div>
     </div>
   );
 }
