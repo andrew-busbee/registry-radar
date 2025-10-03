@@ -482,7 +482,7 @@ export function Dashboard({
   return (
     <div className="h-screen flex flex-col">
       {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 flex-shrink-0">
+      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>

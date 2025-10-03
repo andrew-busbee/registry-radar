@@ -2,7 +2,7 @@ import { Github } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="fixed bottom-0 left-64 right-0 border-t border-border bg-muted z-40">
+    <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-muted z-40">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           {/* Left side - App name and version */}
