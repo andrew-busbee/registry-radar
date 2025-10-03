@@ -17,7 +17,7 @@ export class AppriseTemplates {
   private static readonly BRAND_FOOTER = (() => {
     const currentYear = new Date().getFullYear();
     const copyrightYear = currentYear === 2025 ? '2025' : `2025-${currentYear}`;
-    return `---\nRegistry Radar © ${copyrightYear} Andrew Busbee v${packageJson.version}`;
+    return `---\n© ${copyrightYear} Registry Radar v${packageJson.version}`;
   })();
   private static readonly TITLE_PREFIX = '📡 Registry Radar';
   
