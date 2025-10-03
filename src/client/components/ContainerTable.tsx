@@ -30,12 +30,16 @@ export function ContainerTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<ContainerRegistry | null>(null);
-  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  const [selectedContainers, setSelectedContainers] = useState<Set<string>>(new Set());
 
   const getContainerState = (container: ContainerRegistry): ContainerState | undefined => {
     return containerStates.find(state => 
       state.image === container.imagePath && state.tag === (container.tag || 'latest')
     );
+  };
+
+  const getContainerKey = (container: ContainerRegistry): string => {
+    return `${container.imagePath}@@${container.tag || 'latest'}`;
   };
 
   // Helper function to check if dismiss button should be shown
@@ -197,31 +201,42 @@ export function ContainerTable({
   };
 
   const handleToggleSelect = (index: number) => {
-    const newSelected = new Set(selectedIndices);
-    if (newSelected.has(index)) {
-      newSelected.delete(index);
+    const container = sortedContainers[index];
+    const containerKey = getContainerKey(container);
+    const newSelected = new Set(selectedContainers);
+    if (newSelected.has(containerKey)) {
+      newSelected.delete(containerKey);
     } else {
-      newSelected.add(index);
+      newSelected.add(containerKey);
     }
-    setSelectedIndices(newSelected);
+    setSelectedContainers(newSelected);
   };
 
   const handleSelectAll = () => {
-    if (selectedIndices.size === containers.length) {
-      setSelectedIndices(new Set());
+    if (selectedContainers.size === containers.length) {
+      setSelectedContainers(new Set());
     } else {
-      setSelectedIndices(new Set(containers.map((_, i) => i)));
+      setSelectedContainers(new Set(containers.map(container => getContainerKey(container))));
     }
   };
 
   const handleBulkDelete = () => {
-    if (selectedIndices.size === 0) return;
+    if (selectedContainers.size === 0) return;
     
     if (onBulkDelete) {
-      // Convert to array and sort in descending order (delete from end to start)
-      const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
+      // Convert selected container keys to their indices in the current sorted order
+      const indicesToDelete: number[] = [];
+      sortedContainers.forEach((container, index) => {
+        const containerKey = getContainerKey(container);
+        if (selectedContainers.has(containerKey)) {
+          indicesToDelete.push(index);
+        }
+      });
+      
+      // Sort in descending order for deletion
+      indicesToDelete.sort((a, b) => b - a);
       onBulkDelete(indicesToDelete);
-      setSelectedIndices(new Set());
+      setSelectedContainers(new Set());
     }
   };
 
@@ -236,10 +251,10 @@ export function ContainerTable({
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
-      {selectedIndices.size > 0 && (
+      {selectedContainers.size > 0 && (
         <div className="bg-muted/30 border-b border-border px-4 py-2 flex items-center justify-between">
           <span className="text-sm text-foreground">
-            {selectedIndices.size} item{selectedIndices.size > 1 ? 's' : ''} selected
+            {selectedContainers.size} item{selectedContainers.size > 1 ? 's' : ''} selected
           </span>
           <button
             onClick={handleBulkDelete}
@@ -257,7 +272,7 @@ export function ContainerTable({
               <th className="px-2 sm:px-4 py-3 text-center w-12">
                 <input
                   type="checkbox"
-                  checked={selectedIndices.size === containers.length && containers.length > 0}
+                  checked={selectedContainers.size === containers.length && containers.length > 0}
                   onChange={handleSelectAll}
                   className="w-4 h-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
                   title="Select all"
@@ -332,7 +347,7 @@ export function ContainerTable({
                   <td className="px-2 sm:px-4 py-3 sm:py-4 text-center">
                     <input
                       type="checkbox"
-                      checked={selectedIndices.has(index)}
+                      checked={selectedContainers.has(getContainerKey(container))}
                       onChange={() => handleToggleSelect(index)}
                       className="w-4 h-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
                     />

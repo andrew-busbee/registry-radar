@@ -62,8 +62,11 @@ export function Containers({
     
     if (confirm(`Are you sure you want to delete ${indices.length} container(s)?`)) {
       try {
+        // Sort indices in descending order to maintain correct indices during deletion
+        const sortedIndices = [...indices].sort((a, b) => b - a);
+        
         // Delete in descending order to maintain correct indices
-        for (const index of indices) {
+        for (const index of sortedIndices) {
           await onDeleteContainer(index);
         }
       } catch (error) {
@@ -370,16 +373,29 @@ export function Containers({
               const originalIndex = containers.findIndex(
                 c => c.imagePath === container.imagePath && c.tag === container.tag
               );
+              if (originalIndex === -1) {
+                console.error('Could not find original index for container:', container);
+                return;
+              }
               await handleDeleteContainer(originalIndex);
             }}
             onBulkDelete={(indices) => {
               // Map filtered indices to original indices
               const originalIndices = indices.map(i => {
                 const container = filteredContainers[i];
-                return containers.findIndex(
+                const originalIndex = containers.findIndex(
                   c => c.imagePath === container.imagePath && c.tag === container.tag
                 );
-              });
+                if (originalIndex === -1) {
+                  console.error('Could not find original index for container:', container);
+                }
+                return originalIndex;
+              }).filter(index => index !== -1); // Remove any invalid indices
+              
+              if (originalIndices.length !== indices.length) {
+                console.warn('Some selected items could not be found in the original containers list');
+              }
+              
               handleBulkDelete(originalIndices);
             }}
             onCheck={(index) => {
