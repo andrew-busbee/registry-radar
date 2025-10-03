@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Menu, X, Bell, Settings, Container, Home, BookOpen } from 'lucide-react';
 import { LAYOUT } from '../../constants/layout';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface MobileNavigationProps {
   activePage: string;
@@ -44,14 +45,17 @@ export function MobileNavigation({ activePage, onPageChange, unreadCount }: Mobi
             <h1 className="text-xl font-bold text-foreground">Registry Radar</h1>
           </div>
 
-          {unreadCount > 0 && (
-            <div className="relative">
-              <Bell className="w-6 h-6 text-foreground" />
-              <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
-                {unreadCount}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            <ThemeToggle />
+            {unreadCount > 0 && (
+              <div className="relative">
+                <Bell className="w-6 h-6 text-foreground" />
+                <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  {unreadCount}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
