@@ -58,13 +58,17 @@ export function Containers({
   };
 
   const handleBulkDelete = async (indices: number[]) => {
-    try {
-      // Delete in descending order to maintain correct indices
-      for (const index of indices) {
-        await onDeleteContainer(index);
+    if (indices.length === 0) return;
+    
+    if (confirm(`Are you sure you want to delete ${indices.length} container(s)?`)) {
+      try {
+        // Delete in descending order to maintain correct indices
+        for (const index of indices) {
+          await onDeleteContainer(index);
+        }
+      } catch (error) {
+        console.error('Error bulk deleting containers:', error);
       }
-    } catch (error) {
-      console.error('Error bulk deleting containers:', error);
     }
   };
 
@@ -360,13 +364,13 @@ export function Containers({
               );
               return handleUpdateContainer(originalIndex, container);
             }}
-            onDelete={(index) => {
+            onDelete={async (index) => {
               // Find the original index in the unfiltered array
               const container = filteredContainers[index];
               const originalIndex = containers.findIndex(
                 c => c.imagePath === container.imagePath && c.tag === container.tag
               );
-              handleDeleteContainer(originalIndex);
+              await handleDeleteContainer(originalIndex);
             }}
             onBulkDelete={(indices) => {
               // Map filtered indices to original indices

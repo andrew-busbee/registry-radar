@@ -217,13 +217,11 @@ export function ContainerTable({
   const handleBulkDelete = () => {
     if (selectedIndices.size === 0) return;
     
-    if (confirm(`Are you sure you want to delete ${selectedIndices.size} container(s)?`)) {
-      if (onBulkDelete) {
-        // Convert to array and sort in descending order (delete from end to start)
-        const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
-        onBulkDelete(indicesToDelete);
-        setSelectedIndices(new Set());
-      }
+    if (onBulkDelete) {
+      // Convert to array and sort in descending order (delete from end to start)
+      const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
+      onBulkDelete(indicesToDelete);
+      setSelectedIndices(new Set());
     }
   };
 

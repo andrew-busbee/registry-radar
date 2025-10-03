@@ -739,7 +739,7 @@ export function Dashboard({
                         container={container}
                         containerState={containerState}
                         onUpdate={(updatedContainer) => handleUpdateContainer(originalIndex, updatedContainer)}
-                        onDelete={() => handleDeleteContainer(originalIndex)}
+                        onDelete={async () => await handleDeleteContainer(originalIndex)}
                         onCheck={() => handleCheckSingle(originalIndex)}
                         onDismissUpdate={() => handleDismissUpdate(container)}
                         isChecking={checkingIndex === originalIndex}
