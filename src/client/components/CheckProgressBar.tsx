@@ -23,7 +23,7 @@ export function CheckProgressBar() {
   };
 
   return (
-    <div className="fixed bottom-16 left-64 right-0 z-50 bg-primary text-primary-foreground shadow-lg">
+    <div className="fixed bottom-16 left-0 right-0 z-50 bg-primary text-primary-foreground shadow-lg">
       <div className="px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">

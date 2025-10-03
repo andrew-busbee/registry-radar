@@ -1143,10 +1143,19 @@ export class RegistryService {
         updateAcknowledgedAt = undefined;
       }
 
+      // Preserve previously monitored/local digest in currentSha except for the first successful check, where we baseline to latestSha
+      const previousSha = existingState?.currentSha || '';
+      const isFirstSuccessfulCheck = (!previousSha || previousSha === '') && !result.error;
+      const newCurrentSha = result.error
+        ? previousSha
+        : isFirstSuccessfulCheck
+          ? result.latestSha
+          : previousSha;
+
       const newState: ContainerState = {
         image: result.image,
         tag: result.tag,
-        currentSha: result.error ? (existingState?.currentSha || '') : result.latestSha,
+        currentSha: newCurrentSha,
         lastChecked: result.lastChecked,
         hasUpdate: result.error ? (existingState?.hasUpdate || false) : hasUpdate,
         hasNewerTag: result.error ? existingState?.hasNewerTag : hasNewerTag,

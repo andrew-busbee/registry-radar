@@ -22,6 +22,28 @@ export function ContainerCard({
   isChecking = false 
 }: ContainerCardProps) {
   
+  const normalizeSha = (sha?: string): string => {
+    if (!sha) return '';
+    const trimmed = sha.trim().toLowerCase();
+    return trimmed.startsWith('sha256:') ? trimmed.substring(7) : trimmed;
+  };
+
+  const getShaDiffSuffix = (a?: string, b?: string): { aSuffix: string; bSuffix: string } => {
+    const na = normalizeSha(a);
+    const nb = normalizeSha(b);
+    if (!na || !nb || na === nb) return { aSuffix: '', bSuffix: '' };
+    let i = 0;
+    const max = Math.min(na.length, nb.length);
+    while (i < max && na[i] === nb[i]) i++;
+    const take = 4;
+    return {
+      aSuffix: na.substring(i, Math.min(i + take, na.length)),
+      bSuffix: nb.substring(i, Math.min(i + take, nb.length)),
+    };
+  };
+
+  // Note: We show up to 4 differing characters after the first 12 matching prefix
+
   // Helper function to check if a tag is a v-prefixed versioned tag (like v1.2.3) or has additional characters after semantic version (like 0.1.0-beta.4)
   const isVPrefixedVersionedTag = (tag: string): boolean => {
     // Match v-prefixed versions like v1.2.3
@@ -329,11 +351,34 @@ export function ContainerCard({
                 </div>
               </div>
             )}
-            {containerState && containerState.currentSha && (
-              <div className="text-xs text-muted-foreground mt-2">
-                Current SHA: {containerState.currentSha.substring(0, 12)}...
-              </div>
-            )}
+            {(containerState && (containerState.currentSha || containerState.latestSha)) && (() => {
+              const currentPrefix = containerState?.currentSha ? normalizeSha(containerState.currentSha).substring(0, 12) : '';
+              const latestPrefix = containerState?.latestSha ? normalizeSha(containerState.latestSha).substring(0, 12) : '';
+              const { aSuffix, bSuffix } = getShaDiffSuffix(containerState?.currentSha, containerState?.latestSha);
+
+              return (
+                <div className="text-xs text-muted-foreground mt-2 flex flex-col gap-1">
+                  {containerState?.currentSha && (
+                    <div title={normalizeSha(containerState.currentSha)}>
+                      <span className="font-medium">Monitored SHA for {container.tag || 'latest'}:</span> {currentPrefix}
+                      <span>...</span>
+                      {aSuffix && (
+                        <span className="text-orange-600 font-medium">{aSuffix}</span>
+                      )}
+                    </div>
+                  )}
+                  {containerState?.latestSha && (
+                    <div title={normalizeSha(containerState.latestSha)}>
+                      <span className="font-medium">Registry SHA for {container.tag || 'latest'}:</span> {latestPrefix}
+                      <span>...</span>
+                      {bSuffix && (
+                        <span className="text-orange-600 font-medium">{bSuffix}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Status details grid */}
