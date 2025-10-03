@@ -12,6 +12,8 @@ import {
   XCircle
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { PageHeader } from './layout/PageHeader';
+import { PageContent } from './layout/PageContent';
 
 interface GettingStartedGuideProps {
   onAddContainer: () => void;
@@ -27,23 +29,13 @@ export function GettingStartedGuide({
 
   return (
     <div>
-      {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Welcome to Registry Radar
-            </h1>
-          </div>
-          <ThemeToggle />
-        </div>
-        <p className="text-lg text-muted-foreground mt-4">
-          Tired of manually checking if your Docker images have updates? Use Registry Radar to monitor your Docker images for updates across multiple registries. Get notified when new versions are available so you can keep your deployments up to date.
-        </p>
-      </div>
+      <PageHeader
+        title="Welcome to Registry Radar"
+        description="Tired of manually checking if your Docker images have updates? Use Registry Radar to monitor your Docker images for updates across multiple registries. Get notified when new versions are available so you can keep your deployments up to date."
+        actions={<ThemeToggle />}
+      />
 
-      {/* Content - Below horizontal line */}
-      <div className="bg-card rounded-lg p-8 pt-32">
+      <PageContent>
         <div className="space-y-8">
 
         {/* What Registry Radar Does */}
@@ -262,7 +254,7 @@ export function GettingStartedGuide({
           </div>
         )}
         </div>
-      </div>
+      </PageContent>
     </div>
   );
 }

@@ -8,7 +8,7 @@ interface PageContentProps {
 
 export function PageContent({ children, className = '' }: PageContentProps) {
   return (
-    <div className={`space-y-6 ${LAYOUT.CONTENT_PADDING} md:${LAYOUT.CONTENT_TOP_PADDING} ${className}`}>
+    <div className={`space-y-6 p-6 ${className}`}>
       {children}
     </div>
   );

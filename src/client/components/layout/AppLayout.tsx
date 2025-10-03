@@ -30,7 +30,7 @@ export function AppLayout({ children, activePage, onPageChange, unreadCount }: A
       />
       
       {/* Main Content */}
-      <main className={`md:${LAYOUT.CONTENT_MARGIN} ${LAYOUT.CONTENT_PADDING} pb-20 pt-16 md:pt-0`}>
+      <main className="md:ml-64 pb-20 pt-20 md:pt-4">
         {children}
       </main>
       

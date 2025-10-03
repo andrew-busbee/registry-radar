@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { LAYOUT } from '../../constants/layout';
 
 interface PageHeaderProps {
   title: string;
@@ -11,7 +10,7 @@ interface PageHeaderProps {
 export function PageHeader({ title, description, actions, className = '' }: PageHeaderProps) {
   return (
     <div 
-      className={`hidden md:block fixed top-0 ${LAYOUT.CONTENT_MARGIN} right-0 z-${LAYOUT.Z_INDEX.HEADER} bg-background border-b border-border pb-4 px-6 pt-4 ${className}`}
+      className={`bg-background border-b border-border pb-4 px-6 pt-4 ${className}`}
     >
       <div className="flex items-center justify-between">
         <div>
