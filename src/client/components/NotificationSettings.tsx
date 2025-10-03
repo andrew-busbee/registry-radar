@@ -464,9 +464,9 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
         <div className="mt-3 space-y-3">
             {localConfig.apprise?.enabled ? (
               <>
-              <div className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 text-xs">
+              <div className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-blue-800 dark:text-blue-200 text-xs">
                 <span><strong>Apprise:</strong> Supports 80+ services (Discord, Slack, Email, SMS, etc.)</span>
-                <a href="https://github.com/caronc/apprise#supported-notifications" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                <a href="https://github.com/caronc/apprise#supported-notifications" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
                   Supported services →
                 </a>
               </div>

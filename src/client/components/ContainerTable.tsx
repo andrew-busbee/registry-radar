@@ -187,7 +187,9 @@ export function ContainerTable({
     if (!editData) return;
     
     try {
-      await onUpdate(index, editData);
+      // Find the index in the original containers array
+      const originalIndex = containers.findIndex(c => getContainerKey(c) === getContainerKey(sortedContainers[index]));
+      await onUpdate(originalIndex, editData);
       setEditingIndex(null);
       setEditData(null);
     } catch (error) {
@@ -224,9 +226,9 @@ export function ContainerTable({
     if (selectedContainers.size === 0) return;
     
     if (onBulkDelete) {
-      // Convert selected container keys to their indices in the current sorted order
+      // Convert selected container keys to their indices in the original containers array (not sorted)
       const indicesToDelete: number[] = [];
-      sortedContainers.forEach((container, index) => {
+      containers.forEach((container, index) => {
         const containerKey = getContainerKey(container);
         if (selectedContainers.has(containerKey)) {
           indicesToDelete.push(index);
@@ -463,7 +465,11 @@ export function ContainerTable({
                             </button>
                           )}
                           <button
-                            onClick={() => onCheck(index)}
+                            onClick={() => {
+                              // Find the index in the original containers array
+                              const originalIndex = containers.findIndex(c => getContainerKey(c) === getContainerKey(container));
+                              onCheck(originalIndex);
+                            }}
                             disabled={checkingIndex === index}
                             className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors disabled:opacity-50"
                             title="Check for updates"
@@ -478,7 +484,11 @@ export function ContainerTable({
                             <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                           </button>
                           <button
-                            onClick={() => onDelete(index)}
+                            onClick={() => {
+                              // Find the index in the original containers array
+                              const originalIndex = containers.findIndex(c => getContainerKey(c) === getContainerKey(container));
+                              onDelete(originalIndex);
+                            }}
                             className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                             title="Delete container"
                           >
