@@ -23,6 +23,7 @@ export class AppriseTemplates {
   
   static updateAvailable(containerName: string, image: string, tag: string, updatedDate?: string): { title: string; body: string } {
     const publicUrl = process.env.PUBLIC_URL;
+    console.log(`[AppriseTemplates] updateAvailable - PUBLIC_URL: "${publicUrl}"`);
     const actionText = publicUrl 
       ? `Visit ${publicUrl} to confirm this update and stop notifications until a subsequent update is found`
       : `Reset the update for this image online to stop future notifications until a subsequent update is found`;
@@ -93,6 +94,7 @@ ${additionalInfo}${this.BRAND_FOOTER}`
 
   static testNotification(): { title: string; body: string } {
     const publicUrl = process.env.PUBLIC_URL;
+    console.log(`[AppriseTemplates] testNotification - PUBLIC_URL: "${publicUrl}"`);
     const additionalInfo = publicUrl 
       ? `Visit ${publicUrl} to configure your monitors\n\n`
       : '';
