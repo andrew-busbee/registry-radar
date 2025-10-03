@@ -121,43 +121,44 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     <div className="h-screen flex flex-col">
       {/* Sticky Header - Above horizontal line */}
       <div className="sticky top-0 z-20 bg-background border-b border-border pb-4 -mx-6 px-6 flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Settings</h1>
             <p className="text-muted-foreground mt-1">
               Configure your registry monitoring schedule and notification preferences
             </p>
           </div>
-          <ThemeToggle />
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="border-b border-border">
-          <nav className="flex space-x-6">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+          <div className="flex items-center space-x-2">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
       {/* Scrollable Content - Below horizontal line */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-5xl space-y-4 p-6">
+          {/* Tab Navigation */}
+          <div className="border-b border-border">
+            <nav className="flex space-x-6">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center space-x-2 py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      activeTab === tab.id
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
 
       {/* Tab Content */}
       {activeTab === 'general' && (

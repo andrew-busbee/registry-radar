@@ -111,26 +111,24 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
           </div>
           
           <div className="flex items-center space-x-2">
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllAsRead}
+                className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <Check className="w-4 h-4" />
+                <span>Mark All Read</span>
+              </button>
+            )}
             {notifications.length > 0 && (
-              <>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={handleMarkAllAsRead}
-                    className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                  >
-                    <Check className="w-4 h-4" />
-                    <span>Mark All Read</span>
-                  </button>
-                )}
-                <button
-                  onClick={handleClearAll}
-                  disabled={isClearing}
-                  className="flex items-center space-x-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>{isClearing ? 'Clearing...' : 'Clear All'}</span>
-                </button>
-              </>
+              <button
+                onClick={handleClearAll}
+                disabled={isClearing}
+                className="flex items-center space-x-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{isClearing ? 'Clearing...' : 'Clear All'}</span>
+              </button>
             )}
             <ThemeToggle />
           </div>
