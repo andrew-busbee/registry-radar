@@ -15,6 +15,9 @@ services:
       # Uncomment and set your credentials to enable:
       # - DOCKERHUB_USERNAME=your_username
       # - DOCKERHUB_PASSWORD=your_password_or_token
+      # Public URL (optional)
+      # Uncomment and set your public Registry Radar URL to enable:
+      # - PUBLIC_URL=https://registry-radar.your-domain.com
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/cron/status', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]

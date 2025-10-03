@@ -22,26 +22,37 @@ export class AppriseTemplates {
   private static readonly TITLE_PREFIX = '📡 Registry Radar';
   
   static updateAvailable(containerName: string, image: string, tag: string, updatedDate?: string): { title: string; body: string } {
+    const publicUrl = process.env.PUBLIC_URL;
+    const actionText = publicUrl 
+      ? `Visit ${publicUrl} to confirm this update and stop notifications until a subsequent update is found`
+      : `Reset the update for this image online to stop future notifications until a subsequent update is found`;
+
     return {
-      title: `${this.TITLE_PREFIX}: Monitored Image Update Available`,
-      body: `Name: ${containerName}
-Image: ${image}:${tag}
-${updatedDate ? `Image Updated: ${updatedDate}` : ''}
+      title: `${this.TITLE_PREFIX}: Update Available for Monitored Docker Image`,
+      body: `Registry Radar has found an update to your monitored image ${image}:${tag}
+The new version was updated on ${updatedDate || 'unknown date'}
+
+${actionText}
 
 ${this.BRAND_FOOTER}`
     };
   }
 
   static errorOccurred(errorMessage: string, container?: string): { title: string; body: string } {
+    const publicUrl = process.env.PUBLIC_URL;
+    const actionText = publicUrl 
+      ? `Visit ${publicUrl} to check your configuration`
+      : `Please check your configuration`;
+
     return {
-      title: `${this.TITLE_PREFIX} Image Check Error`,
+      title: `${this.TITLE_PREFIX}: Image Check Error`,
       body: `An error occurred during the registry check:
 
 Name: ${container || 'N/A'}
 Error Details:
 ${errorMessage}
 
-Please check your configuration and try again.
+${actionText}
 
 ${this.BRAND_FOOTER}`
     };
@@ -49,14 +60,12 @@ ${this.BRAND_FOOTER}`
 
   static checkComplete(totalImages: number, updatesFound: number, errors: number): { title: string; body: string } {
     return {
-      title: `${this.TITLE_PREFIX} Check Complete`,
-      body: `Scheduled registry check has completed with the following results:
+      title: `${this.TITLE_PREFIX}: Monitored Image Check Complete`,
+      body: `${updatesFound > 0 ? '⚠️ Image Updates Available' : '✅ All Good: No updates found for your monitored images.'}
 
 Total Images Checked: ${totalImages}
 Updates Found: ${updatesFound}
 Errors: ${errors}
-
-${updatesFound > 0 ? '⚠️ Image Updates Available' : '✅ All Good: No updates found for your monitored images.'}
 
 ${this.BRAND_FOOTER}`
     };
@@ -67,17 +76,27 @@ ${this.BRAND_FOOTER}`
       `${container.name}\n- Image: ${container.image}:${container.tag}\n- Status: ${container.status}`
     ).join('\n\n');
 
+    const publicUrl = process.env.PUBLIC_URL;
+    const additionalInfo = publicUrl 
+      ? `Visit ${publicUrl} for additional details\n\n`
+      : '';
+
     return {
-      title: `${this.TITLE_PREFIX} Image Status Report`,
+      title: `${this.TITLE_PREFIX}: Monitored Image Status Report`,
       body: `Status report for all monitored images:
 
 ${containerList}
 
-${this.BRAND_FOOTER}`
+${additionalInfo}${this.BRAND_FOOTER}`
     };
   }
 
   static testNotification(): { title: string; body: string } {
+    const publicUrl = process.env.PUBLIC_URL;
+    const additionalInfo = publicUrl 
+      ? `Visit ${publicUrl} to configure your monitors\n\n`
+      : '';
+
     return {
       title: `${this.TITLE_PREFIX} Test Notification`,
       body: `This is a test notification from Registry Radar.
@@ -89,7 +108,7 @@ Configuration Details:
 - Format: Plain Text
 - Timestamp: ${new Date().toLocaleString()}
 
-${this.BRAND_FOOTER}`
+${additionalInfo}${this.BRAND_FOOTER}`
     };
   }
 }
