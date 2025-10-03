@@ -45,20 +45,30 @@ export class NotificationService {
   }
 
   static async createUpdateNotification(containerName: string, image: string, tag: string, isNewUpdate: boolean = true, customMessage?: string): Promise<void> {
+    console.log(`[NotificationService] createUpdateNotification called for ${containerName} (${image}:${tag})`);
+    
     // Create notification message (use custom message if provided, otherwise default)
     const message = customMessage || `New version available for ${containerName} (tag: ${tag})`;
+    console.log(`[NotificationService] Creating notification with message: ${message}`);
 
-    // Create internal notification
-    await this.addNotification({
-      type: 'update',
-      message,
-      timestamp: new Date().toISOString(),
-      container: image,
-      read: false,
-    });
+    try {
+      // Create internal notification
+      await this.addNotification({
+        type: 'update',
+        message,
+        timestamp: new Date().toISOString(),
+        container: image,
+        read: false,
+      });
+      console.log(`[NotificationService] Internal notification created successfully for ${containerName}`);
 
-    // Send external notifications for all updates (both new and existing)
-    await this.sendExternalNotifications('update', containerName, image, tag);
+      // Send external notifications for all updates (both new and existing)
+      await this.sendExternalNotifications('update', containerName, image, tag);
+      console.log(`[NotificationService] External notifications processed for ${containerName}`);
+    } catch (error) {
+      console.error(`[NotificationService] Error creating notification for ${containerName}:`, error);
+      throw error;
+    }
   }
 
   static async createErrorNotification(message: string, container?: string): Promise<void> {

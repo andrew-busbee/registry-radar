@@ -25,7 +25,7 @@ export function GettingStartedGuide({
 }: GettingStartedGuideProps) {
 
   return (
-    <div className="bg-card border border-border rounded-lg p-8 max-w-4xl">
+    <div className="bg-card rounded-lg p-8 w-1/2">
       <div className="space-y-8">
         {/* Hero Section */}
         <div className="space-y-4 text-left">
@@ -37,7 +37,7 @@ export function GettingStartedGuide({
               Welcome to Registry Radar
             </h1>
           </div>
-          <p className="text-lg text-muted-foreground max-w-2xl">
+          <p className="text-lg text-muted-foreground">
             Tired of manually checking if your Docker images have updates? Use Registry Radar to monitor your Docker images for updates across multiple registries. Get notified when new versions are available so you can keep your deployments up to date.
           </p>
         </div>
@@ -204,8 +204,8 @@ export function GettingStartedGuide({
                 </p>
               </div>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="p-4">
+              <p className="text-sm text-muted-foreground">
                 <strong>💡 Tip:</strong> Set up notifications in Settings → Notifications. You can test your notification setup to confirm it is working.
               </p>
             </div>

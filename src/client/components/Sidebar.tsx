@@ -16,7 +16,15 @@ export function Sidebar({ activePage, onPageChange, unreadCount }: SidebarProps)
   ];
 
   return (
-    <aside className="hidden md:block w-64 bg-card border-r border-border p-4">
+    <aside className="hidden md:block w-64 bg-card border-r border-border fixed left-0 top-0 h-full overflow-y-auto p-4">
+      {/* Brand Section */}
+      <div className="flex items-center space-x-2 mb-6 pb-4 border-b border-border">
+        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <Container className="w-5 h-5 text-primary-foreground animate-pulse" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">Registry Radar</h1>
+      </div>
+      
       <nav className="space-y-2">
         {navItems.map(({ id, label, icon: Icon }) => (
           <div key={id}>

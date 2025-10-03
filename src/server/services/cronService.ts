@@ -118,6 +118,7 @@ export class CronService {
               notificationMessage = `Manual check completed for ${container.name} (tag: ${state.tag}) - up to date`;
             }
             
+            console.log(`[CronService] About to create notification for ${container.name}`);
             await NotificationService.createUpdateNotification(
               container.name,
               `${state.image}:${state.tag}`,
@@ -125,7 +126,7 @@ export class CronService {
               isNewUpdate,
               notificationMessage
             );
-            console.log(`Update detected for ${container.name}${isNewUpdate ? ' (new update)' : ' (existing update)'} - SHA: ${state.hasUpdate}, Newer: ${state.hasNewerTag}`);
+            console.log(`[CronService] Update detected for ${container.name}${isNewUpdate ? ' (new update)' : ' (existing update)'} - SHA: ${state.hasUpdate}, Newer: ${state.hasNewerTag}`);
           }
         } else if (state.isNew) {
           console.log(`Skipping notification for new image: ${state.image}:${state.tag} (isNew=true, establishing baseline)`);

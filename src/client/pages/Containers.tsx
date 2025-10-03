@@ -231,44 +231,47 @@ export function Containers({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Image Details</h1>
-          <p className="text-muted-foreground mt-1">
-            Monitor and configure your Docker images
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setIsBulkImportModalOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Import List</span>
-          </button>
-          <button
-            onClick={handleExport}
-            disabled={containers.length === 0}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download className="w-4 h-4" />
-            <span>Export List</span>
-          </button>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add Image</span>
-          </button>
-          <button
-            onClick={handleCheckAll}
-            disabled={isCheckingAll || containers.length === 0}
-            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
-            <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
-          </button>
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-background border-b border-border pb-4 -mx-6 px-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Image Details</h1>
+            <p className="text-muted-foreground mt-1">
+              Monitor and configure your Docker images
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsBulkImportModalOpen(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Import List</span>
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={containers.length === 0}
+              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export List</span>
+            </button>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Add Image</span>
+            </button>
+            <button
+              onClick={handleCheckAll}
+              disabled={isCheckingAll || containers.length === 0}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
+              <span>{isCheckingAll ? 'Checking...' : 'Check All'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
