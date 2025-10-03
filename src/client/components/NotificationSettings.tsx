@@ -330,22 +330,26 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-2">
-        <Bell className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Notification Settings</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Bell className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Notification Settings</h2>
+        </div>
+        
+        {/* Inline Success/Error Messages */}
+        <div className="flex items-center space-x-2">
+          {success && (
+            <div className="px-3 py-1 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm whitespace-nowrap">
+              {success}
+            </div>
+          )}
+          {error && (
+            <div className="px-3 py-1 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm whitespace-nowrap">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Success/Error Messages */}
-      {success && (
-        <div className="p-2 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
-          {success}
-        </div>
-      )}
-      {error && (
-        <div className="p-2 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
-          {error}
-        </div>
-      )}
 
       {/* Notification Triggers */}
       <div className="bg-card border border-border rounded-lg p-4">
