@@ -16,7 +16,7 @@ services:
       # - DOCKERHUB_USERNAME=your_username
       # - DOCKERHUB_PASSWORD=your_password_or_token
       # Public URL (optional)
-      # Uncomment and set your public Registry Radar URL to enable:
+      # Uncomment and set your public Registry Radar URL to enable links in notification messages:
       # - PUBLIC_URL=https://registry-radar.your-domain.com
     restart: unless-stopped
     healthcheck:
