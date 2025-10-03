@@ -232,8 +232,8 @@ export function Containers({
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Sticky Header - Above horizontal line */}
-      <div className="sticky top-0 z-20 bg-background border-b border-border pb-4 -mx-6 px-6 flex-shrink-0">
+      {/* Fixed Header - Above horizontal line */}
+      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Image Details</h1>
@@ -279,7 +279,7 @@ export function Containers({
 
       {/* Scrollable Content - Below horizontal line */}
       <div className="flex-1 overflow-y-auto">
-        <div className="space-y-6 p-6">
+        <div className="space-y-6 p-6 pt-20">
 
       {/* Search Bar */}
       {containers.length > 0 && (

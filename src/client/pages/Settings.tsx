@@ -119,8 +119,8 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Sticky Header - Above horizontal line */}
-      <div className="sticky top-0 z-20 bg-background border-b border-border pb-4 -mx-6 px-6 flex-shrink-0">
+      {/* Fixed Header - Above horizontal line */}
+      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Settings</h1>
@@ -136,7 +136,7 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
 
       {/* Scrollable Content - Below horizontal line */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl space-y-4 p-6">
+        <div className="max-w-5xl space-y-4 p-6 pt-20">
           {/* Tab Navigation */}
           <div className="border-b border-border">
             <nav className="flex space-x-6">
