@@ -1,8 +1,8 @@
 # Registry Radar
 
-**Get notified of Docker container updates automatically!**
+**Get notified of updated Docker images automatically!**
 
-Registry Radar is a simple web application that monitors your Docker container images for updates and sends you notifications when new versions are available. Instead of manually checking for updates, let Registry Radar do the work for you.
+Registry Radar is a simple web application that monitors Docker images for updates and sends you notifications when new versions are available. Instead of manually checking for updates, let Registry Radar do the work for you.
 
 Perfect for developers and system administrators who want to stay on top of security updates and new features without the hassle of manual checking.
 
@@ -12,7 +12,7 @@ Perfect for developers and system administrators who want to stay on top of secu
 - ⏰ **Automatic Checking**: Set up schedules to check for updates daily, weekly, or whenever you want
 - 🎨 **Easy-to-Use Interface**: Clean, modern web interface that anyone can use
 - 📱 **Instant Notifications**: See update notifications right in your browser
-- 📊 **Dashboard View**: Get an overview of all your containers and their update status
+- 📊 **Dashboard View**: Get an overview of all your images and their update status
 - ⚙️ **No Database Needed**: Everything is stored in simple files - no complex setup required
 - 🐳 **Docker Ready**: Runs in Docker with just one command
 - 🎉 **Application Notifications**: Notifications from the app are available via Apprise (Discord, Slack, Email, SMS, and 80+ other services) 
@@ -74,7 +74,7 @@ docker-compose up -d
 3. **Open your browser:**
 Go to `http://localhost:3001` and you'll see the Registry Radar interface.
 
-That's it! Registry Radar is now running and ready to monitor your containers.
+That's it! Registry Radar is now running and ready to monitor images for you!
 
 ### Option 2: Using Docker CLI
 
@@ -120,7 +120,7 @@ Registry Radar doesn't have built-in user authentication yet. If you're planning
 
 ## How to Use Registry Radar
 
-Once Registry Radar is running, you can start adding containers to monitor. The web interface makes this easy - just click "Add Container" and fill in the details or paste in a list of conatiners to monitor.
+Once Registry Radar is running, you can start adding images to monitor. The web interface makes this easy - just click "Add Image" and fill in the details or paste in a list of conatiners to monitor.
 
 ### Setting Up Automatic Checks
 
@@ -142,7 +142,7 @@ schedule: "0 8 * * 1"
 
 ## Notification Options
 
-Registry Radar can send you notifications when container updates are found or errors occur. You can configure multiple notification types to stay informed about your containers.
+Registry Radar can send you notifications when updated images are found or errors occur. You can configure multiple notification types to stay informed about your Docker images.
 
 ### Available Notification Types
 #### 🔔 **Apprise Notifications**
@@ -201,15 +201,15 @@ You can customize Registry Radar with these environment variables:
 - Check the logs: `docker-compose logs registry-radar`
 - Try accessing `http://localhost:3001` (not https)
 
-**Container checks are failing:**
+**Image checks are failing:**
 - Check your internet connection
-- Verify container names and tags are correct
-- For GitHub containers, make sure you've specified the namespace
+- Verify image names and tags are correct
+- For GitHub images, make sure you've specified the namespace
 
 ### Getting Help
 
 If you run into issues:
-1. Check the container logs: `docker-compose logs registry-radar`
+1. Check the Registy Radar container logs: `docker-compose logs registry-radar`
 2. Look at the web interface - it often shows helpful error messages
 3. Create an issue on GitHub with your error details
 
