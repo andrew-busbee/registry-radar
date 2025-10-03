@@ -152,7 +152,7 @@ export function Dashboard({
       // Simulate progress updates for each container
       for (let i = 0; i < containers.length; i++) {
         const container = containers[i];
-        updateProgress(i + 1, `${container.imagePath}:${container.tag}`);
+        updateProgress(i + 1, `${container.imagePath}:${container.tag || 'latest'}`);
         
         // Check individual container
         try {

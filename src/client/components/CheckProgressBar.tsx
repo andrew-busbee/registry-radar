@@ -38,25 +38,25 @@ export function CheckProgressBar() {
               )}
             </div>
             <RefreshCw className="h-4 w-4 animate-spin" />
-            <div className="flex-1 min-w-0">
+            <div className="w-80">
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium whitespace-nowrap">
                   Checking {progress.current} of {progress.total} images
                 </span>
                 {progress.currentContainer && (
-                  <span className="text-xs opacity-75 truncate max-w-xs">
+                  <span className="text-xs opacity-75 truncate flex-1 min-w-0">
                     • {progress.currentContainer}
                   </span>
                 )}
               </div>
               <div className="flex items-center space-x-2 mt-1">
-                <div className="flex-1 bg-primary-foreground/20 rounded-full h-1.5 min-w-0">
+                <div className="w-48 bg-primary-foreground/20 rounded-full h-1.5">
                   <div 
                     className="bg-primary-foreground h-1.5 rounded-full transition-all duration-300"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <span className="text-xs opacity-75">
+                <span className="text-xs opacity-75 whitespace-nowrap">
                   {Math.round(percentage)}%
                 </span>
               </div>
