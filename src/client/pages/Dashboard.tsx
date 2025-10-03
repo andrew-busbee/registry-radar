@@ -480,9 +480,9 @@ export function Dashboard({
   const totalFiltered = filteredAndSortedContainers.reduce((sum, g) => sum + g.containers.length, 0);
 
   return (
-    <div className="h-screen flex flex-col">
+    <div>
       {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4 flex-shrink-0">
+      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
@@ -518,9 +518,8 @@ export function Dashboard({
         </div>
       </div>
 
-      {/* Scrollable Content - Below horizontal line */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="space-y-6 p-6 pt-20">
+      {/* Content - Below horizontal line */}
+      <div className="space-y-6 p-6 pt-32">
 
       {/* Stats Cards - Only show when there are containers */}
       {containers.length > 0 && (
@@ -791,21 +790,6 @@ export function Dashboard({
           </div>
         )}
       </div>
-
-      <AddContainerModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={onAddContainer}
-      />
-
-      <BulkImportModal
-        isOpen={isBulkImportModalOpen}
-        onClose={() => setIsBulkImportModalOpen(false)}
-        onImport={handleBulkImport}
-        onExport={handleExport}
-      />
-
-        </div>
       </div>
 
       <AddContainerModal

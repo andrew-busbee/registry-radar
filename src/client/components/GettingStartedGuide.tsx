@@ -26,14 +26,11 @@ export function GettingStartedGuide({
 }: GettingStartedGuideProps) {
 
   return (
-    <div className="h-screen flex flex-col">
+    <div>
       {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4 flex-shrink-0">
+      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <Container className="w-10 h-10 text-primary animate-pulse" />
-            </div>
+          <div>
             <h1 className="text-3xl font-bold text-foreground">
               Welcome to Registry Radar
             </h1>
@@ -45,10 +42,9 @@ export function GettingStartedGuide({
         </p>
       </div>
 
-      {/* Scrollable Content - Below horizontal line */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="bg-card rounded-lg p-8 pt-20">
-          <div className="space-y-8">
+      {/* Content - Below horizontal line */}
+      <div className="bg-card rounded-lg p-8 pt-32">
+        <div className="space-y-8">
 
         {/* What Registry Radar Does */}
         <div className="space-y-4 text-left">
@@ -265,7 +261,6 @@ export function GettingStartedGuide({
             </button>
           </div>
         )}
-          </div>
         </div>
       </div>
     </div>

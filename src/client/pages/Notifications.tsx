@@ -99,9 +99,9 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="h-screen flex flex-col">
+    <div>
       {/* Fixed Header - Above horizontal line */}
-      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4 flex-shrink-0">
+      <div className="fixed top-0 left-64 right-0 z-20 bg-background border-b border-border pb-4 px-6 pt-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
@@ -135,126 +135,122 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
         </div>
       </div>
 
-      {/* Scrollable Content - Below horizontal line */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="space-y-6 p-6 pt-20">
-
-      {/* Filter Options */}
-      {notifications.length > 0 && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="font-medium text-foreground mb-3">Filter by Type</h3>
-          <div className="flex flex-wrap gap-2">
-            <button 
-              onClick={() => setActiveFilter('all')}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                activeFilter === 'all' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-            >
-              All ({notifications.length})
-            </button>
-            <button 
-              onClick={() => setActiveFilter('update')}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                activeFilter === 'update' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-            >
-              Updates ({notifications.filter(n => n.type === 'update').length})
-            </button>
-            <button 
-              onClick={() => setActiveFilter('error')}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                activeFilter === 'error' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-            >
-              Errors ({notifications.filter(n => n.type === 'error').length})
-            </button>
-            <button 
-              onClick={() => setActiveFilter('unread')}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                activeFilter === 'unread' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-            >
-              Unread ({unreadCount})
-            </button>
-          </div>
-        </div>
-      )}
-
-      {filteredNotifications.length === 0 ? (
-        <div className="bg-card border border-border rounded-lg p-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              {notifications.length === 0 ? 'No notifications' : `No ${activeFilter} notifications`}
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {notifications.length === 0 
-                ? "You'll see notifications here when images have updates or when errors occur."
-                : `Try selecting a different filter to see more notifications.`
-              }
-            </p>
-            {onNavigateToSettings && notifications.length === 0 && (
-              <button
-                onClick={onNavigateToSettings}
-                className="inline-flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+      {/* Content - Below horizontal line */}
+      <div className="space-y-6 p-6 pt-32">
+        {/* Filter Options */}
+        {notifications.length > 0 && (
+          <div className="bg-card border border-border rounded-lg p-4">
+            <h3 className="font-medium text-foreground mb-3">Filter by Type</h3>
+            <div className="flex flex-wrap gap-2">
+              <button 
+                onClick={() => setActiveFilter('all')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  activeFilter === 'all' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
               >
-                <Bell className="w-4 h-4" />
-                <span>Configure Notifications</span>
+                All ({notifications.length})
               </button>
-            )}
+              <button 
+                onClick={() => setActiveFilter('update')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  activeFilter === 'update' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Updates ({notifications.filter(n => n.type === 'update').length})
+              </button>
+              <button 
+                onClick={() => setActiveFilter('error')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  activeFilter === 'error' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Errors ({notifications.filter(n => n.type === 'error').length})
+              </button>
+              <button 
+                onClick={() => setActiveFilter('unread')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  activeFilter === 'unread' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Unread ({unreadCount})
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filteredNotifications.map((notification) => (
-            <div
-              key={notification.id}
-              className={`p-4 rounded-lg border transition-colors cursor-pointer hover:shadow-sm ${
-                getNotificationBg(notification.type, notification.read)
-              }`}
-              onClick={() => !notification.read && onMarkAsRead(notification.id)}
-            >
-              <div className="flex items-start space-x-3">
-                {getNotificationIcon(notification.type)}
-                <div className="flex-1 min-w-0">
-                  <p className={`font-medium ${
-                    getNotificationText(notification.type, notification.read)
-                  }`}>
-                    {notification.message}
-                  </p>
-                  {notification.container && (
-                    <p className={`text-sm mt-1 ${
+        )}
+
+        {filteredNotifications.length === 0 ? (
+          <div className="bg-card border border-border rounded-lg p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {notifications.length === 0 ? 'No notifications' : `No ${activeFilter} notifications`}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {notifications.length === 0 
+                  ? "You'll see notifications here when images have updates or when errors occur."
+                  : `Try selecting a different filter to see more notifications.`
+                }
+              </p>
+              {onNavigateToSettings && notifications.length === 0 && (
+                <button
+                  onClick={onNavigateToSettings}
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span>Configure Notifications</span>
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredNotifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`p-4 rounded-lg border transition-colors cursor-pointer hover:shadow-sm ${
+                  getNotificationBg(notification.type, notification.read)
+                }`}
+                onClick={() => !notification.read && onMarkAsRead(notification.id)}
+              >
+                <div className="flex items-start space-x-3">
+                  {getNotificationIcon(notification.type)}
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-medium ${
+                      getNotificationText(notification.type, notification.read)
+                    }`}>
+                      {notification.message}
+                    </p>
+                    {notification.container && (
+                      <p className={`text-sm mt-1 ${
+                        notification.read ? 'text-muted-foreground' : 'text-muted-foreground'
+                      }`}>
+                        Container: {notification.container}
+                      </p>
+                    )}
+                    <p className={`text-xs mt-2 ${
                       notification.read ? 'text-muted-foreground' : 'text-muted-foreground'
                     }`}>
-                      Container: {notification.container}
+                      {new Date(notification.timestamp).toLocaleString()}
                     </p>
+                  </div>
+                  {!notification.read && (
+                    <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                   )}
-                  <p className={`text-xs mt-2 ${
-                    notification.read ? 'text-muted-foreground' : 'text-muted-foreground'
-                  }`}>
-                    {new Date(notification.timestamp).toLocaleString()}
-                  </p>
                 </div>
-                {!notification.read && (
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                )}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
