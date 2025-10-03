@@ -446,7 +446,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                       disabled={isImporting}
                     />
                     <div className="text-xs text-muted-foreground">
-                      <span>✨ Smart parsing: Feel free to paste in Docker Compose format, Dockerfiles, or text lists</span>
+                      <span>✨ Smart parsing: Feel free to paste Docker Compose, Dockerfiles, or text lists</span>
                     </div>
                   </div>
                 </div>

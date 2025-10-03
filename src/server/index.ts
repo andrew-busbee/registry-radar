@@ -18,6 +18,8 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: false, // Disable for development
+  crossOriginEmbedderPolicy: false, // Allow screenshots
+  crossOriginOpenerPolicy: false, // Allow screenshots
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' ? false : true,

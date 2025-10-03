@@ -1,4 +1,5 @@
 import { ReactNode, cloneElement, isValidElement } from 'react';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface PageHeaderProps {
   title: string;
@@ -12,10 +13,18 @@ export function PageHeader({ title, description, actions, className = '' }: Page
   const filterActionsForMobile = (actions: ReactNode) => {
     if (!actions) return null;
     
+    console.log('Filtering actions:', actions, 'Type:', typeof actions, 'IsArray:', Array.isArray(actions)); // Debug log
+    
     if (isValidElement(actions)) {
       // Single element - check if it's ThemeToggle by looking at the component name or displayName
       const componentName = actions.type?.name || actions.type?.displayName;
-      if (componentName === 'ThemeToggle') {
+      console.log('Single action component name:', componentName, 'type:', actions.type); // Debug log
+      
+      // Try multiple ways to identify ThemeToggle
+      if (componentName === 'ThemeToggle' || 
+          actions.type === ThemeToggle || 
+          actions.type?.toString?.().includes('ThemeToggle')) {
+        console.log('Filtering out ThemeToggle on mobile'); // Debug log
         return null; // Hide ThemeToggle on mobile
       }
       return actions;
@@ -23,15 +32,24 @@ export function PageHeader({ title, description, actions, className = '' }: Page
     
     if (Array.isArray(actions)) {
       // Array of elements - filter out ThemeToggle
-      return actions.filter((action) => {
+      console.log('Processing array with', actions.length, 'elements'); // Debug log
+      const filtered = actions.filter((action) => {
         if (isValidElement(action)) {
           const componentName = action.type?.name || action.type?.displayName;
-          if (componentName === 'ThemeToggle') {
+          console.log('Array action component name:', componentName, 'type:', action.type); // Debug log
+          
+          // Try multiple ways to identify ThemeToggle
+          if (componentName === 'ThemeToggle' || 
+              action.type === ThemeToggle || 
+              action.type?.toString?.().includes('ThemeToggle')) {
+            console.log('Filtering out ThemeToggle from array on mobile'); // Debug log
             return false; // Hide ThemeToggle on mobile
           }
         }
         return true;
       });
+      console.log('Filtered array result:', filtered); // Debug log
+      return filtered;
     }
     
     return actions;
