@@ -23,7 +23,7 @@ The easiest way to run Registry Radar is with Docker Compose. You'll be up and r
 
 ### Option 1: Using Docker Compose (Recommended)
 
-1. **Create a docker-compose.yml with the following content:** The [sample docker-compose.yml](https://github.com/andrew-busbee/registry-radar/blob/main/docker-compose.yml) file also has an optional healthcheck.
+1. **Create a docker-compose.yml with the following content:** The [sample docker-compose.yml](https://github.com/andrewbusbee/registry-radar/blob/main/docker-compose.yml) file also has an optional healthcheck.
 ```yml
 services:
   registry-radar:
