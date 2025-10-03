@@ -204,7 +204,7 @@ export function GettingStartedGuide({
                 </p>
               </div>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <div className="bg-blue-50 dark:bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>💡 Tip:</strong> Set up notifications in Settings → Notifications. You can test your notification setup to confirm it is working.
               </p>
