@@ -160,24 +160,19 @@ export function Containers({
 
   const handleDismissUpdate = async (container: ContainerRegistry) => {
     try {
-      const response = await fetch('/api/config/containers/dismiss-update', {
+      const image = encodeURIComponent(container.imagePath);
+      const tag = encodeURIComponent(container.tag || 'latest');
+      const response = await fetch(`/api/registry/reset/${image}/${tag}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imagePath: container.imagePath,
-          tag: container.tag || 'latest'
-        }),
       });
       
       if (response.ok) {
         await onRefreshContainerStates();
       } else {
-        console.error('Failed to dismiss update:', response.statusText);
+        console.error('Failed to reset container state:', response.statusText);
       }
     } catch (error) {
-      console.error('Error dismissing update:', error);
+      console.error('Error resetting container state:', error);
     }
   };
 

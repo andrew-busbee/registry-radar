@@ -94,18 +94,28 @@ router.post('/reset/:image/:tag', async (req, res) => {
     const { image, tag } = req.params;
     
     const states = await ConfigService.getContainerState();
-    const stateIndex = states.findIndex(s => s.image === image && s.tag === tag);
+    const normalizedTag = (tag || 'latest');
+    const stateIndex = states.findIndex(s => s.image === image && (s.tag || 'latest') === normalizedTag);
     
     if (stateIndex === -1) {
       return res.status(404).json({ error: 'Container state not found' });
     }
     
-    states[stateIndex].hasUpdate = false;
-    states[stateIndex].lastChecked = new Date().toISOString();
+    // True baseline reset: accept the current online SHA as baseline if available
+    const state = states[stateIndex];
+    if (state.latestSha && state.latestSha !== '') {
+      state.currentSha = state.latestSha;
+    }
+    state.hasUpdate = false;
+    state.hasNewerTag = false;
+    state.latestAvailableTag = undefined;
+    state.latestAvailableUpdated = undefined;
+    state.updateAcknowledged = false;
+    state.lastChecked = new Date().toISOString();
     
     await ConfigService.saveContainerState(states);
     
-    res.json({ message: 'Container state reset' });
+    res.json({ message: 'Container baseline reset' });
   } catch (error) {
     console.error('Error resetting container state:', error);
     res.status(500).json({ error: 'Failed to reset container state' });

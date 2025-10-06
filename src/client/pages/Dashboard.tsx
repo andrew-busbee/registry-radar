@@ -329,46 +329,27 @@ export function Dashboard({
 
   const handleDismissUpdate = async (container: ContainerRegistry) => {
     try {
-      const response = await fetch('/api/config/containers/dismiss-update', {
+      const image = encodeURIComponent(container.imagePath);
+      const tag = encodeURIComponent(container.tag || 'latest');
+      const response = await fetch(`/api/registry/reset/${image}/${tag}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imagePath: container.imagePath,
-          tag: container.tag || 'latest'
-        }),
       });
       
       if (response.ok) {
-        // Optimistically update local state so UI reflects immediately
         try {
-          // Fetch latest states from server to keep in sync
           await onRefreshContainerStates();
         } catch {}
-        // Also adjust the local view instantly
-        const idx = containerStates.findIndex(s => s.image === container.imagePath && (s.tag || 'latest') === (container.tag || 'latest'));
-        if (idx >= 0) {
-          containerStates[idx] = {
-            ...containerStates[idx],
-            updateAcknowledged: true,
-            hasUpdate: false,
-            hasNewerTag: false,
-            latestAvailableTag: undefined,
-            latestAvailableUpdated: undefined,
-          } as any;
-        }
       } else {
-        console.error('Failed to dismiss update:', response.statusText);
+        console.error('Failed to reset container state:', response.statusText);
       }
     } catch (error) {
-      console.error('Error dismissing update:', error);
+      console.error('Error resetting container state:', error);
     }
   };
 
   const getContainerState = (container: ContainerRegistry): ContainerState | undefined => {
     return containerStates.find(state => 
-      state.image === container.imagePath && state.tag === container.tag
+      state.image === container.imagePath && (state.tag || 'latest') === (container.tag || 'latest')
     );
   };
 

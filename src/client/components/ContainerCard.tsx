@@ -139,12 +139,10 @@ export function ContainerCard({
       return 'text-gray-500';
     }
     
-    // Check if container has never been checked (empty lastChecked)
     if (!containerState.lastChecked || containerState.lastChecked === '') {
       return 'text-gray-500';
     }
     
-    // Error or unsupported status - show red
     if (containerState.error || containerState.statusMessage) {
       return 'text-red-600';
     }
@@ -153,17 +151,7 @@ export function ContainerCard({
       return 'text-orange-600';
     }
     
-    const days = getDaysSinceUpdate();
-    if (days !== null) {
-      if (days <= 180) {
-        return 'text-green-600';
-      } else if (days <= 365) {
-        return 'text-yellow-600';
-      } else {
-        return 'text-red-600';
-      }
-    }
-    
+    // Always green when Up to date; age will be shown as a subtle sub-label
     return 'text-green-600';
   };
 
@@ -188,6 +176,17 @@ export function ContainerCard({
             <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
               {getStatusText()}
             </div>
+            {/* Subtle age sub-label when up to date */}
+            {(!containerState?.error && !containerState?.statusMessage && !containerState?.hasUpdate && !containerState?.hasNewerTag && containerState?.lastUpdated) && (
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Image last updated {(() => {
+                  const days = getDaysSinceUpdate();
+                  if (days === null) return 'unknown';
+                  const dayStr = days === 1 ? 'day' : 'days';
+                  return `${days} ${dayStr} ago (${new Date(containerState!.lastUpdated!).toLocaleDateString()})`;
+                })()}
+              </div>
+            )}
           </div>
         </div>
         
