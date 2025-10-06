@@ -121,7 +121,7 @@ export class CronService {
             console.log(`[CronService] About to create notification for ${container.name}`);
             await NotificationService.createUpdateNotification(
               container.name,
-              `${state.image}:${state.tag}`,
+              state.image,
               state.tag,
               isNewUpdate,
               notificationMessage
