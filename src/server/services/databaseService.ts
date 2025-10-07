@@ -595,6 +595,38 @@ export class DatabaseService {
     return this.runCommand('UPDATE agents SET last_seen_at = CURRENT_TIMESTAMP WHERE id = ?', [agentId]);
   }
 
+  static async deleteAgent(agentId: string) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise<void>((resolve, reject) => {
+      this.db!.serialize(() => {
+        this.db!.run('BEGIN TRANSACTION', (err) => {
+          if (err) return reject(err);
+          
+          // Delete agent containers
+          this.db!.run('DELETE FROM agent_containers WHERE agent_id = ?', [agentId], (err) => {
+            if (err) return reject(err);
+            
+            // Delete agent secrets
+            this.db!.run('DELETE FROM agent_secrets WHERE agent_id = ?', [agentId], (err) => {
+              if (err) return reject(err);
+              
+              // Delete agent
+              this.db!.run('DELETE FROM agents WHERE id = ?', [agentId], (err) => {
+                if (err) return reject(err);
+                
+                this.db!.run('COMMIT', (err) => {
+                  if (err) return reject(err);
+                  resolve();
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  }
+
   // Agent container methods
   static async updateAgentContainers(agentId: string, containers: any[]) {
     if (!this.db) throw new Error('Database not initialized');

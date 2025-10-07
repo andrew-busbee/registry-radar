@@ -92,5 +92,21 @@ agentsRouter.post('/', async (req, res) => {
   res.status(201).json(resp);
 });
 
+agentsRouter.delete('/:id', async (req, res) => {
+  const agentId = req.params.id;
+  if (!agentId) {
+    return res.status(400).json({ error: 'Missing agent ID' });
+  }
+
+  try {
+    // Delete agent and all related data
+    await DatabaseService.deleteAgent(agentId);
+    res.json({ message: 'Agent deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting agent:', error);
+    res.status(500).json({ error: 'Failed to delete agent' });
+  }
+});
+
 
 
