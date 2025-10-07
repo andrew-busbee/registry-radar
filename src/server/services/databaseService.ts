@@ -249,6 +249,20 @@ const migrations: Migration[] = [
         });
       });
     }
+  },
+  {
+    version: 6,
+    name: 'add_tag_to_agent_containers',
+    up: async (db) => {
+      return new Promise((resolve, reject) => {
+        db.run('ALTER TABLE agent_containers ADD COLUMN tag TEXT DEFAULT "latest"', (err) => {
+          if (err && !err.message.includes('duplicate column name')) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+    }
   }
 ];
 
@@ -568,6 +582,32 @@ export class DatabaseService {
     );
   }
 
+  static async updateAgent(agentId: string, updates: { name?: string; tags?: string | null }) {
+    const setParts: string[] = [];
+    const values: any[] = [];
+    
+    if (updates.name !== undefined) {
+      setParts.push('name = ?');
+      values.push(updates.name);
+    }
+    
+    if (updates.tags !== undefined) {
+      setParts.push('tags = ?');
+      values.push(updates.tags);
+    }
+    
+    if (setParts.length === 0) {
+      throw new Error('No updates provided');
+    }
+    
+    values.push(agentId);
+    
+    return this.runCommand(
+      `UPDATE agents SET ${setParts.join(', ')} WHERE id = ?`,
+      values
+    );
+  }
+
   static async upsertAgentSecrets(agentId: string, enrollHash?: string | null, refreshHash?: string | null) {
     const existing = await this.runSingleQuery('SELECT agent_id FROM agent_secrets WHERE agent_id = ?', [agentId]);
     if (existing) {
@@ -642,8 +682,8 @@ export class DatabaseService {
             
             // Insert new containers
             const stmt = this.db!.prepare(`
-              INSERT INTO agent_containers (agent_id, container_id, name, image, status, created_at)
-              VALUES (?, ?, ?, ?, ?, ?)
+              INSERT INTO agent_containers (agent_id, container_id, name, image, tag, status, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
             `);
             
             let completed = 0;
@@ -663,6 +703,7 @@ export class DatabaseService {
                 container.id,
                 container.name,
                 container.image,
+                container.tag || 'latest',
                 container.status,
                 container.created
               ], (err) => {
@@ -687,6 +728,27 @@ export class DatabaseService {
 
   static async getAgentContainers(agentId: string) {
     return this.runQuery('SELECT * FROM agent_containers WHERE agent_id = ? ORDER BY status, name', [agentId]);
+  }
+
+  static async getAgentContainersWithStatus(agentId: string) {
+    return this.runQuery(`
+      SELECT 
+        ac.*,
+        cs.has_update,
+        cs.last_checked,
+        cs.status_message,
+        cs.error,
+        CASE 
+          WHEN cs.error = 1 THEN 'error'
+          WHEN cs.has_update = 1 THEN 'update_available'
+          WHEN cs.last_checked IS NOT NULL THEN 'up_to_date'
+          ELSE 'unknown'
+        END as update_status
+      FROM agent_containers ac
+      LEFT JOIN container_states cs ON ac.image = cs.image AND (ac.tag = cs.tag OR (ac.tag IS NULL AND cs.tag = 'latest'))
+      WHERE ac.agent_id = ? 
+      ORDER BY ac.status, ac.name
+    `, [agentId]);
   }
 
   static async getAllAgentContainers() {

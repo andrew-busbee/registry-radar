@@ -21,7 +21,7 @@ agentsRouter.get('/', async (_req, res) => {
   
   const agentsWithContainers = await Promise.all(
     rows.map(async (r: any) => {
-      const containers = await DatabaseService.getAgentContainers(r.id);
+      const containers = await DatabaseService.getAgentContainersWithStatus(r.id);
       const runningContainers = containers.filter((c: any) => c.status === 'running');
       const stoppedContainers = containers.filter((c: any) => c.status !== 'running');
       
@@ -39,13 +39,21 @@ agentsRouter.get('/', async (_req, res) => {
             id: c.container_id,
             name: c.name,
             image: c.image,
-            status: c.status
+            tag: c.tag || 'latest',
+            status: c.status,
+            updateStatus: c.update_status || 'unknown',
+            lastChecked: c.last_checked,
+            hasUpdate: c.has_update || false
           })),
           stopped: stoppedContainers.map((c: any) => ({
             id: c.container_id,
             name: c.name,
             image: c.image,
-            status: c.status
+            tag: c.tag || 'latest',
+            status: c.status,
+            updateStatus: c.update_status || 'unknown',
+            lastChecked: c.last_checked,
+            hasUpdate: c.has_update || false
           }))
         }
       };
@@ -90,6 +98,27 @@ agentsRouter.post('/', async (req, res) => {
     composeYaml,
   };
   res.status(201).json(resp);
+});
+
+agentsRouter.put('/:id', async (req, res) => {
+  const agentId = req.params.id;
+  const { name } = req.body;
+  
+  if (!agentId) {
+    return res.status(400).json({ error: 'Missing agent ID' });
+  }
+  
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    return res.status(400).json({ error: 'Missing or invalid agent name' });
+  }
+
+  try {
+    await DatabaseService.updateAgent(agentId, { name: name.trim() });
+    res.json({ message: 'Agent updated successfully' });
+  } catch (error) {
+    console.error('Error updating agent:', error);
+    res.status(500).json({ error: 'Failed to update agent' });
+  }
 });
 
 agentsRouter.delete('/:id', async (req, res) => {

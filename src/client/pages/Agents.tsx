@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { AgentCard } from '../components/AgentCard';
 import { AddAgentModal } from '../components/AddAgentModal';
+import { EditAgentModal } from '../components/EditAgentModal';
 
 interface ContainerInfo {
   id: string;
@@ -30,10 +31,13 @@ export function Agents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAgent, setEditingAgent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchAgents = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       const res = await fetch('/api/agents');
       const data = await res.json();
       setAgents(data);
@@ -78,16 +82,50 @@ export function Agents() {
     }
   };
 
+  const handleEditAgent = (agentId: string, currentName: string) => {
+    setEditingAgent({ id: agentId, name: currentName });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateAgent = async (newName: string) => {
+    if (!editingAgent) return;
+    
+    try {
+      const res = await fetch(`/api/agents/${editingAgent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to update agent');
+      }
+      await fetchAgents(); // Refresh the agents list
+    } catch (e: any) {
+      throw new Error(e?.message || 'Update failed');
+    }
+  };
+
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">Registry Radar Agents</h2>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
-        >
-          <Plus className="w-4 h-4 mr-2" /> Add Agent
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={fetchAgents}
+            disabled={loading}
+            className="inline-flex items-center px-3 py-2 rounded-lg border border-border hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Refresh agent status"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" /> Add Agent
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -119,6 +157,7 @@ export function Agents() {
                   key={agent.id}
                   agent={agent}
                   onDelete={handleDeleteAgent}
+                  onEdit={handleEditAgent}
                 />
               ))}
             </div>
@@ -130,6 +169,16 @@ export function Agents() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onCreateAgent={handleCreateAgent}
+      />
+
+      <EditAgentModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingAgent(null);
+        }}
+        currentName={editingAgent?.name || ''}
+        onUpdateAgent={handleUpdateAgent}
       />
     </div>
   );
