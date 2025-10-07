@@ -1,4 +1,4 @@
-import { Bell, Settings, Container, Home, BookOpen } from 'lucide-react';
+import { Bell, Settings, Container, Home, BookOpen, Radio } from 'lucide-react';
 import { LAYOUT } from '../constants/layout';
 
 interface SidebarProps {
@@ -12,6 +12,7 @@ export function Sidebar({ activePage, onPageChange, unreadCount }: SidebarProps)
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'containers', label: 'Image Details', icon: Container },
     { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'agents', label: 'Registry Radar Agent', icon: Radio },
     { id: 'getting-started', label: 'Getting Started', icon: BookOpen },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

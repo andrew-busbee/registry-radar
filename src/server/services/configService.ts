@@ -2,12 +2,13 @@ import { ContainerRegistry, ContainerState, CronConfig, NotificationConfig } fro
 import { DatabaseService } from './databaseService';
 
 export class ConfigService {
-  static async getContainers(): Promise<ContainerRegistry[]> {
+  static async getContainers(): Promise<(ContainerRegistry & { source_agent_id?: string })[]> {
     const containers = await DatabaseService.getContainers();
     return containers.map((container: any) => ({
       name: container.name,
       imagePath: container.image_path,
-      tag: container.tag === 'latest' ? undefined : container.tag
+      tag: container.tag === 'latest' ? undefined : container.tag,
+      source_agent_id: container.source_agent_id || undefined
     }));
   }
 

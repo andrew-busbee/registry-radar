@@ -7,6 +7,7 @@ import { Containers } from './pages/Containers';
 import { GettingStarted } from './pages/GettingStarted';
 import { Settings } from './pages/Settings';
 import { Notifications as NotificationsPage } from './pages/Notifications';
+import { Agents } from './pages/Agents';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CheckProvider } from './contexts/CheckContext';
 
@@ -375,6 +376,10 @@ function AppContent() {
 
   const renderPage = () => {
     switch (activePage) {
+      case 'agents':
+        return (
+          <Agents />
+        );
       case 'containers':
         return (
           <Containers

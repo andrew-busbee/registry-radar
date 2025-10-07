@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -10,6 +10,11 @@ import { notificationsRouter } from './routes/notifications';
 import { notificationConfigRouter } from './routes/notificationConfig';
 import { adminRouter } from './routes/admin';
 import { InitService } from './services/initService';
+import { agentsRouter } from '../agent/server/routes/agents';
+import http from 'http';
+import { createAgentWSServer } from '../agent/server/ws/connect';
+import { agentAuthRouter } from '../agent/server/routes/auth';
+import { jwksRouter } from '../agent/server/routes/jwks';
 import { DatabaseService } from './services/databaseService';
 
 const app = express();
@@ -36,9 +41,12 @@ app.use('/api/cron', cronRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/notification-config', notificationConfigRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/agents', agentsRouter);
+app.use('/api/agent-auth', agentAuthRouter);
+app.use('/.well-known/jwks.json', jwksRouter);
 
 // Serve React app for all non-API routes
-app.get('*', (req, res) => {
+app.get('*', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
 });
 
@@ -53,7 +61,9 @@ async function startServer() {
     // Initialize other services
     await InitService.initialize();
     
-    app.listen(PORT, () => {
+    const server = http.createServer(app);
+    createAgentWSServer(server);
+    server.listen(PORT, () => {
       console.log(`🚀 Registry Radar server running on port ${PORT}`);
       console.log(`📱 Open http://localhost:${PORT} to view the application`);
       

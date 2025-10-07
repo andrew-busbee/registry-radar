@@ -173,6 +173,82 @@ const migrations: Migration[] = [
         });
       });
     }
+  },
+  {
+    version: 3,
+    name: 'agent_tables_v1',
+    up: async (db) => {
+      return new Promise((resolve, reject) => {
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS agents (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            tags TEXT,
+            host TEXT,
+            version TEXT,
+            status TEXT NOT NULL DEFAULT 'offline',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_seen_at DATETIME
+          );
+        `, (err) => {
+          if (err) return reject(err);
+          db.exec(`
+            CREATE TABLE IF NOT EXISTS agent_secrets (
+              agent_id TEXT NOT NULL,
+              enroll_secret_hash TEXT,
+              refresh_secret_hash TEXT,
+              revoked BOOLEAN DEFAULT 0,
+              rotated_at DATETIME,
+              PRIMARY KEY (agent_id),
+              FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE
+            );
+          `, (err2) => {
+            if (err2) return reject(err2);
+            resolve();
+          });
+        });
+      });
+    }
+  },
+  {
+    version: 4,
+    name: 'agent_containers_v1',
+    up: async (db) => {
+      return new Promise((resolve, reject) => {
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS agent_containers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            agent_id TEXT NOT NULL,
+            container_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            image TEXT NOT NULL,
+            status TEXT NOT NULL,
+            created_at DATETIME NOT NULL,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE,
+            UNIQUE(agent_id, container_id)
+          );
+        `, (err) => {
+          if (err) return reject(err);
+          resolve();
+        });
+      });
+    }
+  },
+  {
+    version: 5,
+    name: 'container_source_tracking',
+    up: async (db) => {
+      return new Promise((resolve, reject) => {
+        // Add source tracking to containers table
+        db.run('ALTER TABLE containers ADD COLUMN source_agent_id TEXT', (err) => {
+          if (err && !err.message.includes('duplicate column name')) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+    }
   }
 ];
 
@@ -293,10 +369,10 @@ export class DatabaseService {
     return this.runQuery('SELECT * FROM containers ORDER BY created_at DESC');
   }
 
-  static async addContainer(container: { name: string; image_path: string; tag?: string }) {
+  static async addContainer(container: { name: string; image_path: string; tag?: string; source_agent_id?: string }) {
     return this.runCommand(
-      'INSERT INTO containers (name, image_path, tag) VALUES (?, ?, ?)',
-      [container.name, container.image_path, container.tag || 'latest']
+      'INSERT INTO containers (name, image_path, tag, source_agent_id) VALUES (?, ?, ?, ?)',
+      [container.name, container.image_path, container.tag || 'latest', container.source_agent_id || null]
     );
   }
 
@@ -474,5 +550,119 @@ export class DatabaseService {
       'UPDATE notification_config SET config_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1',
       [JSON.stringify(config)]
     );
+  }
+
+  // Agents operations
+  static async listAgents() {
+    return this.runQuery('SELECT * FROM agents ORDER BY created_at DESC');
+  }
+
+  static async getAgent(agentId: string) {
+    return this.runSingleQuery('SELECT * FROM agents WHERE id = ?', [agentId]);
+  }
+
+  static async createAgent(agent: { id: string; name: string; tags?: string | null }) {
+    return this.runCommand(
+      'INSERT INTO agents (id, name, tags, status) VALUES (?, ?, ?, ?)',
+      [agent.id, agent.name, agent.tags || null, 'offline']
+    );
+  }
+
+  static async upsertAgentSecrets(agentId: string, enrollHash?: string | null, refreshHash?: string | null) {
+    const existing = await this.runSingleQuery('SELECT agent_id FROM agent_secrets WHERE agent_id = ?', [agentId]);
+    if (existing) {
+      await this.runCommand(
+        'UPDATE agent_secrets SET enroll_secret_hash = COALESCE(?, enroll_secret_hash), refresh_secret_hash = COALESCE(?, refresh_secret_hash), rotated_at = CURRENT_TIMESTAMP WHERE agent_id = ?',
+        [enrollHash || null, refreshHash || null, agentId]
+      );
+      return;
+    }
+    await this.runCommand(
+      'INSERT INTO agent_secrets (agent_id, enroll_secret_hash, refresh_secret_hash) VALUES (?, ?, ?)',
+      [agentId, enrollHash || null, refreshHash || null]
+    );
+  }
+
+  static async getAgentSecrets(agentId: string) {
+    return this.runSingleQuery('SELECT * FROM agent_secrets WHERE agent_id = ?', [agentId]);
+  }
+
+  static async setAgentStatus(agentId: string, status: 'online' | 'offline' | 'disabled') {
+    return this.runCommand('UPDATE agents SET status = ?, last_seen_at = CURRENT_TIMESTAMP WHERE id = ?', [status, agentId]);
+  }
+
+  static async touchAgentLastSeen(agentId: string) {
+    return this.runCommand('UPDATE agents SET last_seen_at = CURRENT_TIMESTAMP WHERE id = ?', [agentId]);
+  }
+
+  // Agent container methods
+  static async updateAgentContainers(agentId: string, containers: any[]) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise<void>((resolve, reject) => {
+      this.db!.serialize(() => {
+        this.db!.run('BEGIN TRANSACTION', (err) => {
+          if (err) return reject(err);
+          
+          // Clear existing containers for this agent
+          this.db!.run('DELETE FROM agent_containers WHERE agent_id = ?', [agentId], (err) => {
+            if (err) return reject(err);
+            
+            // Insert new containers
+            const stmt = this.db!.prepare(`
+              INSERT INTO agent_containers (agent_id, container_id, name, image, status, created_at)
+              VALUES (?, ?, ?, ?, ?, ?)
+            `);
+            
+            let completed = 0;
+            const total = containers.length;
+            
+            if (total === 0) {
+              this.db!.run('COMMIT', (err) => {
+                if (err) return reject(err);
+                resolve();
+              });
+              return;
+            }
+            
+            containers.forEach((container) => {
+              stmt.run([
+                agentId,
+                container.id,
+                container.name,
+                container.image,
+                container.status,
+                container.created
+              ], (err) => {
+                if (err) return reject(err);
+                completed++;
+                if (completed === total) {
+                  stmt.finalize((err) => {
+                    if (err) return reject(err);
+                    this.db!.run('COMMIT', (err) => {
+                      if (err) return reject(err);
+                      resolve();
+                    });
+                  });
+                }
+              });
+            });
+          });
+        });
+      });
+    });
+  }
+
+  static async getAgentContainers(agentId: string) {
+    return this.runQuery('SELECT * FROM agent_containers WHERE agent_id = ? ORDER BY status, name', [agentId]);
+  }
+
+  static async getAllAgentContainers() {
+    return this.runQuery(`
+      SELECT ac.*, a.name as agent_name, a.host as agent_host 
+      FROM agent_containers ac 
+      JOIN agents a ON ac.agent_id = a.id 
+      ORDER BY a.name, ac.status, ac.name
+    `);
   }
 }

@@ -7,6 +7,7 @@ export interface ContainerRegistry {
   name: string;
   imagePath: string; // Full image path like "andrewbusbee/planning-poker" or "nginx"
   tag?: string; // Optional, defaults to 'latest'
+  source_agent_id?: string; // Optional, indicates if container was discovered by an agent
   // registry and namespace are auto-detected from imagePath
 }
 

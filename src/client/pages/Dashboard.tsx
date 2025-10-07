@@ -13,6 +13,11 @@ import { ResponsiveContainerGrid } from '../components/layout/ResponsiveContaine
 import { ResponsiveSearchControls } from '../components/layout/ResponsiveSearchControls';
 import { useCheck } from '../contexts/CheckContext';
 
+interface AgentInfo {
+  id: string;
+  name: string;
+}
+
 interface DashboardProps {
   containers: ContainerRegistry[];
   containerStates: ContainerState[];
@@ -122,12 +127,41 @@ export function Dashboard({
       onModalOpened?.();
     }
   }, [initialOpenModal, onModalOpened]);
+
+  // Fetch agents for agent name lookup
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const response = await fetch('/api/agents');
+        if (response.ok) {
+          const agentsData = await response.json();
+          setAgents(agentsData.map((agent: any) => ({
+            id: agent.id,
+            name: agent.name
+          })));
+        }
+      } catch (error) {
+        console.error('Failed to fetch agents:', error);
+      }
+    };
+    
+    fetchAgents();
+  }, []);
   
   // Search, Sort, and Group state
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'age' | 'status'>('name');
   const [groupBy, setGroupBy] = useState<'none' | 'age' | 'registry' | 'status'>('none');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'upToDate' | 'updates' | 'errors' | 'neverChecked'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'upToDate' | 'updates' | 'errors' | 'neverChecked' | 'agentMonitored'>('all');
+  // Removed viewMode - always show all instances
+  const [agents, setAgents] = useState<AgentInfo[]>([]);
+
+  // Helper function to get agent name by ID
+  const getAgentName = (agentId?: string): string | null => {
+    if (!agentId) return null;
+    const agent = agents.find(a => a.id === agentId);
+    return agent?.name || null;
+  };
 
   const handleCheckRegistry = async () => {
     // Show confirmation if there are 40 or more images
@@ -222,6 +256,8 @@ export function Dashboard({
   const upToDate = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && !(state.hasUpdate || state.hasNewerTag) && !state.error && !state.statusMessage).length;
   const updatesAvailable = stateMatchesCurrent.filter(state => (state.lastChecked && state.lastChecked !== '') && (state.hasUpdate || state.hasNewerTag) && !state.updateAcknowledged && !state.error).length;
   const total = containers.length;
+  // Count containers that came from agents (have source_agent_id)
+  const agentMonitored = containers.filter(container => (container as any).source_agent_id).length;
   // Preserve original neverChecked calculation based only on actual error states
   const errorsOnlyCount = stateMatchesCurrent.filter(state => state.error || state.statusMessage).length;
   const neverCheckedRaw = total - upToDate - updatesAvailable - errorsOnlyCount;
@@ -233,6 +269,7 @@ export function Dashboard({
     updatesAvailable,
     errors: errorsAndWarnings,
     neverChecked,
+    agentMonitored,
   };
 
   const recentNotifications = notifications.slice(0, 5);
@@ -383,13 +420,15 @@ export function Dashboard({
           return hasErrorOrStatus || isVVersionTag;
         } else if (statusFilter === 'neverChecked') {
           return !state?.lastChecked || state.lastChecked === '';
+        } else if (statusFilter === 'agentMonitored') {
+          return !!(container as any).source_agent_id;
         }
         
         return true;
       });
     }
 
-    // 2. Sort containers
+    // 3. Sort containers
     filtered = [...filtered].sort((a, b) => {
       if (sortBy === 'name') {
         return a.name.localeCompare(b.name);
@@ -409,7 +448,7 @@ export function Dashboard({
       return 0;
     });
 
-    // 3. Group containers if needed
+    // 4. Group containers if needed
     if (groupBy === 'none') {
       return [{ group: null, containers: filtered }];
     }
@@ -594,6 +633,21 @@ export function Dashboard({
             </div>
             <p className="text-2xl font-bold text-foreground mt-2">{stats.neverChecked}</p>
           </div>
+
+          <div 
+            onClick={() => setStatusFilter(statusFilter === 'agentMonitored' ? 'all' : 'agentMonitored')}
+            className={`bg-card border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              statusFilter === 'agentMonitored' 
+                ? 'border-purple-500 shadow-lg shadow-purple-500/20' 
+                : 'border-border hover:border-purple-300 hover:shadow-md'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <Container className="w-5 h-5 text-purple-500" />
+              <span className="text-sm font-medium text-muted-foreground">Agent Monitored</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.agentMonitored}</p>
+          </div>
         </ResponsiveStatsGrid>
       )}
 
@@ -676,6 +730,7 @@ export function Dashboard({
             <option value="registry">Group: Registry</option>
             <option value="status">Group: Status</option>
           </select>
+
         </ResponsiveSearchControls>
       )}
 
@@ -687,23 +742,24 @@ export function Dashboard({
       )}
 
       {/* Monitored Images */}
-      <div className="bg-card border border-border rounded-lg p-6">
+      {containers.length > 0 && (
         <h2 className="text-lg font-semibold text-foreground mb-4">Monitored Images</h2>
-        {containers.length > 0 ? (
-          <>
-            {filteredAndSortedContainers.map((group, groupIndex) => (
-              <div key={groupIndex} className="mb-6 last:mb-0">
-                {group.group && (
-                  <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4" />
-                    {group.group} ({group.containers.length})
-                  </h3>
-                )}
+      )}
+      {containers.length > 0 ? (
+        <>
+          {filteredAndSortedContainers.map((group, groupIndex) => (
+            <div key={groupIndex} className="mb-6 last:mb-0">
+              {group.group && (
+                <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  {group.group} ({group.containers.length})
+                </h3>
+              )}
                 <ResponsiveContainerGrid>
                   {group.containers.map((container, index) => {
-                const containerState = containerStates.find(
-                  state => state.image === container.imagePath && state.tag === (container.tag || 'latest')
-                );
+                    const containerState = containerStates.find(
+                      state => state.image === container.imagePath && state.tag === (container.tag || 'latest')
+                    );
                     const originalIndex = containers.findIndex(
                       c => c.imagePath === container.imagePath && c.tag === container.tag
                     );
@@ -712,6 +768,7 @@ export function Dashboard({
                         key={`${container.name}-${container.imagePath}`}
                         container={container}
                         containerState={containerState}
+                        agentName={getAgentName((container as any).source_agent_id)}
                         onUpdate={(updatedContainer) => handleUpdateContainer(originalIndex, updatedContainer)}
                         onDelete={async () => await handleDeleteContainer(originalIndex)}
                         onCheck={() => handleCheckSingle(originalIndex)}
@@ -763,7 +820,6 @@ export function Dashboard({
             </div>
           </div>
         )}
-      </div>
       </PageContent>
 
       <AddContainerModal

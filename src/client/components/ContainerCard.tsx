@@ -5,6 +5,7 @@ import { ContainerRegistry, ContainerState } from '../types';
 interface ContainerCardProps {
   container: ContainerRegistry;
   containerState?: ContainerState;
+  agentName?: string | null;
   onUpdate: (container: ContainerRegistry) => Promise<void>;
   onDelete: () => void;
   onCheck: () => void;
@@ -15,6 +16,7 @@ interface ContainerCardProps {
 export function ContainerCard({ 
   container, 
   containerState, 
+  agentName,
   onUpdate, 
   onDelete, 
   onCheck,
@@ -318,8 +320,21 @@ export function ContainerCard({
           <div className="bg-muted/50 rounded-lg p-3 border border-border/60">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-semibold text-foreground">Monitored Image</h4>
-              <div className="text-xs text-primary-foreground bg-primary px-2 py-1 rounded-full font-medium">
-                Tag: {container.tag || 'latest'}
+              <div className="flex items-center gap-1">
+                {/* Agent/Local badge */}
+                {agentName ? (
+                  <div className="text-xs text-purple-800 bg-purple-100 dark:text-purple-200 dark:bg-purple-900 px-2 py-1 rounded-full font-medium">
+                    Agent: {agentName}
+                  </div>
+                ) : (
+                  <div className="text-xs text-cyan-700 bg-cyan-50 dark:text-cyan-300 dark:bg-cyan-900/20 px-2 py-1 rounded-full font-medium">
+                    Local
+                  </div>
+                )}
+                {/* Tag badge */}
+                <div className="text-xs text-primary-foreground bg-primary px-2 py-1 rounded-full font-medium">
+                  Tag: {container.tag || 'latest'}
+                </div>
               </div>
             </div>
             <div className="font-mono text-sm text-foreground break-all">
