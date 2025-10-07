@@ -676,49 +676,82 @@ export class DatabaseService {
         this.db!.run('BEGIN TRANSACTION', (err) => {
           if (err) return reject(err);
           
-          // Clear existing containers for this agent
-          this.db!.run('DELETE FROM agent_containers WHERE agent_id = ?', [agentId], (err) => {
-            if (err) return reject(err);
-            
-            // Insert new containers
-            const stmt = this.db!.prepare(`
-              INSERT INTO agent_containers (agent_id, container_id, name, image, tag, status, created_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
-            `);
-            
-            let completed = 0;
-            const total = containers.length;
-            
-            if (total === 0) {
+          // Use UPSERT pattern - much more efficient and safer
+          const stmt = this.db!.prepare(`
+            INSERT OR REPLACE INTO agent_containers (agent_id, container_id, name, image, tag, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, 
+              COALESCE((SELECT created_at FROM agent_containers WHERE agent_id = ? AND container_id = ?), ?),
+              CURRENT_TIMESTAMP)
+          `);
+          
+          let completed = 0;
+          const total = containers.length;
+          
+          if (total === 0) {
+            // If no containers, remove all existing ones for this agent
+            this.db!.run('DELETE FROM agent_containers WHERE agent_id = ?', [agentId], (err) => {
+              if (err) {
+                console.error('[db] Error removing all containers:', err);
+                return reject(err);
+              }
               this.db!.run('COMMIT', (err) => {
-                if (err) return reject(err);
+                if (err) {
+                  console.error('[db] Error committing empty transaction:', err);
+                  return reject(err);
+                }
+                console.log(`[db] Removed all containers for agent ${agentId}`);
                 resolve();
               });
-              return;
-            }
-            
-            containers.forEach((container) => {
-              stmt.run([
-                agentId,
-                container.id,
-                container.name,
-                container.image,
-                container.tag || 'latest',
-                container.status,
-                container.created
-              ], (err) => {
-                if (err) return reject(err);
-                completed++;
-                if (completed === total) {
-                  stmt.finalize((err) => {
-                    if (err) return reject(err);
+            });
+            return;
+          }
+          
+          containers.forEach((container) => {
+            stmt.run([
+              agentId,
+              container.id,
+              container.name,
+              container.image,
+              container.tag || 'latest',
+              container.status,
+              agentId, // For COALESCE lookup
+              container.id, // For COALESCE lookup  
+              container.created || new Date().toISOString()
+            ], (err) => {
+              if (err) {
+                console.error('[db] Error upserting container:', err);
+                return reject(err);
+              }
+              completed++;
+              if (completed === total) {
+                stmt.finalize((err) => {
+                  if (err) {
+                    console.error('[db] Error finalizing statement:', err);
+                    return reject(err);
+                  }
+                  
+                  // Now remove any containers that are no longer present
+                  const placeholders = containers.map(() => '?').join(',');
+                  this.db!.run(`
+                    DELETE FROM agent_containers 
+                    WHERE agent_id = ? AND container_id NOT IN (${placeholders})
+                  `, [agentId, ...containers.map(c => c.id)], (err) => {
+                    if (err) {
+                      console.error('[db] Error removing stale containers:', err);
+                      return reject(err);
+                    }
+                    
                     this.db!.run('COMMIT', (err) => {
-                      if (err) return reject(err);
+                      if (err) {
+                        console.error('[db] Error committing transaction:', err);
+                        return reject(err);
+                      }
+                      console.log(`[db] Successfully upserted ${total} containers for agent ${agentId}`);
                       resolve();
                     });
                   });
-                }
-              });
+                });
+              }
             });
           });
         });
@@ -758,5 +791,28 @@ export class DatabaseService {
       JOIN agents a ON ac.agent_id = a.id 
       ORDER BY a.name, ac.status, ac.name
     `);
+  }
+
+  // Clean up duplicate agent containers (keep only the latest entry for each agent_id + container_id)
+  static async cleanupDuplicateAgentContainers() {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise<void>((resolve, reject) => {
+      this.db!.run(`
+        DELETE FROM agent_containers 
+        WHERE id NOT IN (
+          SELECT MIN(id) 
+          FROM agent_containers 
+          GROUP BY agent_id, container_id
+        )
+      `, function(err) {
+        if (err) {
+          console.error('[db] Error cleaning up duplicate agent containers:', err);
+          return reject(err);
+        }
+        console.log(`[db] Cleaned up ${this.changes} duplicate agent container entries`);
+        resolve();
+      });
+    });
   }
 }

@@ -63,6 +63,11 @@ async function startServer() {
     await DatabaseService.initialize();
     console.log('✅ Database initialized successfully');
     
+    // Clean up any duplicate agent containers from previous runs
+    console.log('🧹 Cleaning up duplicate agent containers...');
+    await DatabaseService.cleanupDuplicateAgentContainers();
+    console.log('✅ Agent container cleanup completed');
+    
     // Initialize other services
     await InitService.initialize();
     
