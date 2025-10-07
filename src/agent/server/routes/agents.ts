@@ -81,13 +81,7 @@ agentsRouter.post('/', async (req, res) => {
       - AGENT_ENROLL_TOKEN=${enrollToken}
       - AGENT_LOG_LEVEL=info
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    healthcheck:
-      test: ["CMD", "node", "/app/dist/healthcheck.js"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+      - /var/run/docker.sock:/var/run/docker.sock
 `;
 
   const resp: CreateAgentResponse = {
