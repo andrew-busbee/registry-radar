@@ -10,9 +10,15 @@ import { Notifications as NotificationsPage } from './pages/Notifications';
 import { Agents } from './pages/Agents';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CheckProvider } from './contexts/CheckContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoginPage } from './components/LoginPage';
+import { useAuthenticatedFetch } from './contexts/AuthContext';
 
 // Main app content component
 function AppContent() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const authenticatedFetch = useAuthenticatedFetch();
+  
   const [containers, setContainers] = useState<ContainerRegistry[]>([]);
   const [containerStates, setContainerStates] = useState<ContainerState[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -27,20 +33,35 @@ function AppContent() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState('getting-started');
-  const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'notifications'>('general');
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'notifications' | 'authentication'>('general');
   const [dashboardInitialModal, setDashboardInitialModal] = useState<'add' | 'bulk-import' | undefined>(undefined);
+
+  // Show login page if not authenticated
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
 
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
+      if (!isAuthenticated) return;
+      
       try {
         const [containersRes, statesRes, notificationsRes, cronRes, notificationConfigRes] = await Promise.all([
-          fetch('/api/config/containers'),
-          fetch('/api/registry/states'),
-          fetch('/api/notifications'),
-          fetch('/api/cron/config'),
-          fetch('/api/notification-config/config'),
+          authenticatedFetch('/api/config/containers'),
+          authenticatedFetch('/api/registry/states'),
+          authenticatedFetch('/api/notifications'),
+          authenticatedFetch('/api/cron/config'),
+          authenticatedFetch('/api/notification-config/config'),
         ]);
 
         const [containersData, statesData, notificationsData, cronData, notificationConfigData] = await Promise.all([
@@ -74,19 +95,18 @@ function AppContent() {
 
     // Set up polling for real-time updates (only on dashboard)
     const interval = setInterval(() => {
-      if (activePage === 'dashboard') {
+      if (activePage === 'dashboard' && isAuthenticated) {
         fetchData();
       }
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(interval);
-  }, []); // Remove activePage dependency to always fetch data on mount
+  }, [isAuthenticated, authenticatedFetch, activePage]); // Remove activePage dependency to always fetch data on mount
 
   const handleAddContainer = async (container: ContainerRegistry) => {
     try {
-      const response = await fetch('/api/config/containers', {
+      const response = await authenticatedFetch('/api/config/containers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(container),
       });
 
@@ -115,7 +135,6 @@ function AppContent() {
     try {
       const response = await fetch(`/api/config/containers/${index}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(container),
       });
 
@@ -177,7 +196,7 @@ function AppContent() {
 
   const handleCheckRegistry = async () => {
     try {
-      const response = await fetch('/api/registry/check', {
+      const response = await authenticatedFetch('/api/registry/check', {
         method: 'POST',
       });
 
@@ -215,7 +234,6 @@ function AppContent() {
       if (config.schedule !== undefined && config.enabled !== undefined) {
         const scheduleResp = await fetch('/api/cron/config/schedule', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ schedule: config.schedule }),
         });
         if (!scheduleResp.ok) {
@@ -225,7 +243,6 @@ function AppContent() {
 
         const enabledResp = await fetch('/api/cron/config/enabled', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ enabled: config.enabled }),
         });
         if (!enabledResp.ok) {
@@ -237,7 +254,6 @@ function AppContent() {
         if (config.timezone !== undefined) {
           const tzResp = await fetch('/api/cron/config/timezone', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ timezone: config.timezone }),
           });
           if (!tzResp.ok) {
@@ -250,7 +266,6 @@ function AppContent() {
         if (config.schedule !== undefined) {
           const scheduleResp = await fetch('/api/cron/config/schedule', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ schedule: config.schedule }),
           });
           if (!scheduleResp.ok) {
@@ -261,7 +276,6 @@ function AppContent() {
         if (config.timezone !== undefined) {
           const tzResp = await fetch('/api/cron/config/timezone', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ timezone: config.timezone }),
           });
           if (!tzResp.ok) {
@@ -272,7 +286,6 @@ function AppContent() {
       } else if (config.enabled !== undefined) {
         const enabledResp = await fetch('/api/cron/config/enabled', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ enabled: config.enabled }),
         });
         if (!enabledResp.ok) {
@@ -303,9 +316,8 @@ function AppContent() {
 
   const handleUpdateNotificationConfig = async (config: Partial<NotificationConfig>) => {
     try {
-      const response = await fetch('/api/notification-config/config', {
+      const response = await authenticatedFetch('/api/notification-config/config', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
       });
 
@@ -342,7 +354,7 @@ function AppContent() {
 
   const handleClearNotifications = async () => {
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await authenticatedFetch('/api/notifications', {
         method: 'DELETE',
       });
 
@@ -356,7 +368,7 @@ function AppContent() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      const response = await fetch('/api/notifications/read-all', {
+      const response = await authenticatedFetch('/api/notifications/read-all', {
         method: 'PUT',
       });
 
@@ -472,7 +484,11 @@ function AppContent() {
 
 // Main App component
 function App() {
-  return <AppContent />;
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
 
 export default App;

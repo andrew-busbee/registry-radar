@@ -289,6 +289,47 @@ const migrations: Migration[] = [
         });
       });
     }
+  },
+  {
+    version: 5,
+    name: 'web_user_auth',
+    up: async (db) => {
+      return new Promise((resolve, reject) => {
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS web_users (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            username TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            first_login BOOLEAN DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );
+        `, (err) => {
+          if (err) return reject(err);
+          
+          // Insert default admin user if no users exist
+          db.get('SELECT COUNT(*) as count FROM web_users', (err, row: any) => {
+            if (err) return reject(err);
+            
+            if (row.count === 0) {
+              // Default password is 'password' - user must change on first login
+              const bcrypt = require('bcryptjs');
+              const defaultPasswordHash = bcrypt.hashSync('password', 10);
+              
+              db.run(`
+                INSERT INTO web_users (id, username, password_hash, first_login)
+                VALUES (1, 'admin', ?, 1)
+              `, [defaultPasswordHash], (err) => {
+                if (err) return reject(err);
+                resolve();
+              });
+            } else {
+              resolve();
+            }
+          });
+        });
+      });
+    }
   }
 ];
 
@@ -952,6 +993,40 @@ export class DatabaseService {
     return this.runCommand(
       'UPDATE agent_config SET heartbeat_interval_seconds = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1',
       [config.heartbeatIntervalSeconds]
+    );
+  }
+
+  // Web user authentication methods
+  static async getWebUser() {
+    return this.runSingleQuery('SELECT * FROM web_users WHERE id = 1');
+  }
+
+  static async validateWebUserCredentials(username: string, password: string) {
+    const user = await this.getWebUser() as any;
+    if (!user) return null;
+    
+    const bcrypt = require('bcryptjs');
+    const isValid = await bcrypt.compare(password, user.password_hash);
+    
+    if (isValid && user.username === username) {
+      return user;
+    }
+    return null;
+  }
+
+  static async updateWebUserCredentials(username: string, password: string, isFirstLogin = false) {
+    const bcrypt = require('bcryptjs');
+    const passwordHash = await bcrypt.hash(password, 10);
+    
+    return this.runCommand(
+      'UPDATE web_users SET username = ?, password_hash = ?, first_login = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1',
+      [username, passwordHash, isFirstLogin ? 0 : 1]
+    );
+  }
+
+  static async markFirstLoginComplete() {
+    return this.runCommand(
+      'UPDATE web_users SET first_login = 0, updated_at = CURRENT_TIMESTAMP WHERE id = 1'
     );
   }
 }

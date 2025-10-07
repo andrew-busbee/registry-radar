@@ -5,6 +5,7 @@ import { AddAgentModal } from '../components/AddAgentModal';
 import { EditAgentModal } from '../components/EditAgentModal';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageContent } from '../components/layout/PageContent';
+import { useAuthenticatedFetch } from '../contexts/AuthContext';
 
 interface ContainerInfo {
   id: string;
@@ -29,6 +30,8 @@ interface AgentListItem {
 }
 
 export function Agents() {
+  const authenticatedFetch = useAuthenticatedFetch();
+  
   const [agents, setAgents] = useState<AgentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,7 @@ export function Agents() {
     try {
       setLoading(true);
       setError(null); // Clear any previous errors
-      const res = await fetch('/api/agents');
+      const res = await authenticatedFetch('/api/agents');
       const data = await res.json();
       setAgents(data);
     } catch (e: any) {
@@ -54,7 +57,7 @@ export function Agents() {
 
   const fetchAgentConfig = async () => {
     try {
-      const res = await fetch('/api/agents/config');
+      const res = await authenticatedFetch('/api/agents/config');
       const data = await res.json();
       setHeartbeatInterval(data.heartbeatIntervalSeconds);
     } catch (e: any) {
@@ -65,9 +68,8 @@ export function Agents() {
   const updateAgentConfig = async (newInterval: number) => {
     try {
       setConfigLoading(true);
-      const res = await fetch('/api/agents/config', {
+      const res = await authenticatedFetch('/api/agents/config', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ heartbeatIntervalSeconds: newInterval })
       });
       
@@ -90,9 +92,8 @@ export function Agents() {
   }, []);
 
   const handleCreateAgent = async (name: string, ipAddress?: string) => {
-    const res = await fetch('/api/agents', {
+    const res = await authenticatedFetch('/api/agents', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, ipAddress })
     });
     if (!res.ok) {
@@ -106,7 +107,7 @@ export function Agents() {
 
   const handleDeleteAgent = async (agentId: string) => {
     try {
-      const res = await fetch(`/api/agents/${agentId}`, {
+      const res = await authenticatedFetch(`/api/agents/${agentId}`, {
         method: 'DELETE'
       });
       if (!res.ok) {
@@ -134,9 +135,8 @@ export function Agents() {
         hostDisplay = `${newName} (${ipAddress.trim()})`;
       }
 
-      const res = await fetch(`/api/agents/${editingAgent.id}`, {
+      const res = await authenticatedFetch(`/api/agents/${editingAgent.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName, host: hostDisplay })
       });
       if (!res.ok) {

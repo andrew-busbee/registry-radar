@@ -51,12 +51,35 @@ export const JwtService = {
     );
     return token;
   },
+  issueWebToken(username: string, ttlHours = 24) {
+    const kp = InMemoryKeyStore.getCurrent();
+    const token = jwt.sign(
+      { sub: username, typ: 'web', iat: Math.floor(Date.now() / 1000) },
+      kp.privateKeyPem,
+      { algorithm: 'RS256', expiresIn: `${ttlHours}h`, keyid: kp.kid }
+    );
+    return token;
+  },
   verifyAccessToken(token: string) {
     const decoded = jwt.decode(token, { complete: true }) as any;
     if (!decoded?.header?.kid) throw new Error('Missing kid');
     const kp = InMemoryKeyStore.findByKid(decoded.header.kid);
     if (!kp) throw new Error('Unknown kid');
     return jwt.verify(token, kp.publicKeyPem, { algorithms: ['RS256'] });
+  },
+  verifyWebToken(token: string) {
+    const decoded = jwt.decode(token, { complete: true }) as any;
+    if (!decoded?.header?.kid) throw new Error('Missing kid');
+    const kp = InMemoryKeyStore.findByKid(decoded.header.kid);
+    if (!kp) throw new Error('Unknown kid');
+    const verified = jwt.verify(token, kp.publicKeyPem, { algorithms: ['RS256'] }) as any;
+    
+    // Ensure this is a web token, not an agent token
+    if (verified.typ !== 'web') {
+      throw new Error('Invalid token type');
+    }
+    
+    return verified;
   },
   getJwks() {
     // Lightweight public representation; not a full JWKS (missing modulus/exponent breakdown)

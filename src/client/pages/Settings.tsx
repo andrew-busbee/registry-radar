@@ -1,27 +1,38 @@
 import { useState, useEffect } from 'react';
-import { Save, Clock, ToggleLeft, ToggleRight, Settings as SettingsIcon, Bell } from 'lucide-react';
+import { Save, Clock, ToggleLeft, ToggleRight, Settings as SettingsIcon, Bell, User, Key } from 'lucide-react';
 import { CronConfig, NotificationConfig } from '../types';
 import { NotificationSettings } from '../components/NotificationSettings';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageContent } from '../components/layout/PageContent';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SettingsProps {
   cronConfig: CronConfig;
   onUpdateCronConfig: (config: Partial<CronConfig>) => Promise<void>;
   notificationConfig: NotificationConfig;
   onUpdateNotificationConfig: (config: Partial<NotificationConfig>) => Promise<void>;
-  initialTab?: 'general' | 'notifications';
+  initialTab?: 'general' | 'notifications' | 'authentication';
 }
 
 export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, onUpdateNotificationConfig, initialTab = 'general' }: SettingsProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'notifications'>(initialTab);
+  const { user, changePassword } = useAuth();
+  const [activeTab, setActiveTab] = useState<'general' | 'notifications' | 'authentication'>(initialTab);
   const [schedule, setSchedule] = useState(cronConfig.schedule);
   const [enabled, setEnabled] = useState(cronConfig.enabled);
   const [timezone, setTimezone] = useState(cronConfig.timezone || 'UTC');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Authentication state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newUsername, setNewUsername] = useState(user?.username || '');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Build a comprehensive timezone list using IANA zones when available,
   // with a reasonable fallback set if not supported by the browser.
@@ -48,6 +59,11 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     setEnabled(cronConfig.enabled);
     setTimezone(cronConfig.timezone || 'UTC');
   }, [cronConfig.schedule, cronConfig.enabled, cronConfig.timezone]);
+
+  // Sync username with user changes
+  useEffect(() => {
+    setNewUsername(user?.username || '');
+  }, [user?.username]);
 
   // Update active tab when initialTab prop changes
   useEffect(() => {
@@ -94,6 +110,46 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     }
   };
 
+  // Authentication functions
+  const handleChangePassword = async () => {
+    if (!user?.username) {
+      setAuthError('No user found');
+      return;
+    }
+
+    setAuthLoading(true);
+    setAuthError(null);
+    setAuthSuccess(null);
+
+    try {
+      const result = await changePassword(
+        user.username,
+        currentPassword,
+        newUsername,
+        newPassword,
+        confirmPassword
+      );
+
+      if (result.success) {
+        setAuthSuccess('Credentials updated successfully');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setAuthSuccess(null);
+        }, 3000);
+      } else {
+        setAuthError(result.error || 'Failed to update credentials');
+      }
+    } catch (err) {
+      setAuthError('Failed to update credentials');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const commonSchedules = [
     { label: 'Every hour', value: '0 * * * *' },
     { label: 'Every 6 hours', value: '0 */6 * * *' },
@@ -116,6 +172,12 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
       label: 'Notification Settings',
       icon: Bell,
       description: 'Apprise and notification triggers'
+    },
+    {
+      id: 'authentication' as const,
+      label: 'Authentication',
+      icon: User,
+      description: 'Username and password settings'
     }
   ];
 
@@ -362,6 +424,96 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
           config={notificationConfig}
           onUpdateConfig={onUpdateNotificationConfig}
         />
+      )}
+
+      {activeTab === 'authentication' && (
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-medium mb-4">Change Username & Password</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Update your login credentials. You'll need to enter your current password to make changes.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="currentPassword" className="block text-sm font-medium mb-2">
+                Current Password
+              </label>
+              <input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="newUsername" className="block text-sm font-medium mb-2">
+                New Username
+              </label>
+              <input
+                id="newUsername"
+                type="text"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                placeholder="Enter new username"
+                className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium mb-2">
+                New Password
+              </label>
+              <input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
+                Confirm New Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            {authError && (
+              <div className="text-red-600 dark:text-red-400 text-sm">
+                {authError}
+              </div>
+            )}
+
+            {authSuccess && (
+              <div className="text-green-600 dark:text-green-400 text-sm">
+                {authSuccess}
+              </div>
+            )}
+
+            <button
+              onClick={handleChangePassword}
+              disabled={authLoading || !currentPassword || !newUsername || !newPassword || !confirmPassword}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              <Key className="w-4 h-4" />
+              <span>{authLoading ? 'Updating...' : 'Update Credentials'}</span>
+            </button>
+          </div>
+        </div>
       )}
       </PageContent>
     </div>

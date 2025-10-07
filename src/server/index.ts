@@ -16,6 +16,8 @@ import { agentAuthRouter } from '../agent/server/routes/auth';
 import { jwksRouter } from '../agent/server/routes/jwks';
 import { heartbeatRouter } from '../agent/server/routes/heartbeat';
 import { DatabaseService } from './services/databaseService';
+import { webAuthRouter } from './routes/webAuth';
+import { authMiddleware } from './middleware/auth';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,26 +34,39 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../client')));
-
-// Health check endpoint
-app.get('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// API Routes
-app.use('/api/config', configRouter);
-app.use('/api/registry', registryRouter);
-app.use('/api/cron', cronRouter);
-app.use('/api/notifications', notificationsRouter);
-app.use('/api/notification-config', notificationConfigRouter);
-app.use('/api/admin', adminRouter);
-app.use('/api/agents', agentsRouter);
+// API Routes (must be defined before static file serving)
+// Authentication routes (no auth required)
+app.use('/api/auth', webAuthRouter);
 app.use('/api/agent-auth', agentAuthRouter);
 app.use('/.well-known/jwks.json', jwksRouter);
 app.use('/api/agent', heartbeatRouter);
 
+// Public health check for agents (no auth required)
+app.get('/api/agent/health', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    service: 'registry-radar-server'
+  });
+});
+
+// Protected routes (require authentication)
+app.use('/api/health', authMiddleware, (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+app.use('/api/config', authMiddleware, configRouter);
+app.use('/api/registry', authMiddleware, registryRouter);
+app.use('/api/cron', authMiddleware, cronRouter);
+app.use('/api/notifications', authMiddleware, notificationsRouter);
+app.use('/api/notification-config', authMiddleware, notificationConfigRouter);
+app.use('/api/admin', authMiddleware, adminRouter);
+app.use('/api/agents', authMiddleware, agentsRouter);
+
+// Serve static files (CSS, JS, images) - these are needed for the login page
+app.use(express.static(path.join(__dirname, '../client')));
+
 // Serve React app for all non-API routes
+// The React app will handle authentication and show login page if needed
 app.get('*', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
 });

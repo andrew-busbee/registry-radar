@@ -12,6 +12,7 @@ import { ResponsiveStatsGrid } from '../components/layout/ResponsiveStatsGrid';
 import { ResponsiveContainerGrid } from '../components/layout/ResponsiveContainerGrid';
 import { ResponsiveSearchControls } from '../components/layout/ResponsiveSearchControls';
 import { useCheck } from '../contexts/CheckContext';
+import { useAuthenticatedFetch } from '../contexts/AuthContext';
 
 interface AgentInfo {
   id: string;
@@ -129,10 +130,12 @@ export function Dashboard({
   }, [initialOpenModal, onModalOpened]);
 
   // Fetch agents for agent name lookup
+  const authenticatedFetch = useAuthenticatedFetch();
+  
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch('/api/agents');
+        const response = await authenticatedFetch('/api/agents');
         if (response.ok) {
           const agentsData = await response.json();
           setAgents(agentsData.map((agent: any) => ({
@@ -146,7 +149,7 @@ export function Dashboard({
     };
     
     fetchAgents();
-  }, []);
+  }, [authenticatedFetch]);
   
   // Search, Sort, and Group state
   const [searchQuery, setSearchQuery] = useState('');
@@ -278,9 +281,8 @@ export function Dashboard({
 
   const handleBulkImport = async (containers: ContainerRegistry[]): Promise<{ success: boolean; errors: string[] }> => {
     try {
-      const response = await fetch('/api/config/containers/bulk', {
+      const response = await authenticatedFetch('/api/config/containers/bulk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ containers }),
       });
 
@@ -300,8 +302,7 @@ export function Dashboard({
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/config/containers/export', {
-      });
+      const response = await authenticatedFetch('/api/config/containers/export');
 
       if (response.ok) {
         const blob = await response.blob();
@@ -344,7 +345,7 @@ export function Dashboard({
   const handleCheckSingle = async (index: number) => {
     setCheckingIndex(index);
     try {
-      const response = await fetch(`/api/registry/check/${index}`, {
+      const response = await authenticatedFetch(`/api/registry/check/${index}`, {
         method: 'POST',
       });
       
@@ -368,7 +369,7 @@ export function Dashboard({
     try {
       const image = encodeURIComponent(container.imagePath);
       const tag = encodeURIComponent(container.tag || 'latest');
-      const response = await fetch(`/api/registry/reset/${image}/${tag}`, {
+      const response = await authenticatedFetch(`/api/registry/reset/${image}/${tag}`, {
         method: 'POST',
       });
       
