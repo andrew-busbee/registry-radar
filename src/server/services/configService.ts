@@ -52,10 +52,9 @@ export class ConfigService {
   }
 
   static async saveContainerState(state: ContainerState[]): Promise<void> {
-    // Clear existing states
-    await DatabaseService.clearContainerStates();
-
-    // Add new states
+    // Instead of clearing all states, only update the states that are being checked
+    // This preserves agent-created container states and prevents duplication
+    
     for (const containerState of state) {
       await DatabaseService.upsertContainerState({
         image: containerState.image,

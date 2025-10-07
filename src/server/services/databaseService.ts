@@ -815,4 +815,27 @@ export class DatabaseService {
       });
     });
   }
+
+  // Clean up duplicate container states (keep only the latest entry for each image + tag)
+  static async cleanupDuplicateContainerStates() {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise<void>((resolve, reject) => {
+      this.db!.run(`
+        DELETE FROM container_states 
+        WHERE id NOT IN (
+          SELECT MIN(id) 
+          FROM container_states 
+          GROUP BY image, tag
+        )
+      `, function(err) {
+        if (err) {
+          console.error('[db] Error cleaning up duplicate container states:', err);
+          return reject(err);
+        }
+        console.log(`[db] Cleaned up ${this.changes} duplicate container state entries`);
+        resolve();
+      });
+    });
+  }
 }
