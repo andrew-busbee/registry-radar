@@ -82,7 +82,7 @@ agentsRouter.post('/', async (req, res) => {
   await DatabaseService.upsertAgentSecrets(agentId, enrollHash, null);
 
   const baseUrl = getPublicUrl(req);
-  const imageRef = 'ghcr.io/andrewbusbee/registry-radar-agent:0.1.0-beta.1';
+  const imageRef = 'ghcr.io/andrewbusbee/registry-radar-agent:latest';
   const composeYaml = `services:
   registry-radar-agent:
     image: ${imageRef}
