@@ -18,7 +18,7 @@ Perfect for developers and system administrators who want to stay on top of secu
 ## Key Features
 
 - 🔍 **Monitor Multiple Registries**: Works with Docker Hub, GitHub Container Registry, and more
-- 🤖 **Registry Radar Agent**: Optional lightweight companion for remote Docker hosts; auto-discovers running containers and streams updates securely for multi-host monitoring
+- 🛰️ **Registry Radar Agent**: Optional lightweight companion for remote Docker hosts; auto-discovers running containers and streams updates securely for multi-host monitoring
 - ⏰ **Automatic Checking**: Set up schedules to check for updates daily, weekly, or whenever you want
 - 🎨 **Easy-to-Use Interface**: Clean, modern web interface that anyone can use
 - 📱 **Instant Notifications**: See update notifications right in your browser
