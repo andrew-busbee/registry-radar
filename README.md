@@ -1,3 +1,12 @@
+[![Release](https://img.shields.io/github/v/release/andrewbusbee/registry-radar?logo=github&label=Release)](https://github.com/andrewbusbee/registry-radar/releases)
+[![Last commit](https://img.shields.io/github/last-commit/andrewbusbeeregistry-radar?logo=github&label=Last%20commit)](https://github.com/andrewbusbee/registry-radar/commits/main)
+
+[![Release](https://img.shields.io/docker/v/andrewbusbee/registry-radar?sort=semver&logo=docker&label=Release)](https://hub.docker.com/r/andrewbusbee/registry-radar/tags)
+[![Pulls](https://img.shields.io/docker/pulls/andrewbusbee/registry-radar?logo=docker&label=Pulls)](https://hub.docker.com/r/andrewbusbee/registry-radar)
+[![Image size](https://img.shields.io/docker/image-size/andrewbusbee/registry-radar/latest?logo=docker&label=Image%20size)](https://hub.docker.com/r/andrewbusbee/registry-radar)
+
+[![License](https://img.shields.io/github/license/andrewbusbee/registry-radar?cacheBust=1)](https://github.com/andrewbusbee/registry-radar/blob/main/LICENSE)
+
 # Registry Radar
 
 **Get notified of updated Docker images automatically!**
@@ -9,6 +18,7 @@ Perfect for developers and system administrators who want to stay on top of secu
 ## Key Features
 
 - 🔍 **Monitor Multiple Registries**: Works with Docker Hub, GitHub Container Registry, and more
+- 🤖 **Registry Radar Agent**: Optional lightweight companion for remote Docker hosts; auto-discovers running containers and streams updates securely for multi-host monitoring
 - ⏰ **Automatic Checking**: Set up schedules to check for updates daily, weekly, or whenever you want
 - 🎨 **Easy-to-Use Interface**: Clean, modern web interface that anyone can use
 - 📱 **Instant Notifications**: See update notifications right in your browser
