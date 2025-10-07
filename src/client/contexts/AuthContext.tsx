@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 interface User {
   username: string;
@@ -78,21 +78,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('Login successful, user data:', data.user);
         // Don't set authentication state yet if it's first login
         // The first-login modal will handle setting the auth state after password change
         if (data.user.firstLogin) {
-          console.log('First login detected, showing modal');
           return { success: true, firstLogin: true, user: data.user };
         } else {
-          console.log('Regular login, setting auth state');
           setToken(data.accessToken);
           setUser(data.user);
           localStorage.setItem('authToken', data.accessToken);
           return { success: true, firstLogin: false };
         }
       } else {
-        console.log('Login failed:', data.error);
         return { success: false, error: data.error };
       }
     } catch (error) {
@@ -166,7 +162,7 @@ export function useAuth() {
 export function useAuthenticatedFetch() {
   const { token } = useAuth();
 
-  return async (url: string, options: RequestInit = {}) => {
+  return useCallback(async (url: string, options: RequestInit = {}) => {
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -180,5 +176,5 @@ export function useAuthenticatedFetch() {
       ...options,
       headers,
     });
-  };
+  }, [token]);
 }

@@ -46,6 +46,19 @@ export function FirstLoginModal({ currentUsername, currentPassword, onComplete }
       return;
     }
 
+    // Prevent using default credentials
+    if (newUsername.toLowerCase() === 'user') {
+      setError('Username "user" is not allowed. Please choose a different username.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (newPassword === 'password') {
+      setError('Password "password" is not allowed. Please choose a different password.');
+      setIsLoading(false);
+      return;
+    }
+
     const result = await changePassword(
       currentUsername,
       currentPassword,

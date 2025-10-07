@@ -57,6 +57,15 @@ router.post('/change-password', async (req, res) => {
       return res.status(400).json({ error: 'New password must be at least 6 characters long' });
     }
 
+    // Prevent using default credentials
+    if (newUsername.toLowerCase() === 'user') {
+      return res.status(400).json({ error: 'Username "user" is not allowed. Please choose a different username.' });
+    }
+
+    if (newPassword === 'password') {
+      return res.status(400).json({ error: 'Password "password" is not allowed. Please choose a different password.' });
+    }
+
     // Validate current credentials
     const user = await DatabaseService.validateWebUserCredentials(username, password);
     if (!user) {

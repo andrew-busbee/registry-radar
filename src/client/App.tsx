@@ -16,7 +16,7 @@ import { useAuthenticatedFetch } from './contexts/AuthContext';
 
 // Main app content component
 function AppContent() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const authenticatedFetch = useAuthenticatedFetch();
   
   const [containers, setContainers] = useState<ContainerRegistry[]>([]);
@@ -36,24 +36,13 @@ function AppContent() {
   const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'notifications' | 'authentication'>('general');
   const [dashboardInitialModal, setDashboardInitialModal] = useState<'add' | 'bulk-import' | undefined>(undefined);
 
-  // Show login page if not authenticated
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
-
 
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated) {
+        return;
+      }
       
       try {
         const [containersRes, statesRes, notificationsRes, cronRes, notificationConfigRes] = await Promise.all([
@@ -101,7 +90,32 @@ function AppContent() {
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, authenticatedFetch, activePage]); // Remove activePage dependency to always fetch data on mount
+  }, [isAuthenticated]); // Only depend on isAuthenticated
+
+  // Show login page if not authenticated
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  // Show loading state if still loading
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading Registry Radar...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleAddContainer = async (container: ContainerRegistry) => {
     try {
@@ -464,6 +478,18 @@ function AppContent() {
   }
 
   const unreadNotifications = notifications.filter((n: Notification) => !n.read);
+
+  // Fallback error boundary
+  if (isAuthenticated && !isLoading && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Authentication Error</h1>
+          <p className="text-gray-600 dark:text-gray-400">User data is missing. Please refresh the page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ThemeProvider>

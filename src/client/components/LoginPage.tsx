@@ -17,20 +17,15 @@ export function LoginPage() {
     setError('');
 
     const result = await login(username, password);
-    console.log('Login result:', result);
     
     if (result.success) {
       if (result.firstLogin) {
-        console.log('Showing first login modal');
         // Show first login modal
         setCurrentUser({ username, password });
         setShowFirstLoginModal(true);
-      } else {
-        console.log('Regular login successful, should redirect to main app');
       }
       // If not first login, the AuthContext will handle the redirect
     } else {
-      console.log('Login failed:', result.error);
       setError(result.error || 'Login failed');
     }
     
@@ -113,17 +108,16 @@ export function LoginPage() {
         </form>
 
         <div className="text-center">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            <strong>Default credentials:</strong>
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-500">
-            Username: <code>admin</code>
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-500">
-            Password: <code>password</code>
-          </div>
-          <div className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
-            ⚠️ You will be required to change these credentials on first login
+          <div className="text-sm text-yellow-600 dark:text-yellow-400 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+            ⚠️ Default credentials can be found here: <br />
+            <a 
+              href="https://github.com/andrewbusbee/registry-radar" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium"
+            >
+              Registry Radar README.md on GitHub
+            </a>
           </div>
         </div>
       </div>

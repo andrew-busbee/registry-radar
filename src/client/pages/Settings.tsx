@@ -122,6 +122,17 @@ export function Settings({ cronConfig, onUpdateCronConfig, notificationConfig, o
     setAuthSuccess(null);
 
     try {
+      // Prevent using default credentials
+      if (newUsername.toLowerCase() === 'user') {
+        setAuthError('Username "user" is not allowed. Please choose a different username.');
+        return;
+      }
+
+      if (newPassword === 'password') {
+        setAuthError('Password "password" is not allowed. Please choose a different password.');
+        return;
+      }
+
       const result = await changePassword(
         user.username,
         currentPassword,

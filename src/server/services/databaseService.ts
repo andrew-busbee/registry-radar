@@ -318,7 +318,7 @@ const migrations: Migration[] = [
               
               db.run(`
                 INSERT INTO web_users (id, username, password_hash, first_login)
-                VALUES (1, 'admin', ?, 1)
+                VALUES (1, 'user', ?, 1)
               `, [defaultPasswordHash], (err) => {
                 if (err) return reject(err);
                 resolve();

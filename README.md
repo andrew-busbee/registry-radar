@@ -86,6 +86,18 @@ Go to `http://localhost:3001` and you'll see the Registry Radar interface.
 
 That's it! Registry Radar is now running and ready to monitor images for you!
 
+### 🔐 Default Login Credentials
+
+**First Time Setup:**
+- **Username:** `user`
+- **Password:** `password`
+
+⚠️ **Important Security Note:** You will be required to change these default credentials on your first login. The system will prompt you to create a new username and password that are more secure.
+
+**After First Login:**
+- Use your new credentials to access Registry Radar
+- You can change your credentials anytime in Settings → Authentication
+
 ### Option 2: Using Docker CLI
 
 If you prefer to use Docker commands directly:
