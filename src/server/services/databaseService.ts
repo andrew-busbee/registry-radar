@@ -263,6 +263,32 @@ const migrations: Migration[] = [
         });
       });
     }
+  },
+  {
+    version: 7,
+    name: 'agent_heartbeat_config',
+    up: async (db) => {
+      return new Promise((resolve, reject) => {
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS agent_config (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            heartbeat_interval_seconds INTEGER NOT NULL DEFAULT 120,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );
+        `, (err) => {
+          if (err) return reject(err);
+          
+          // Insert default config
+          db.exec(`
+            INSERT OR IGNORE INTO agent_config (id, heartbeat_interval_seconds) 
+            VALUES (1, 120);
+          `, (err) => {
+            if (err) return reject(err);
+            resolve();
+          });
+        });
+      });
+    }
   }
 ];
 
@@ -575,14 +601,14 @@ export class DatabaseService {
     return this.runSingleQuery('SELECT * FROM agents WHERE id = ?', [agentId]);
   }
 
-  static async createAgent(agent: { id: string; name: string; tags?: string | null }) {
+  static async createAgent(agent: { id: string; name: string; tags?: string | null; host?: string | null }) {
     return this.runCommand(
-      'INSERT INTO agents (id, name, tags, status) VALUES (?, ?, ?, ?)',
-      [agent.id, agent.name, agent.tags || null, 'offline']
+      'INSERT INTO agents (id, name, tags, host, status) VALUES (?, ?, ?, ?, ?)',
+      [agent.id, agent.name, agent.tags || null, agent.host || null, 'offline']
     );
   }
 
-  static async updateAgent(agentId: string, updates: { name?: string; tags?: string | null }) {
+  static async updateAgent(agentId: string, updates: { name?: string; tags?: string | null; host?: string | null }) {
     const setParts: string[] = [];
     const values: any[] = [];
     
@@ -594,6 +620,11 @@ export class DatabaseService {
     if (updates.tags !== undefined) {
       setParts.push('tags = ?');
       values.push(updates.tags);
+    }
+    
+    if (updates.host !== undefined) {
+      setParts.push('host = ?');
+      values.push(updates.host);
     }
     
     if (setParts.length === 0) {
@@ -837,5 +868,90 @@ export class DatabaseService {
         resolve();
       });
     });
+  }
+
+  // Create monitored containers from agent heartbeat data
+  static async createMonitoredContainersFromAgent(agentId: string, containers: any[]) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise<void>((resolve, reject) => {
+      this.db!.serialize(() => {
+        this.db!.run('BEGIN TRANSACTION', (err) => {
+          if (err) return reject(err);
+          
+          let completed = 0;
+          const total = containers.length;
+          
+          if (total === 0) {
+            this.db!.run('COMMIT', (err) => {
+              if (err) return reject(err);
+              resolve();
+            });
+            return;
+          }
+          
+          containers.forEach((container) => {
+            // Check if a monitored container already exists for this imagePath + agentId combination
+            this.db!.get(
+              'SELECT id FROM containers WHERE image_path = ? AND source_agent_id = ?',
+              [container.image, agentId],
+              (err, existing) => {
+                if (err) {
+                  console.error('[db] Error checking existing monitored container:', err);
+                  return reject(err);
+                }
+                
+                // Only create if it doesn't already exist
+                if (!existing) {
+                  this.db!.run(
+                    'INSERT INTO containers (name, image_path, tag, source_agent_id) VALUES (?, ?, ?, ?)',
+                    [container.name, container.image, container.tag || 'latest', agentId],
+                    function(insertErr) {
+                      if (insertErr) {
+                        console.error('[db] Error creating monitored container:', insertErr);
+                        return reject(insertErr);
+                      }
+                      console.log(`[db] Created monitored container: ${container.name} (${container.image}:${container.tag || 'latest'}) for agent ${agentId}`);
+                    }
+                  );
+                } else {
+                  console.log(`[db] Monitored container already exists: ${container.image} for agent ${agentId}`);
+                }
+                
+                completed++;
+                if (completed === total) {
+                  this.db!.run('COMMIT', (err) => {
+                    if (err) {
+                      console.error('[db] Error committing monitored containers transaction:', err);
+                      return reject(err);
+                    }
+                    console.log(`[db] Processed ${total} containers for monitored container creation`);
+                    resolve();
+                  });
+                }
+              }
+            );
+          });
+        });
+      });
+    });
+  }
+
+  // Agent configuration methods
+  static async getAgentConfig() {
+    const result = await this.runSingleQuery('SELECT * FROM agent_config WHERE id = 1') as any;
+    if (!result) {
+      return { heartbeatIntervalSeconds: 120 }; // Default 2 minutes
+    }
+    return {
+      heartbeatIntervalSeconds: result.heartbeat_interval_seconds
+    };
+  }
+
+  static async updateAgentConfig(config: { heartbeatIntervalSeconds: number }) {
+    return this.runCommand(
+      'UPDATE agent_config SET heartbeat_interval_seconds = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1',
+      [config.heartbeatIntervalSeconds]
+    );
   }
 }

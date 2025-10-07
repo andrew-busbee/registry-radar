@@ -5,11 +5,20 @@ interface EditAgentModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentName: string;
-  onUpdateAgent: (name: string) => Promise<void>;
+  currentHost?: string;
+  onUpdateAgent: (name: string, ipAddress?: string) => Promise<void>;
 }
 
-export function EditAgentModal({ isOpen, onClose, currentName, onUpdateAgent }: EditAgentModalProps) {
+export function EditAgentModal({ isOpen, onClose, currentName, currentHost, onUpdateAgent }: EditAgentModalProps) {
+  // Parse current IP from host string (format: "NAME (IP)" or just "NAME")
+  const getCurrentIp = () => {
+    if (!currentHost) return '';
+    const match = currentHost.match(/^.+ \((.+)\)$/);
+    return match ? match[1] : '';
+  };
+
   const [agentName, setAgentName] = useState(currentName);
+  const [ipAddress, setIpAddress] = useState(getCurrentIp());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +28,12 @@ export function EditAgentModal({ isOpen, onClose, currentName, onUpdateAgent }: 
       return;
     }
     
-    if (agentName.trim() === currentName) {
+    const trimmedName = agentName.trim();
+    const trimmedIp = ipAddress.trim() || undefined;
+    
+    // Check if anything changed
+    const currentIp = getCurrentIp();
+    if (trimmedName === currentName && trimmedIp === currentIp) {
       onClose();
       return;
     }
@@ -27,10 +41,10 @@ export function EditAgentModal({ isOpen, onClose, currentName, onUpdateAgent }: 
     try {
       setLoading(true);
       setError(null);
-      await onUpdateAgent(agentName.trim());
+      await onUpdateAgent(trimmedName, trimmedIp);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to update agent name');
+      setError(err.message || 'Failed to update agent');
     } finally {
       setLoading(false);
     }
@@ -38,6 +52,7 @@ export function EditAgentModal({ isOpen, onClose, currentName, onUpdateAgent }: 
 
   const handleClose = () => {
     setAgentName(currentName);
+    setIpAddress(getCurrentIp());
     setError(null);
     onClose();
   };
@@ -49,7 +64,7 @@ export function EditAgentModal({ isOpen, onClose, currentName, onUpdateAgent }: 
       <div className="bg-background border border-border rounded-lg max-w-md w-full mx-4">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-xl font-semibold">Edit Agent Name</h2>
+          <h2 className="text-xl font-semibold">Edit Agent</h2>
           <button
             onClick={handleClose}
             className="text-muted-foreground hover:text-foreground"
@@ -74,6 +89,23 @@ export function EditAgentModal({ isOpen, onClose, currentName, onUpdateAgent }: 
                 className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                 autoFocus
               />
+            </div>
+            
+            <div>
+              <label htmlFor="editIpAddress" className="block text-sm font-medium mb-2">
+                IP Address <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <input
+                id="editIpAddress"
+                type="text"
+                value={ipAddress}
+                onChange={(e) => setIpAddress(e.target.value)}
+                placeholder="e.g., 192.168.1.100 or 10.0.0.5"
+                className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The IP address of the machine where this agent runs.
+              </p>
             </div>
             
             {error && (

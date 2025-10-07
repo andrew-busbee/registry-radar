@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { DatabaseService } from '../../../server/services/databaseService';
 import { CreateAgentRequest, CreateAgentResponse } from '../../shared/types';
 
@@ -73,7 +72,13 @@ agentsRouter.post('/', async (req, res) => {
   const enrollToken = randomUUID().replace(/-/g, '') + randomUUID().replace(/-/g, '');
   const enrollHash = await bcrypt.hash(enrollToken, 10);
 
-  await DatabaseService.createAgent({ id: agentId, name: body.name, tags: body.tags ? JSON.stringify(body.tags) : null });
+  // Create host display string
+  let hostDisplay = body.name;
+  if (body.ipAddress && body.ipAddress.trim()) {
+    hostDisplay = `${body.name} (${body.ipAddress.trim()})`;
+  }
+
+  await DatabaseService.createAgent({ id: agentId, name: body.name, tags: body.tags ? JSON.stringify(body.tags) : null, host: hostDisplay });
   await DatabaseService.upsertAgentSecrets(agentId, enrollHash, null);
 
   const baseUrl = getPublicUrl(req);
@@ -100,9 +105,39 @@ agentsRouter.post('/', async (req, res) => {
   res.status(201).json(resp);
 });
 
+// Agent configuration endpoints (must come before /:id routes)
+agentsRouter.get('/config', async (_req, res) => {
+  try {
+    const config = await DatabaseService.getAgentConfig();
+    res.json(config);
+  } catch (error) {
+    console.error('Error fetching agent config:', error);
+    res.status(500).json({ error: 'Failed to fetch agent configuration' });
+  }
+});
+
+agentsRouter.put('/config', async (req, res) => {
+  try {
+    const { heartbeatIntervalSeconds } = req.body;
+    
+    // Validate heartbeat interval
+    if (typeof heartbeatIntervalSeconds !== 'number' || heartbeatIntervalSeconds < 30 || heartbeatIntervalSeconds > 1800) {
+      return res.status(400).json({ 
+        error: 'Heartbeat interval must be a number between 30 and 1800 seconds (30 seconds to 30 minutes)' 
+      });
+    }
+
+    await DatabaseService.updateAgentConfig({ heartbeatIntervalSeconds });
+    res.json({ message: 'Agent configuration updated successfully' });
+  } catch (error) {
+    console.error('Error updating agent config:', error);
+    res.status(500).json({ error: 'Failed to update agent configuration' });
+  }
+});
+
 agentsRouter.put('/:id', async (req, res) => {
   const agentId = req.params.id;
-  const { name } = req.body;
+  const { name, host } = req.body;
   
   if (!agentId) {
     return res.status(400).json({ error: 'Missing agent ID' });
@@ -113,7 +148,7 @@ agentsRouter.put('/:id', async (req, res) => {
   }
 
   try {
-    await DatabaseService.updateAgent(agentId, { name: name.trim() });
+    await DatabaseService.updateAgent(agentId, { name: name.trim(), host: host || null });
     res.json({ message: 'Agent updated successfully' });
   } catch (error) {
     console.error('Error updating agent:', error);
@@ -136,6 +171,4 @@ agentsRouter.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete agent' });
   }
 });
-
-
 

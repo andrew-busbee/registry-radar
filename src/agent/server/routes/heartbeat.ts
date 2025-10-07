@@ -37,12 +37,19 @@ router.post('/heartbeat', async (req, res) => {
     // Update agent containers (this will use the improved UPSERT logic we fixed)
     await DatabaseService.updateAgentContainers(agentId, containers);
 
+    // Create monitored containers for new imagePath+agentId combinations
+    await DatabaseService.createMonitoredContainersFromAgent(agentId, containers);
+
+    // Get current agent configuration to send back to agent
+    const agentConfig = await DatabaseService.getAgentConfig();
+
     console.log(`[heartbeat] Agent ${agentId} reported ${containers.length} containers with status: ${status}`);
 
     res.json({ 
       success: true, 
       message: 'Heartbeat received',
-      containersReceived: containers.length 
+      containersReceived: containers.length,
+      heartbeatIntervalSeconds: agentConfig.heartbeatIntervalSeconds
     });
 
   } catch (error) {

@@ -4,12 +4,13 @@ import { X, Copy, Check, Plus } from 'lucide-react';
 interface AddAgentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateAgent: (name: string) => Promise<{ composeYaml: string; agentId: string }>;
+  onCreateAgent: (name: string, ipAddress?: string) => Promise<{ composeYaml: string; agentId: string }>;
 }
 
 export function AddAgentModal({ isOpen, onClose, onCreateAgent }: AddAgentModalProps) {
   const [step, setStep] = useState<'name' | 'compose'>('name');
   const [agentName, setAgentName] = useState('');
+  const [ipAddress, setIpAddress] = useState('');
   const [composeYaml, setComposeYaml] = useState('');
   const [agentId, setAgentId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export function AddAgentModal({ isOpen, onClose, onCreateAgent }: AddAgentModalP
     try {
       setLoading(true);
       setError(null);
-      const result = await onCreateAgent(agentName.trim());
+      const result = await onCreateAgent(agentName.trim(), ipAddress.trim() || undefined);
       setComposeYaml(result.composeYaml);
       setAgentId(result.agentId);
       setStep('compose');
@@ -54,6 +55,7 @@ export function AddAgentModal({ isOpen, onClose, onCreateAgent }: AddAgentModalP
   const handleClose = () => {
     setStep('name');
     setAgentName('');
+    setIpAddress('');
     setComposeYaml('');
     setAgentId('');
     setError(null);
@@ -96,6 +98,23 @@ export function AddAgentModal({ isOpen, onClose, onCreateAgent }: AddAgentModalP
                   className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                   autoFocus
                 />
+              </div>
+              
+              <div>
+                <label htmlFor="ipAddress" className="block text-sm font-medium mb-2">
+                  IP Address <span className="text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <input
+                  id="ipAddress"
+                  type="text"
+                  value={ipAddress}
+                  onChange={(e) => setIpAddress(e.target.value)}
+                  placeholder="e.g., 192.168.1.100 or 10.0.0.5"
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  The IP address of the machine where this agent will run. This will be displayed in the UI.
+                </p>
               </div>
               
               {error && (

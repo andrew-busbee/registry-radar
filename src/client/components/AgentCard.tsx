@@ -28,7 +28,7 @@ interface AgentCardProps {
     };
   };
   onDelete: (agentId: string) => void;
-  onEdit: (agentId: string, currentName: string) => void;
+  onEdit: (agentId: string, currentName: string, currentHost?: string) => void;
 }
 
 export function AgentCard({ agent, onDelete, onEdit }: AgentCardProps) {
@@ -61,7 +61,8 @@ export function AgentCard({ agent, onDelete, onEdit }: AgentCardProps) {
   };
 
   const getLastSeenText = () => {
-    if (!agent.lastSeenAt) return 'Never';
+    if (!agent.lastSeenAt) return { text: 'Never', color: 'text-gray-600 dark:text-gray-400' };
+    
     const lastSeen = new Date(agent.lastSeenAt);
     const now = new Date();
     const diffMs = now.getTime() - lastSeen.getTime();
@@ -69,10 +70,43 @@ export function AgentCard({ agent, onDelete, onEdit }: AgentCardProps) {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+    // Format the actual timestamp
+    const timestamp = lastSeen.toLocaleString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+
+    // Format the relative time
+    let relativeTime;
+    if (diffMins < 1) {
+      relativeTime = 'Just now';
+    } else if (diffMins < 60) {
+      relativeTime = `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+    } else if (diffHours < 24) {
+      relativeTime = `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    } else {
+      relativeTime = `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+    }
+
+    // Determine color based on time since last seen
+    let color;
+    if (diffMins <= 5) {
+      color = 'text-green-600 dark:text-green-400'; // Green for recent (≤5 minutes)
+    } else if (diffMins <= 10) {
+      color = 'text-yellow-600 dark:text-yellow-400'; // Yellow for 5-10 minutes
+    } else {
+      color = 'text-red-600 dark:text-red-400'; // Red for >10 minutes
+    }
+
+    return {
+      text: `${timestamp} (${relativeTime})`,
+      color
+    };
   };
 
   const getUpdateStatusDisplay = (container: ContainerInfo) => {
@@ -104,9 +138,9 @@ export function AgentCard({ agent, onDelete, onEdit }: AgentCardProps) {
         </div>
         <div className="flex items-center space-x-1">
           <button
-            onClick={() => onEdit(agent.id, agent.name)}
+            onClick={() => onEdit(agent.id, agent.name, agent.host)}
             className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/20 p-1 rounded"
-            title="Edit agent name"
+            title="Edit agent"
           >
             <Edit className="w-4 h-4" />
           </button>
@@ -129,7 +163,12 @@ export function AgentCard({ agent, onDelete, onEdit }: AgentCardProps) {
         <div className={`flex items-center space-x-2 text-sm ${agent.status === 'offline' ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>
           <Clock className="w-3 h-3" />
           <span>
-            {agent.status === 'offline' ? 'Status: Disconnected' : `Last seen: ${getLastSeenText()}`}
+            {agent.status === 'offline' ? 'Status: Disconnected' : `Last seen: `}
+            {agent.status !== 'offline' && (
+              <span className={getLastSeenText().color}>
+                {getLastSeenText().text}
+              </span>
+            )}
           </span>
         </div>
         {agent.version && (

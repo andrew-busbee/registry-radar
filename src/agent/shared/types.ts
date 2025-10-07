@@ -12,6 +12,7 @@ export interface AgentRecord {
 export interface CreateAgentRequest {
   name: string;
   tags?: string[];
+  ipAddress?: string;
 }
 
 export interface CreateAgentResponse {
