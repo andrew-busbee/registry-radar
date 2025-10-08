@@ -139,10 +139,7 @@ docker run -d \
 Then open `http://localhost:3001` in your browser.
 
 ⚠️ **Security Note:**
-Registry Radar doesn't have built-in user authentication yet. If you're planning to use it in a production environment where others might access it, consider:
-- Using a reverse proxy with authentication (like nginx with basic auth)
-- Restricting network access with a firewall
-- Running it on a private network or VPN
+If you're planning to Registry Radar in a production environment, it is highly recommended to run it behind a reverse proxy 
 
 ## How to Use Registry Radar
 
