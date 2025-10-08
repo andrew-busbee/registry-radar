@@ -83,7 +83,7 @@ export function FirstLoginModal({ currentUsername, currentPassword, onComplete }
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center space-x-2">
             <AlertTriangle className="w-5 h-5 text-yellow-500" />
-            <h2 className="text-xl font-semibold">Change Default Password</h2>
+            <h2 className="text-xl font-semibold">Change Default Username & Password</h2>
           </div>
         </div>
 

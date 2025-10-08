@@ -194,7 +194,7 @@ function AppContent() {
 
   const refreshContainerStates = async () => {
     try {
-      const statesRes = await fetch('/api/registry/states');
+      const statesRes = await authenticatedFetch('/api/registry/states');
       if (statesRes.ok) {
         const statesData = await statesRes.json();
         setContainerStates(statesData);
@@ -217,8 +217,8 @@ function AppContent() {
       if (response.ok) {
         // Refresh data after check
         const [statesRes, notificationsRes] = await Promise.all([
-          fetch('/api/registry/states'),
-          fetch('/api/notifications'),
+          authenticatedFetch('/api/registry/states'),
+          authenticatedFetch('/api/notifications'),
         ]);
         
         const [statesData, notificationsData] = await Promise.all([
@@ -246,7 +246,7 @@ function AppContent() {
       // persist the previous schedule, overwriting the new one.
 
       if (config.schedule !== undefined && config.enabled !== undefined) {
-        const scheduleResp = await fetch('/api/cron/config/schedule', {
+        const scheduleResp = await authenticatedFetch('/api/cron/config/schedule', {
           method: 'PUT',
           body: JSON.stringify({ schedule: config.schedule }),
         });
@@ -255,7 +255,7 @@ function AppContent() {
         }
         await scheduleResp.json();
 
-        const enabledResp = await fetch('/api/cron/config/enabled', {
+        const enabledResp = await authenticatedFetch('/api/cron/config/enabled', {
           method: 'PUT',
           body: JSON.stringify({ enabled: config.enabled }),
         });
@@ -266,7 +266,7 @@ function AppContent() {
 
         // If a timezone was provided along with schedule+enabled, persist it too
         if (config.timezone !== undefined) {
-          const tzResp = await fetch('/api/cron/config/timezone', {
+          const tzResp = await authenticatedFetch('/api/cron/config/timezone', {
             method: 'PUT',
             body: JSON.stringify({ timezone: config.timezone }),
           });
@@ -278,7 +278,7 @@ function AppContent() {
       } else if (config.schedule !== undefined || config.timezone !== undefined) {
         // If either schedule or timezone is provided, update schedule first (if provided), then timezone
         if (config.schedule !== undefined) {
-          const scheduleResp = await fetch('/api/cron/config/schedule', {
+          const scheduleResp = await authenticatedFetch('/api/cron/config/schedule', {
             method: 'PUT',
             body: JSON.stringify({ schedule: config.schedule }),
           });
@@ -288,7 +288,7 @@ function AppContent() {
           await scheduleResp.json();
         }
         if (config.timezone !== undefined) {
-          const tzResp = await fetch('/api/cron/config/timezone', {
+          const tzResp = await authenticatedFetch('/api/cron/config/timezone', {
             method: 'PUT',
             body: JSON.stringify({ timezone: config.timezone }),
           });
@@ -298,7 +298,7 @@ function AppContent() {
           await tzResp.json();
         }
       } else if (config.enabled !== undefined) {
-        const enabledResp = await fetch('/api/cron/config/enabled', {
+        const enabledResp = await authenticatedFetch('/api/cron/config/enabled', {
           method: 'PUT',
           body: JSON.stringify({ enabled: config.enabled }),
         });
@@ -310,7 +310,7 @@ function AppContent() {
       
       // Refresh cron configuration from server to ensure we have the latest data
       try {
-        const cronResponse = await fetch('/api/cron/config');
+        const cronResponse = await authenticatedFetch('/api/cron/config');
         if (cronResponse.ok) {
           const updatedCronData = await cronResponse.json();
           setCronConfig(updatedCronData);

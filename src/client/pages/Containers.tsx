@@ -10,6 +10,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageContent } from '../components/layout/PageContent';
 import { ResponsiveSearchControls } from '../components/layout/ResponsiveSearchControls';
 import { useCheck } from '../contexts/CheckContext';
+import { useAuthenticatedFetch } from '../contexts/AuthContext';
 
 interface ContainersProps {
   containers: ContainerRegistry[];
@@ -31,6 +32,7 @@ export function Containers({
   onRefreshContainerStates,
 }: ContainersProps) {
   const { progress, startCheck, updateProgress, completeCheck, cancelCheck } = useCheck();
+  const authenticatedFetch = useAuthenticatedFetch();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [isCheckingAll, setIsCheckingAll] = useState(false);
@@ -178,9 +180,8 @@ export function Containers({
 
   const handleBulkImport = async (containers: ContainerRegistry[]): Promise<{ success: boolean; errors: string[] }> => {
     try {
-      const response = await fetch('/api/config/containers/bulk', {
+      const response = await authenticatedFetch('/api/config/containers/bulk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ containers }),
       });
 
@@ -200,8 +201,7 @@ export function Containers({
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/config/containers/export', {
-      });
+      const response = await authenticatedFetch('/api/config/containers/export');
 
       if (response.ok) {
         const blob = await response.blob();

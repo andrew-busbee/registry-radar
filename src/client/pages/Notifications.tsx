@@ -4,6 +4,7 @@ import { Notification } from '../types';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageContent } from '../components/layout/PageContent';
+import { useAuthenticatedFetch } from '../contexts/AuthContext';
 
 interface NotificationsProps {
   notifications: Notification[];
@@ -16,6 +17,7 @@ interface NotificationsProps {
 type FilterType = 'all' | 'update' | 'error' | 'unread';
 
 export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkAllAsRead, onNavigateToSettings }: NotificationsProps) {
+  const authenticatedFetch = useAuthenticatedFetch();
   const [isClearing, setIsClearing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
@@ -34,7 +36,7 @@ export function Notifications({ notifications, onMarkAsRead, onClearAll, onMarkA
 
   const handleMarkAllAsRead = async () => {
     try {
-      await fetch('/api/notifications/read-all', { method: 'PUT' });
+      await authenticatedFetch('/api/notifications/read-all', { method: 'PUT' });
       // Note: In a real app, you'd update the parent state here
       console.log('All notifications marked as read');
     } catch (error) {

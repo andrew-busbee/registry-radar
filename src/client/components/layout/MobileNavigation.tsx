@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Menu, X, Bell, Settings, Container, Home, BookOpen } from 'lucide-react';
+import { Menu, X, Bell, Settings, Container, Home, BookOpen, LogOut } from 'lucide-react';
 import { LAYOUT } from '../../constants/layout';
 import { ThemeToggle } from '../ThemeToggle';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface MobileNavigationProps {
   activePage: string;
@@ -11,6 +12,7 @@ interface MobileNavigationProps {
 
 export function MobileNavigation({ activePage, onPageChange, unreadCount }: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { logout } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -22,6 +24,11 @@ export function MobileNavigation({ activePage, onPageChange, unreadCount }: Mobi
 
   const handlePageChange = (page: string) => {
     onPageChange(page);
+    setIsOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
     setIsOpen(false);
   };
 
@@ -112,6 +119,17 @@ export function MobileNavigation({ activePage, onPageChange, unreadCount }: Mobi
                   )}
                 </button>
               ))}
+              
+              {/* Logout Button */}
+              <div className="pt-4 border-t border-border">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Logout</span>
+                </button>
+              </div>
             </nav>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Bell, TestTube, Plus, Trash2, ChevronDown, ChevronRight, Zap } from 'lucide-react';
 import { NotificationConfig } from '../types';
+import { useAuthenticatedFetch } from '../contexts/AuthContext';
 
 interface NotificationSettingsProps {
   config: NotificationConfig;
@@ -8,6 +9,8 @@ interface NotificationSettingsProps {
 }
 
 export function NotificationSettings({ config, onUpdateConfig }: NotificationSettingsProps) {
+  const authenticatedFetch = useAuthenticatedFetch();
+  
   // Common function to get trigger value with fallback
   const getTriggerValue = (triggerName: keyof typeof defaultTriggers, defaultValue: boolean) => {
     return localConfig.triggers?.[triggerName] ?? defaultValue;
@@ -114,7 +117,7 @@ export function NotificationSettings({ config, onUpdateConfig }: NotificationSet
       await onUpdateConfig(localConfig);
       setHasLocalChanges(false);
       
-      const response = await fetch('/api/notification-config/test/apprise', {
+      const response = await authenticatedFetch('/api/notification-config/test/apprise', {
         method: 'POST',
       });
       

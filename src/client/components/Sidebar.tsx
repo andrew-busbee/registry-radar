@@ -1,5 +1,6 @@
-import { Bell, Settings, Container, Home, BookOpen, Radio } from 'lucide-react';
+import { Bell, Settings, Container, Home, BookOpen, Radio, LogOut } from 'lucide-react';
 import { LAYOUT } from '../constants/layout';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SidebarProps {
   activePage: string;
@@ -8,6 +9,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activePage, onPageChange, unreadCount }: SidebarProps) {
+  const { logout } = useAuth();
+  
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'containers', label: 'Image Details', icon: Container },
@@ -51,6 +54,17 @@ export function Sidebar({ activePage, onPageChange, unreadCount }: SidebarProps)
             {id === 'notifications' && <div className="h-4"></div>}
           </div>
         ))}
+        
+        {/* Logout Button */}
+        <div className="pt-4 border-t border-border">
+          <button
+            onClick={logout}
+            className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
+        </div>
       </nav>
     </aside>
   );
