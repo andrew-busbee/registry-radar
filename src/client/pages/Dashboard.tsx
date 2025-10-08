@@ -193,7 +193,7 @@ export function Dashboard({
         
         // Check individual container
         try {
-          const response = await fetch(`/api/registry/check/${i}`, {
+          const response = await authenticatedFetch(`/api/registry/check/${i}`, {
             method: 'POST',
           });
           

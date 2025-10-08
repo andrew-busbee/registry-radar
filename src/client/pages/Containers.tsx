@@ -107,7 +107,7 @@ export function Containers({
         
         // Check individual container
         try {
-          const response = await fetch(`/api/registry/check/${i}`, {
+          const response = await authenticatedFetch(`/api/registry/check/${i}`, {
             method: 'POST',
           });
           
@@ -141,7 +141,7 @@ export function Containers({
   const handleCheckSingle = async (index: number) => {
     setCheckingIndex(index);
     try {
-      const response = await fetch(`/api/registry/check/${index}`, {
+      const response = await authenticatedFetch(`/api/registry/check/${index}`, {
         method: 'POST',
       });
       
@@ -164,7 +164,7 @@ export function Containers({
     try {
       const image = encodeURIComponent(container.imagePath);
       const tag = encodeURIComponent(container.tag || 'latest');
-      const response = await fetch(`/api/registry/reset/${image}/${tag}`, {
+      const response = await authenticatedFetch(`/api/registry/reset/${image}/${tag}`, {
         method: 'POST',
       });
       
