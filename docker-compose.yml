@@ -10,7 +10,7 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - APPRISE_URL=http://apprise:8000
-      # Public URL (required for registry radar agent use)
+      # Registry Radar Server URL (required for registry radar agent use)
       # Set your public Registry Radar URL or internal IP:PORT 
       - REGISTRY_RADAR_URL=https://registry-radar.your-domain.com or http://IP:PORT
       # Docker Hub Authentication (optional)
