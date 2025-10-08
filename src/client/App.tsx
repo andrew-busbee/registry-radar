@@ -147,7 +147,7 @@ function AppContent() {
 
   const handleUpdateContainer = async (index: number, container: ContainerRegistry) => {
     try {
-      const response = await fetch(`/api/config/containers/${index}`, {
+      const response = await authenticatedFetch(`/api/config/containers/${index}`, {
         method: 'PUT',
         body: JSON.stringify(container),
       });
@@ -168,7 +168,7 @@ function AppContent() {
 
   const handleDeleteContainer = async (index: number) => {
     try {
-      const response = await fetch(`/api/config/containers/${index}`, {
+      const response = await authenticatedFetch(`/api/config/containers/${index}`, {
         method: 'DELETE',
       });
 
@@ -352,7 +352,7 @@ function AppContent() {
 
   const handleMarkNotificationAsRead = async (id: string) => {
     try {
-      const response = await fetch(`/api/notifications/${id}/read`, {
+      const response = await authenticatedFetch(`/api/notifications/${id}/read`, {
         method: 'PUT',
       });
 
