@@ -47,6 +47,9 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - APPRISE_URL=http://apprise:8000
+      # Public URL (required for registry radar agent use)
+      # Set your public Registry Radar URL or internal IP:PORT 
+      - REGISTRY_RADAR_URL=https://registry-radar.your-domain.com or http://IP:PORT
       # Docker Hub Authentication (optional)
       # Increases rate limit from 100 to 200 pulls/6hr (or unlimited with Pro account)
       # Uncomment and set your credentials to enable:
@@ -128,6 +131,7 @@ docker run -d \
   -e NODE_ENV=production \
   -e PORT=3001 \
   -e APPRISE_URL=http://apprise:8000 \
+  -e REGISTRY_RADAR_URL=https://registry-radar.your-domain.com or http://IP:PORT \
   ghcr.io/andrewbusbee/registry-radar:0.1.0-beta.8
 
 ```
