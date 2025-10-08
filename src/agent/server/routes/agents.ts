@@ -7,8 +7,8 @@ import { CreateAgentRequest, CreateAgentResponse } from '../../shared/types';
 export const agentsRouter = Router();
 
 function getPublicUrl(req: any): string {
-  // Prefer PUBLIC_URL, fallback to current host
-  const envUrl = process.env.PUBLIC_URL;
+  // Prefer REGISTRY_RADAR_URL, fallback to current host
+  const envUrl = process.env.REGISTRY_RADAR_URL;
   if (envUrl) return envUrl.replace(/\/$/, '');
   const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
   const host = req.headers['x-forwarded-host'] || req.headers.host;

@@ -22,8 +22,8 @@ export class AppriseTemplates {
   private static readonly TITLE_PREFIX = '📡 Registry Radar';
   
   static updateAvailable(containerName: string, image: string, tag: string, updatedDate?: string): { title: string; body: string } {
-    const publicUrl = process.env.PUBLIC_URL;
-    console.log(`[AppriseTemplates] updateAvailable - PUBLIC_URL: "${publicUrl}"`);
+    const publicUrl = process.env.REGISTRY_RADAR_URL;
+    console.log(`[AppriseTemplates] updateAvailable - REGISTRY_RADAR_URL: "${publicUrl}"`);
     const actionText = publicUrl 
       ? `Visit ${publicUrl} to confirm this update and stop notifications until a subsequent update is found`
       : `Reset the update for this image online to stop future notifications until a subsequent update is found`;
@@ -40,7 +40,7 @@ ${this.BRAND_FOOTER}`
   }
 
   static errorOccurred(errorMessage: string, container?: string): { title: string; body: string } {
-    const publicUrl = process.env.PUBLIC_URL;
+    const publicUrl = process.env.REGISTRY_RADAR_URL;
     const actionText = publicUrl 
       ? `Visit ${publicUrl} to check your configuration`
       : `Please check your configuration`;
@@ -77,7 +77,7 @@ ${this.BRAND_FOOTER}`
       `${container.name}\n- Image: ${container.image}:${container.tag}\n- Status: ${container.status}`
     ).join('\n\n');
 
-    const publicUrl = process.env.PUBLIC_URL;
+    const publicUrl = process.env.REGISTRY_RADAR_URL;
     const additionalInfo = publicUrl 
       ? `Visit ${publicUrl} for additional details\n\n`
       : '';
@@ -93,8 +93,8 @@ ${additionalInfo}${this.BRAND_FOOTER}`
   }
 
   static testNotification(): { title: string; body: string } {
-    const publicUrl = process.env.PUBLIC_URL;
-    console.log(`[AppriseTemplates] testNotification - PUBLIC_URL: "${publicUrl}"`);
+    const publicUrl = process.env.REGISTRY_RADAR_URL;
+    console.log(`[AppriseTemplates] testNotification - REGISTRY_RADAR_URL: "${publicUrl}"`);
     const additionalInfo = publicUrl 
       ? `Visit ${publicUrl} to configure your monitors\n\n`
       : '';
