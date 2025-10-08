@@ -94,7 +94,7 @@ agentsRouter.post('/', async (req, res) => {
       - AGENT_ENROLL_TOKEN=${enrollToken}
       - AGENT_LOG_LEVEL=info
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 `;
 
   const resp: CreateAgentResponse = {
